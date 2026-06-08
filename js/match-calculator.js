@@ -2,8 +2,12 @@
 (function (global) {
   "use strict";
 
-  // TODO(F3): soportar multi-segmento (varias carreras/niveles) y render de
-  //           conflictos + las 3 sugerencias devueltas por el backend.
+  const fmt = (d) =>
+    new Date(d).toLocaleString("es-CL", {
+      weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+    });
+
+  // TODO(F3+): soportar multi-segmento (varias carreras/niveles) en la UI.
   async function evaluar(form) {
     const data = Object.fromEntries(new FormData(form).entries());
     const publico = [
@@ -18,6 +22,19 @@
 
   function render(el, r) {
     const nivel = (r.nivel || "").toLowerCase();
+    const conflictos =
+      r.conflictos && r.conflictos.length
+        ? "<h3>Conflictos</h3><ul>" + r.conflictos.map((c) => `<li>${c.detalle}</li>`).join("") + "</ul>"
+        : '<p class="muted">Sin conflictos detectados.</p>';
+    const sugerencias =
+      r.sugerencias && r.sugerencias.length
+        ? "<h3>Mejores alternativas de la semana</h3><ul>" +
+          r.sugerencias
+            .map((s) => `<li>${fmt(s.inicio)} — <strong>${s.compatibilidad_pct}%</strong> · alcance ${s.alcance_estimado}</li>`)
+            .join("") +
+          "</ul>"
+        : "";
+
     el.innerHTML = `
       <div class="card">
         <div class="row" style="justify-content:space-between">
@@ -25,11 +42,8 @@
           <span class="badge ${nivel}">${r.compatibilidad_pct}% · ${r.nivel}</span>
         </div>
         <p class="muted">Alcance estimado: <strong>${r.alcance_estimado}</strong> estudiantes</p>
-        ${
-          r.conflictos && r.conflictos.length
-            ? "<ul>" + r.conflictos.map((c) => `<li>${c.detalle}</li>`).join("") + "</ul>"
-            : '<p class="muted">Sin conflictos detectados (scoring completo: TODO F3).</p>'
-        }
+        ${conflictos}
+        ${sugerencias}
       </div>`;
   }
 

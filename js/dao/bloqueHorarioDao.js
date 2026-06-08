@@ -21,5 +21,19 @@ module.exports = {
     return rows;
   },
 
-  // TODO(F2): crear, eliminar e importacion masiva por CSV.
+  async crear(b) {
+    const { rows } = await query(
+      `INSERT INTO bloque_horario (carrera_id, nivel, dia_semana, hora_inicio, hora_fin, tipo, descripcion)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [b.carreraId, b.nivel, b.diaSemana, b.horaInicio, b.horaFin, b.tipo, b.descripcion || null]
+    );
+    return rows[0];
+  },
+
+  async eliminar(id) {
+    await query(`DELETE FROM bloque_horario WHERE id = $1`, [id]);
+    return { id };
+  },
+
+  // TODO(F2): importacion masiva por CSV.
 };

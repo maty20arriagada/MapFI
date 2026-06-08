@@ -10,5 +10,12 @@ module.exports = {
     return rows;
   },
 
-  // TODO(F1): alta de niveles adicionales (6.o anio, etc.).
+  async crear(g) {
+    const { rows } = await query(
+      `INSERT INTO generacion (nivel, etiqueta) VALUES ($1,$2)
+       ON CONFLICT (nivel) DO UPDATE SET etiqueta = EXCLUDED.etiqueta RETURNING *`,
+      [g.nivel, g.etiqueta]
+    );
+    return rows[0];
+  },
 };

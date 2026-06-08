@@ -24,11 +24,12 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 
 **Objetivo:** que las entidades puedan iniciar sesión y exista la administración de catálogos.
 
-- [ ] Login/logout con `bcryptjs` + `express-session` (persistido).
-- [ ] Middleware `requireAuth` y `requireRole('ADMIN')`.
-- [ ] CRUD admin de `carrera`, `generacion`, `entidad`, `usuario`.
-- [ ] CRUD de `periodo_academico` + marcar el activo.
-- [ ] `login.html` + `dashboard.html` con estado de sesión.
+- [x] Login/logout con `bcryptjs` + `express-session` (persistido).
+- [x] Middleware `requireAuth` y `requireRole('ADMIN')`.
+- [x] CRUD admin (API) de `carrera`, `generacion`, `entidad`, `usuario`.
+- [x] CRUD de `periodo_academico` + marcar el activo (API).
+- [x] `login.html` + `dashboard.html` con estado de sesión.
+- [ ] Pendiente: panel de administración (UI) para los catálogos.
 
 **Criterio de aceptación:** un usuario `APORTANTE` inicia sesión y ve su dashboard; un `ADMIN` gestiona los catálogos; las contraseñas se guardan hasheadas.
 
@@ -38,12 +39,12 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 
 **Objetivo:** el calendario centralizado con filtros y la lógica de fechas.
 
-- [ ] CRUD de `actividad` (con `actividad_publico`).
-- [ ] `calendario.html` + FullCalendar (vistas mes/semana).
-- [ ] Filtros avanzados: carrera, generación, entidad.
-- [ ] Carga de `bloque_horario` (manual + import CSV).
-- [ ] `holidayService`: feriados + exclusión de findes + soporte de años.
-- [ ] Vista pública (sin login) de solo lectura.
+- [x] CRUD de `actividad` (con `actividad_publico`) — API + formulario de alta.
+- [x] Filtros avanzados: carrera, generación, entidad.
+- [x] `holidayService`: feriados + exclusión de findes (con tests).
+- [x] Vista pública (sin login) de solo lectura.
+- [x] Carga de `bloque_horario` (API); import CSV pendiente.
+- [ ] Pendiente: integrar FullCalendar (hoy lista tarjetas) + edición inline.
 
 **Criterio de aceptación:** un aportante crea una actividad con público objetivo; el público general la ve filtrada por carrera/año; los feriados aparecen marcados y los findes se ignoran en cálculos.
 
@@ -53,11 +54,12 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 
 **Objetivo:** las dos funciones diferenciadoras.
 
-- [ ] `matchService` completo (ver [`ALGORITMO_MATCH.md`](ALGORITMO_MATCH.md)) + tests.
-- [ ] `match.html`: formulario propuesta → resultado + 3 sugerencias.
-- [ ] Persistencia de `compatibilidad_pct` y `alcance_estimado` en la actividad.
-- [ ] `heatmapService` + `vw_saturacion_segmento`.
-- [ ] `mapa-calor.html`: escala verde/amarillo/rojo, filtrable por segmento.
+- [x] `matchService` completo (pasos 0–6, ver [`ALGORITMO_MATCH.md`](ALGORITMO_MATCH.md)) + tests.
+- [x] `match.html`: propuesta → compatibilidad + alcance + 3 sugerencias.
+- [x] `cargarContextoMatch` + tabla `matricula` (alcance real).
+- [x] `heatmapService` + `vw_saturacion_segmento` + endpoint.
+- [x] `mapa-calor.html` con escala de color, filtrable por segmento.
+- [ ] Pendiente: persistir compat/alcance al guardar la actividad; grilla heatmap tipo calendario.
 
 **Criterio de aceptación:** al proponer una fecha sobre un examen del segmento, el sistema marca compatibilidad BAJA y sugiere 3 bloques mejores Lun–Vie; el mapa de calor refleja la saturación de un segmento específico.
 

@@ -41,5 +41,29 @@ module.exports = {
     return rows[0];
   },
 
-  // TODO(F1): actualizar, desactivar, cambiar contrasena.
+  async listarPorEntidad(entidadId) {
+    const { rows } = await query(
+      `SELECT id, email, nombre, rol, activo FROM usuario WHERE entidad_id = $1 ORDER BY nombre`,
+      [entidadId]
+    );
+    return rows;
+  },
+
+  async actualizar(id, u) {
+    const { rows } = await query(
+      `UPDATE usuario SET
+         nombre = COALESCE($2, nombre),
+         entidad_id = COALESCE($3, entidad_id),
+         activo = COALESCE($4, activo)
+       WHERE id = $1
+       RETURNING id, email, nombre, rol, entidad_id, activo`,
+      [id, u.nombre, u.entidadId, u.activo]
+    );
+    return rows[0];
+  },
+
+  async cambiarPassword(id, passwordHash) {
+    await query(`UPDATE usuario SET password_hash = $2 WHERE id = $1`, [id, passwordHash]);
+    return { id };
+  },
 };

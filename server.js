@@ -30,13 +30,13 @@ const generacionDao = require("./js/dao/generacionDao");
 const entidadDao = require("./js/dao/entidadDao");
 const periodoDao = require("./js/dao/periodoDao");
 const actividadDao = require("./js/dao/actividadDao");
+const bloqueHorarioDao = require("./js/dao/bloqueHorarioDao");
 const feriadoDao = require("./js/dao/feriadoDao");
 const kpiDao = require("./js/dao/kpiDao");
 
 // Servicios (puros)
 const matchService = require("./js/services/matchService");
 const heatmapService = require("./js/services/heatmapService");
-const holiday = require("./js/services/holidayService");
 
 const bcrypt = require("bcryptjs");
 
@@ -118,7 +118,7 @@ app.post("/api/auth/login", async (req, res) => {
     const ok = await bcrypt.compare(password, u.password_hash);
     if (!ok) return res.status(401).json({ error: "Credenciales invalidas" });
 
-    req.session.user = { id: u.id, nombre: u.nombre, rol: u.rol, entidadId: u.entidad_id };
+    req.session.user = { id: u.id, email: u.email, nombre: u.nombre, rol: u.rol, entidadId: u.entidad_id };
     res.json({ ok: true, user: req.session.user });
   } catch (e) {
     console.error("[login]", e);
@@ -185,7 +185,39 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
     console.error("[actividades:create]", e);
     res.status(500).json({ error: "Error interno" });
   }
-  // TODO(F2): PUT /api/actividades/:id, PATCH estado, DELETE.
+});
+
+// Helper: el usuario es dueno (su entidad) de la actividad, o es ADMIN.
+async function puedeEditarActividad(req, id) {
+  if (req.session.user.rol === "ADMIN") return true;
+  const act = await actividadDao.obtener(id);
+  return act && act.entidad_id === req.session.user.entidadId;
+}
+
+app.put("/api/actividades/:id", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
+    res.json(await actividadDao.actualizar(id, req.body || {}, (req.body || {}).publico));
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.patch("/api/actividades/:id/estado", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
+    const { estado } = req.body || {};
+    if (!estado) return res.status(400).json({ error: "Falta 'estado'" });
+    res.json(await actividadDao.cambiarEstado(id, estado));
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.delete("/api/actividades/:id", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
+    res.json(await actividadDao.eliminar(id));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
 // ── Calculador de Match (§3.C) ──────────────────────────────────────────────
@@ -195,15 +227,11 @@ app.post("/api/match/evaluar", requireAuth, async (req, res) => {
     if (!inicio || !Array.isArray(publico) || publico.length === 0) {
       return res.status(400).json({ error: "Se requiere 'inicio' y 'publico' objetivo" });
     }
-    const desde = holiday.toISODate(inicio);
-    const hasta = holiday.toISODate(fin || inicio);
-    const feriados = await feriadoDao.listarFechasEntre(desde, hasta);
-
-    // TODO(F3): cargar contexto completo (bloques, actividades, poblacion) via
-    //           actividadDao.cargarContextoMatch() y pasarlo a evaluar().
+    // Contexto completo (feriados, bloques, actividades, poblacion) de la semana.
+    const contexto = await actividadDao.cargarContextoMatch(publico, inicio);
     const out = matchService.evaluar(
       { inicio: new Date(inicio), fin: new Date(fin || inicio), publico },
-      { feriados }
+      contexto
     );
     res.json(out);
   } catch (e) {
@@ -246,6 +274,81 @@ app.get("/api/analytics/aporte", requireRole("ADMIN"), async (req, res) => {
   catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 // TODO(F4): /api/reports/:entidadId/pdf  (reporte de impacto semestral).
+
+// ── Bloques horarios (lectura publica · escritura ADMIN) ────────────────────
+app.get("/api/bloques", async (req, res) => {
+  try { res.json(await bloqueHorarioDao.listar()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+app.post("/api/bloques", requireRole("ADMIN"), async (req, res) => {
+  try { res.status(201).json(await bloqueHorarioDao.crear(req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.delete("/api/bloques/:id", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await bloqueHorarioDao.eliminar(num(req.params.id))); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Periodos academicos ─────────────────────────────────────────────────────
+app.get("/api/periodos", requireAuth, async (req, res) => {
+  try { res.json(await periodoDao.listar()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+app.post("/api/admin/periodos", requireRole("ADMIN"), async (req, res) => {
+  try { res.status(201).json(await periodoDao.crear(req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post("/api/admin/periodos/:id/activar", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await periodoDao.activar(num(req.params.id))); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Admin · catalogos (carreras / entidades) ────────────────────────────────
+app.post("/api/admin/carreras", requireRole("ADMIN"), async (req, res) => {
+  try { res.status(201).json(await carreraDao.crear(req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.put("/api/admin/carreras/:id", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await carreraDao.actualizar(num(req.params.id), req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post("/api/admin/entidades", requireRole("ADMIN"), async (req, res) => {
+  try { res.status(201).json(await entidadDao.crear(req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.put("/api/admin/entidades/:id", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await entidadDao.actualizar(num(req.params.id), req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+// ── Admin · usuarios (alta de aportantes) ───────────────────────────────────
+app.get("/api/admin/usuarios", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await userDao.listar()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+app.post("/api/admin/usuarios", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const { email, password, nombre, rol, entidadId } = req.body || {};
+    if (!email || !password || !nombre) return res.status(400).json({ error: "Faltan campos obligatorios" });
+    const hash = await bcrypt.hash(password, 10);
+    const u = await userDao.crear({ email, passwordHash: hash, nombre, rol: rol || "APORTANTE", entidadId });
+    res.status(201).json(u);
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+// ── Cambio de contrasena propia ─────────────────────────────────────────────
+app.post("/api/auth/password", requireAuth, async (req, res) => {
+  try {
+    const { actual, nueva } = req.body || {};
+    if (!nueva || nueva.length < 6) return res.status(400).json({ error: "La nueva contrasena debe tener al menos 6 caracteres" });
+    const u = await userDao.buscarPorEmail(req.session.user.email);
+    if (!u || !(await bcrypt.compare(actual || "", u.password_hash))) {
+      return res.status(401).json({ error: "Contrasena actual incorrecta" });
+    }
+    await userDao.cambiarPassword(u.id, await bcrypt.hash(nueva, 10));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
 
 // ── Frontend estatico ────────────────────────────────────────────────────────
 // `dotfiles: deny` evita servir .env y otros dotfiles.

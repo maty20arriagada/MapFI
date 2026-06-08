@@ -92,7 +92,7 @@ mapfi/
 
 ## 🗺️ Estado
 
-🚧 **Fase 0 — Scaffold inicial.** Estructura ejecutable lista; lógica de negocio por implementar siguiendo los `TODO` del código y el [roadmap](docs/ROADMAP.md).
+✅ **Fases 1–3 operativas (backend + lógica núcleo).** Autenticación, CRUD de actividades y catálogos, **algoritmo de Match completo** (con tests) y mapa de calor — todo funcionando vía API. Pendiente: pulido de UI (FullCalendar, panel admin) y **Fase 4** (gamificación, reportes PDF, panel BI). Ver [roadmap](docs/ROADMAP.md).
 
 ---
 

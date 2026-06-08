@@ -23,18 +23,44 @@
   </header>
 
   <main class="container">
-    <!-- Visible solo para invitados (no autenticados) -->
     <section class="section guest-only" hidden>
-      <div class="placeholder">
-        Debes <a href="login.html">iniciar sesión</a> para acceder a tu panel.
-      </div>
+      <div class="placeholder">Debes <a href="login.html">iniciar sesión</a> para acceder a tu panel.</div>
     </section>
 
-    <!-- Visible solo autenticado -->
     <section class="section auth-only" hidden>
       <div class="row" style="justify-content:space-between">
         <h1>Mi panel</h1>
-        <button class="btn" onclick="toast('TODO(F2): formulario de nueva actividad')">+ Nueva actividad</button>
+        <button class="btn" id="btnNueva">+ Nueva actividad</button>
+      </div>
+
+      <!-- Formulario de nueva actividad (Fase 2) -->
+      <div class="card" id="formCard" hidden style="margin-top:16px">
+        <h2>Nueva actividad</h2>
+        <form id="actForm">
+          <div class="grid cols-2">
+            <div><label>Título</label><input name="titulo" required /></div>
+            <div><label>Tipo</label>
+              <select name="tipo" required>
+                <option value="EVENTO">Evento</option>
+                <option value="HITO_ACADEMICO">Hito académico</option>
+                <option value="EXTRAPROGRAMATICA">Extraprogramática</option>
+                <option value="EXAMEN">Examen</option>
+              </select>
+            </div>
+            <div><label>Inicio</label><input type="datetime-local" name="fechaInicio" required /></div>
+            <div><label>Fin</label><input type="datetime-local" name="fechaFin" required /></div>
+            <div><label>Carrera (público objetivo)</label><select name="carreraId" id="aCarrera" required></select></div>
+            <div><label>Año (público objetivo)</label><select name="nivel" id="aNivel" required></select></div>
+          </div>
+          <label>Ubicación</label><input name="ubicacion" />
+          <label>Descripción</label><textarea name="descripcion" rows="2"></textarea>
+          <div class="row">
+            <button class="btn" type="submit">Guardar</button>
+            <button class="btn secondary" type="button" id="btnPreview">Evaluar compatibilidad</button>
+            <button class="btn secondary" type="button" id="btnCancelar">Cancelar</button>
+          </div>
+          <div id="preview" style="margin-top:14px"></div>
+        </form>
       </div>
 
       <div class="grid cols-3" style="margin:16px 0">
@@ -53,19 +79,69 @@
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
   <script src="js/app-boot.js"></script>
+  <script src="js/filters.js"></script>
   <script src="js/calendar-view.js"></script>
+  <script src="js/match-calculator.js"></script>
   <script>
     async function logout() { try { await api.post("/api/auth/logout"); } finally { location.href = "index.html"; } }
+
     document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const { user } = await api.get("/api/auth/me");
-        if (user && user.entidadId) {
+      let user = null;
+      try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
+      if (!user) return;
+
+      const cat = await Filters.cargar();
+      Filters.poblarSelect(document.getElementById("aCarrera"), cat.carreras, "id", "nombre");
+      Filters.poblarSelect(document.getElementById("aNivel"), cat.generaciones, "nivel", "etiqueta");
+
+      const formCard = document.getElementById("formCard");
+      document.getElementById("btnNueva").onclick = () => (formCard.hidden = !formCard.hidden);
+      document.getElementById("btnCancelar").onclick = () => (formCard.hidden = true);
+
+      function payloadFrom(form) {
+        const d = Object.fromEntries(new FormData(form).entries());
+        return {
+          titulo: d.titulo, descripcion: d.descripcion, tipo: d.tipo, ubicacion: d.ubicacion,
+          fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
+          publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
+        };
+      }
+
+      document.getElementById("btnPreview").onclick = async () => {
+        const d = Object.fromEntries(new FormData(document.getElementById("actForm")).entries());
+        if (!d.fechaInicio || !d.carreraId) return toast("Completa fecha y carrera", "error");
+        try {
+          const r = await api.post("/api/match/evaluar", {
+            inicio: d.fechaInicio, fin: d.fechaFin || d.fechaInicio,
+            publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
+          });
+          MatchCalculator.render(document.getElementById("preview"), r);
+        } catch (err) { toast(err.message, "error"); }
+      };
+
+      document.getElementById("actForm").onsubmit = async (e) => {
+        e.preventDefault();
+        try {
+          await api.post("/api/actividades", payloadFrom(e.target));
+          toast("Actividad creada", "success");
+          formCard.hidden = true; e.target.reset();
+          cargarLista();
+        } catch (err) { toast(err.message, "error"); }
+      };
+
+      async function cargarLista() {
+        if (user.entidadId) {
           CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId });
-        } else if (user) {
+          try {
+            const acts = await api.get("/api/actividades?entidadId=" + user.entidadId);
+            document.getElementById("kpiTotal").textContent = acts.length + " actividad(es)";
+          } catch (_) {}
+        } else {
           document.getElementById("misActividades").innerHTML =
-            '<div class="placeholder">Eres ADMIN: gestiona catálogos (TODO F1).</div>';
+            '<div class="placeholder">Eres ADMIN: gestiona catálogos (panel admin: TODO F1).</div>';
         }
-      } catch (_) {}
+      }
+      cargarLista();
     });
   </script>
 </body>
