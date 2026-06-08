@@ -70,11 +70,12 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 
 **Objetivo:** sostenibilidad del dato y analítica.
 
-- [ ] Indicador de confiabilidad y `eventos_exitosos` por entidad.
-- [ ] Sello de coordinación eficiente (reconocimiento público).
-- [ ] Reporte de impacto semestral en **PDF** por entidad.
-- [ ] Panel de KPIs (ocupación, reprogramaciones, aporte por entidad).
-- [ ] Endpoints `/api/analytics/*` sobre las vistas (integración Looker/PowerBI/Python).
+- [x] Indicador de confiabilidad y `eventos_exitosos` por entidad (`reputationService`).
+- [x] Sello de coordinación eficiente + **ranking público** en la portada.
+- [x] Reporte de impacto en **PDF** por entidad (pdfkit) + resumen JSON.
+- [x] Panel de KPIs (`kpis.html`): ocupación, aporte, reprogramaciones, ranking.
+- [x] Endpoints `/api/analytics/*` sobre las vistas (Looker/PowerBI/Python).
+- [ ] Pendiente: cron de cálculo de reputación + envío automático del PDF al cierre de semestre.
 
 **Criterio de aceptación:** al cierre de semestre cada entidad descarga su PDF de impacto; el admin ve los KPIs iniciales; un analista consulta las vistas desde una herramienta externa.
 

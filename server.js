@@ -37,6 +37,8 @@ const kpiDao = require("./js/dao/kpiDao");
 // Servicios (puros)
 const matchService = require("./js/services/matchService");
 const heatmapService = require("./js/services/heatmapService");
+const reputationService = require("./js/services/reputationService");
+const reportService = require("./js/services/reportService");
 
 const bcrypt = require("bcryptjs");
 
@@ -273,7 +275,75 @@ app.get("/api/analytics/aporte", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await kpiDao.aporteEntidad()); }
   catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
-// TODO(F4): /api/reports/:entidadId/pdf  (reporte de impacto semestral).
+app.get("/api/analytics/reprogramados", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await kpiDao.eventosReprogramados()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+app.get("/api/analytics/resumen", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const [ocupacion, aporte, reprogramados, ranking] = await Promise.all([
+      kpiDao.ocupacionBloques(), kpiDao.aporteEntidad(),
+      kpiDao.eventosReprogramados(), entidadDao.ranking(),
+    ]);
+    res.json({ ocupacion, aporte, reprogramados, ranking });
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Gamificacion (§5) ────────────────────────────────────────────────────────
+// Ranking publico de entidades por reputacion.
+app.get("/api/ranking", async (req, res) => {
+  try { res.json(await entidadDao.ranking()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Recalcula la reputacion de todas las entidades a partir de sus actividades.
+app.post("/api/admin/recalcular-reputacion", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const entidades = await entidadDao.listar();
+    const detalle = [];
+    for (const e of entidades) {
+      const acts = await actividadDao.listarCompleto(e.id);
+      const r = reputationService.calcular(acts);
+      await entidadDao.actualizarReputacion(e.id, r);
+      detalle.push({ entidadId: e.id, ...r });
+    }
+    res.json({ ok: true, actualizadas: detalle.length, detalle });
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Reporte de impacto por entidad (§5) ─────────────────────────────────────
+function puedeVerEntidad(req, id) {
+  return req.session.user.rol === "ADMIN" || req.session.user.entidadId === id;
+}
+
+// Resumen en JSON (dashboard / preview).
+app.get("/api/entidades/:id/resumen", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    if (!puedeVerEntidad(req, id)) return res.status(403).json({ error: "No autorizado" });
+    const entidad = await entidadDao.obtener(id);
+    if (!entidad) return res.status(404).json({ error: "Entidad no encontrada" });
+    const acts = await actividadDao.listarCompleto(id);
+    const periodo = await periodoDao.obtenerActivo();
+    res.json(reportService.construirResumen(entidad, acts, periodo));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Reporte PDF descargable.
+app.get("/api/reports/:id/pdf", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    if (!puedeVerEntidad(req, id)) return res.status(403).json({ error: "No autorizado" });
+    const entidad = await entidadDao.obtener(id);
+    if (!entidad) return res.status(404).json({ error: "Entidad no encontrada" });
+    const acts = await actividadDao.listarCompleto(id);
+    const periodo = await periodoDao.obtenerActivo();
+    const resumen = reportService.construirResumen(entidad, acts, periodo);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="reporte-mapfi-${id}.pdf"`);
+    reportService.generarPDF(resumen, res);
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
 
 // ── Bloques horarios (lectura publica · escritura ADMIN) ────────────────────
 app.get("/api/bloques", async (req, res) => {

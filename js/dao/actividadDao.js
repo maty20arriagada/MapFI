@@ -135,6 +135,17 @@ module.exports = {
     return { id };
   },
 
+  /** Todas las actividades de una entidad con campos para reputacion/reportes. */
+  async listarCompleto(entidadId) {
+    const { rows } = await query(
+      `SELECT id, titulo, fecha_inicio, fecha_fin, tipo, estado,
+              alcance_estimado, compatibilidad_pct, created_at
+         FROM actividad WHERE entidad_id = $1 ORDER BY fecha_inicio`,
+      [entidadId]
+    );
+    return rows;
+  },
+
   /**
    * Arma el contexto que necesita matchService.evaluar() para una propuesta:
    * feriados de la semana, bloques de la malla, actividades del mismo publico

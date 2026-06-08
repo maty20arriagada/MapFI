@@ -92,7 +92,7 @@ mapfi/
 
 ## 🗺️ Estado
 
-✅ **Fases 1–3 operativas (MVP).** Autenticación, **calendario con FullCalendar**, **panel de administración**, CRUD de actividades, **algoritmo de Match completo** (con tests) y mapa de calor. Pendiente: **Fase 4** (gamificación, reportes PDF, panel BI) y pulidos menores (edición inline, import CSV). Ver [roadmap](docs/ROADMAP.md).
+✅ **Fases 1–4 operativas.** Autenticación, **calendario con FullCalendar**, **panel de administración**, CRUD de actividades, **algoritmo de Match completo**, mapa de calor, **gamificación** (reputación + sello + ranking), **reportes PDF** de impacto y **panel de KPIs/BI**. 29 tests en verde. Pendientes menores: edición inline, import CSV de bloques, automatización del envío del PDF. Ver [roadmap](docs/ROADMAP.md).
 
 ---
 

@@ -15,6 +15,7 @@
         <a href="mapa-calor.html">Mapa de calor</a>
         <a href="match.html">Match</a>
         <a href="dashboard.html">Mi panel</a>
+        <a href="kpis.html" class="admin-only" hidden>KPIs</a>
         <a href="admin.html" class="admin-only" hidden>Admin</a>
         <span id="user-slot" class="muted"></span>
         <button class="btn secondary" onclick="logout()">Salir</button>
@@ -66,8 +67,12 @@
 
       <div class="grid cols-3" style="margin:16px 0">
         <div class="card"><h2>Mis actividades</h2><p class="muted" id="kpiTotal">—</p></div>
-        <div class="card"><h2>Confiabilidad</h2><p class="muted">TODO(F4)</p></div>
-        <div class="card"><h2>Sello coordinación</h2><p class="muted">TODO(F4)</p></div>
+        <div class="card"><h2>Confiabilidad</h2><p class="muted"><span id="kpiConf">—</span></p></div>
+        <div class="card"><h2>Reputación / Sello</h2><p class="muted"><span id="kpiRep">—</span> <span id="kpiSello"></span></p></div>
+      </div>
+
+      <div class="row" style="margin-bottom:16px">
+        <button class="btn secondary" id="btnReporte">⬇️ Descargar reporte de impacto (PDF)</button>
       </div>
 
       <h2>Tus actividades</h2>
@@ -132,6 +137,12 @@
         } catch (err) { toast(err.message, "error"); }
       };
 
+      const btnReporte = document.getElementById("btnReporte");
+      if (btnReporte) btnReporte.onclick = () => {
+        if (user.entidadId) window.open("/api/reports/" + user.entidadId + "/pdf", "_blank");
+        else toast("Solo las entidades aportantes tienen reporte", "error");
+      };
+
       async function cargarLista() {
         if (user.entidadId) {
           CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId });
@@ -139,9 +150,18 @@
             const acts = await api.get("/api/actividades?entidadId=" + user.entidadId);
             document.getElementById("kpiTotal").textContent = acts.length + " actividad(es)";
           } catch (_) {}
+          try {
+            const resumen = await api.get("/api/entidades/" + user.entidadId + "/resumen");
+            document.getElementById("kpiConf").textContent = resumen.confiabilidad_pct + "%";
+            document.getElementById("kpiRep").textContent = resumen.reputacion + " pts";
+            document.getElementById("kpiSello").innerHTML = resumen.sello_coordinacion
+              ? '<span class="badge alto">🏅 Sello</span>' : "";
+          } catch (_) {}
         } else {
           document.getElementById("misActividades").innerHTML =
-            '<div class="placeholder">Eres ADMIN: gestiona catálogos (panel admin: TODO F1).</div>';
+            '<div class="placeholder">Eres ADMIN. Gestiona desde <a href="admin.html">Admin</a> y revisa <a href="kpis.html">KPIs</a>.</div>';
+          document.getElementById("kpiConf").textContent = "—";
+          document.getElementById("kpiRep").textContent = "—";
         }
       }
       cargarLista();
