@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MapFI · Mapeo de actividades de la Facultad de Ingeniería</title>
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <a href="index.html" class="brand">🗺️ MapFI</a>
+      <nav>
+        <a href="calendario.html">Calendario</a>
+        <a href="mapa-calor.html">Mapa de calor</a>
+        <a href="match.html" class="auth-only" hidden>Match</a>
+        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
+        <a href="login.html" class="guest-only">Ingresar</a>
+        <span id="user-slot" class="auth-only muted" hidden></span>
+        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section center">
+      <h1>Coordina las actividades de la Facultad de Ingeniería</h1>
+      <p class="muted" style="max-width:640px;margin:0 auto 20px">
+        Calendario centralizado, mapa de calor de saturación y un calculador inteligente
+        de compatibilidad para que ningún evento pise a otro.
+      </p>
+      <div class="row center" style="justify-content:center">
+        <a class="btn" href="calendario.html">Ver calendario</a>
+        <a class="btn secondary" href="login.html">Soy aportante</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Próximas actividades</h2>
+      <div id="calendar"><div class="placeholder">Cargando…</div></div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script src="js/calendar-view.js"></script>
+  <script>CalendarView.montar(document.getElementById("calendar"), { /* TODO(F2): proximos 30 dias */ });</script>
+</body>
+</html>

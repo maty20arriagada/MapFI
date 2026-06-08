@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi panel · MapFI</title>
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <a href="index.html" class="brand">🗺️ MapFI</a>
+      <nav>
+        <a href="calendario.html">Calendario</a>
+        <a href="mapa-calor.html">Mapa de calor</a>
+        <a href="match.html">Match</a>
+        <a href="dashboard.html">Mi panel</a>
+        <span id="user-slot" class="muted"></span>
+        <button class="btn secondary" onclick="logout()">Salir</button>
+        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Visible solo para invitados (no autenticados) -->
+    <section class="section guest-only" hidden>
+      <div class="placeholder">
+        Debes <a href="login.html">iniciar sesión</a> para acceder a tu panel.
+      </div>
+    </section>
+
+    <!-- Visible solo autenticado -->
+    <section class="section auth-only" hidden>
+      <div class="row" style="justify-content:space-between">
+        <h1>Mi panel</h1>
+        <button class="btn" onclick="toast('TODO(F2): formulario de nueva actividad')">+ Nueva actividad</button>
+      </div>
+
+      <div class="grid cols-3" style="margin:16px 0">
+        <div class="card"><h2>Mis actividades</h2><p class="muted" id="kpiTotal">—</p></div>
+        <div class="card"><h2>Confiabilidad</h2><p class="muted">TODO(F4)</p></div>
+        <div class="card"><h2>Sello coordinación</h2><p class="muted">TODO(F4)</p></div>
+      </div>
+
+      <h2>Tus actividades</h2>
+      <div id="misActividades"><div class="placeholder">Cargando…</div></div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script src="js/calendar-view.js"></script>
+  <script>
+    async function logout() { try { await api.post("/api/auth/logout"); } finally { location.href = "index.html"; } }
+    document.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { user } = await api.get("/api/auth/me");
+        if (user && user.entidadId) {
+          CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId });
+        } else if (user) {
+          document.getElementById("misActividades").innerHTML =
+            '<div class="placeholder">Eres ADMIN: gestiona catálogos (TODO F1).</div>';
+        }
+      } catch (_) {}
+    });
+  </script>
+</body>
+</html>

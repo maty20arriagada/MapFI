@@ -1,0 +1,75 @@
+================================================================================
+DOCUMENTO DE ESPECIFICACIÓN FUNCIONAL Y TÉCNICA: PLATAFORMA DE MAPEO FI
+================================================================================
+
+1. DESCRIPCIÓN GENERAL DEL PROYECTO
+--------------------------------------------------------------------------------
+El proyecto consiste en el desarrollo de una plataforma web de mapeo, planificación y co-diseño de actividades para la Facultad de Ingeniería. El objetivo principal es centralizar, optimizar y coordinar la agenda de eventos, hitos académicos y actividades extraprogramáticas interconectando a los distintos actores de la facultad.
+
+La plataforma resolverá los problemas históricos de tope de horarios, sobrecarga de actividades en ciertos días de la semana y la falta de visibilidad del público objetivo real al momento de levantar una iniciativa.
+
+2. ACTORES Y USUARIOS DE LA PLATAFORMA
+--------------------------------------------------------------------------------
+* **Usuarios Aportantes (Con Login):**
+    * Centros de Estudiantes (13 carreras de la Facultad).
+    * Dirección de Vinculación con el Medio.
+    * Gearbox (Hub de Innovación y Emprendimiento).
+* **Usuarios Visualizadores (Sin Login / Público General):**
+    * Alumnado general, docentes y autoridades de la facultad.
+
+3. MÓDULOS Y FUNCIONALIDADES CLAVE
+--------------------------------------------------------------------------------
+
+### A. Calendario Centralizado e Interactivo
+* **Visualización Agregada:** Un calendario dinámico que consolide todas las actividades ingresadas por los usuarios aportantes.
+* **Filtros Avanzados:** Permite filtrar la información desplegada por:
+    * Carrera (cada una de las 13 especialidades).
+    * Generación / Año académico (Primer a Quinto año, o más).
+    * Entidad organizadora (Centro de alumnos específico, Vinculación, Gearbox).
+* **Horarios Semanales Académicos:** Posibilidad de cargar los bloques horarios base de cada carrera/generación para identificar ventanas libres (bloques protegidos, tardes libres, etc.).
+
+### B. Modo de Visualización: Mapa de Calor
+* **Concepto:** Vista alternativa al calendario tradicional que muestra la densidad y saturación de eventos mediante una escala de colores (ej. Verde = Baja actividad, Amarillo = Media, Rojo = Alta saturación / No recomendado).
+* **Filtros del Mapa de Calor:** Se podrá segmentar el mapa para ver la saturación específica de un público objetivo. Por ejemplo: "Ver el mapa de calor de actividades que afectan solo a 3er año de Ingeniería Civil Industrial".
+* **Utilidad:** Evita que se programen 3 eventos masivos dirigidos al mismo segmento de estudiantes en una misma semana o bloque.
+
+### C. Calculador Inteligente de Compatibilidad y Alcance (Algoritmo de Match)
+* **Flujo de Usuario:** El organizador ingresa una propuesta de fecha y hora para su evento, y define su **Público Objetivo** seleccionando:
+    * Carrera(s) involucrada(s).
+    * Generación(es) (ej. 2do y 3er año).
+* **Cálculo de Compatibilidad:** El sistema cruza la propuesta con la base de datos de exámenes, eventos ya agendados, feriados y horarios críticos del público seleccionado.
+* **Métricas de Salida:**
+    * **Porcentaje de Compatibilidad:** Qué tan viable es la fecha (ej. 85% de compatibilidad).
+    * **Alcance Estimado de Beneficiarios:** Proyección de cuánta audiencia real puede asistir libre de topes horarios.
+    * **Sugerencias Automáticas:** Si la compatibilidad es baja, el sistema sugerirá automáticamente los 3 mejores bloques alternativos de esa semana para maximizar el rango de horarios y el día del evento.
+
+4. LOGICA CRONOLÓGICA Y GESTIÓN DE FECHAS REALEZAS
+--------------------------------------------------------------------------------
+* **Sincronización de Feriados:** Integración automática con el calendario de feriados nacionales y días sándwich decretados.
+* **Exclusión de Fines de Semana:** Por defecto, el cálculo de compatibilidad e indicadores ignorará los días sábado y domingo, centrándose exclusivamente en la realidad de la jornada universitaria (Lunes a Viernes).
+* **Actualización Dinámica de Años:** La plataforma no será estática; se adaptará automáticamente al cambio de año, permitiendo la clonación o reajuste de la estructura del calendario académico anual de la facultad de forma paramétrica.
+
+5. SISTEMA DE AUTENTICACIÓN E INCENTIVOS (GAMIFICACIÓN)
+--------------------------------------------------------------------------------
+* **Módulo de Login:** Acceso seguro para los representantes de los Centros de Alumnos, Vinculación con el Medio y Gearbox mediante cuentas institucionales o credenciales personalizadas.
+* **Sistema de Incentivos para Aportantes:** Para asegurar que la plataforma se mantenga al día y evitar el abandono de datos, se incluye una capa de incentivos:
+    * **Indicador de Confiabilidad:** Los usuarios ganan reputación si sus eventos se realizan con éxito y se registran a tiempo.
+    * **Sello de Coordinación Eficiente:** Reconocimiento público en la app a los centros de estudiantes que mejor utilicen el calculador de alcance para no pisar eventos de otros.
+    * **Reportes de Impacto Automatizados:** El sistema generará al final del semestre un informe PDF automático para cada Centro/Entidad detallando el alcance total logrado en sus eventos, ideal para sus rendiciones de cuentas o postulaciones a fondos.
+
+6. REQUERIMIENTOS TÉCNICOS Y ARQUITECTURA
+--------------------------------------------------------------------------------
+* **Contenedorización (Docker):** Todo el entorno de desarrollo y producción debe ser empaquetado usando Docker y Docker Compose. Esto asegura que levantar la plataforma en un servidor de la facultad sea un proceso de un solo comando (`docker-compose up --build`), garantizando la portabilidad y facilidad de mantenimiento.
+* **Base de Datos (PostgreSQL):** Se utilizará PostgreSQL por su robustez, excelente manejo de concurrencia y capacidades nativas para consultas de fechas, rangos de tiempo (Data Types de tipo Timestamp/Range) y agregaciones complejas necesarias para el mapa de calor.
+* **Diseño UI/UX Emfático y Simple:** Interfaz intuitiva, limpia y responsiva (móvil y web) que requiera cero capacitación previa para ser utilizada por un nuevo integrante de un centro de estudiantes.
+
+7. PANEL DE INDICADORES Y ESCALABILIDAD FUTURA
+--------------------------------------------------------------------------------
+La plataforma contará con un backend desacoplado que permita la actualización, modificación o creación de nuevos indicadores clave de rendimiento (KPIs) el día de mañana sin romper el código base.
+
+* **Indicadores Iniciales:**
+    * Tasa de ocupación de bloques horarios por carrera.
+    * Índice de eventos suspendidos o reprogramados por topes.
+    * Nivel de participación/aporte de información por cada entidad.
+* **Arquitectura Abierta:** El esquema de la base de datos contará con vistas asociadas o API endpoints específicos para analítica, permitiendo que en el futuro se puedan conectar herramientas como Looker Studio, PowerBI o scripts de Data Science en Python de manera directa.
+================================================================================

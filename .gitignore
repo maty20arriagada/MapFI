@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Entorno
+.env
+.env.local
+.env.production
+
+# Archivos temporales del sistema
+*.tmp
+tmpclaude-*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+
+# Artefactos del agente de IA (no subir al repo)
+.claude/
+
+# Logs
+*.log
+
+# Coverage
+/coverage/
+
+# Builds locales
+/dist/
+/build/
+
+# Reportes PDF generados (fase 4)
+/reports/*.pdf

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa de calor · MapFI</title>
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <a href="index.html" class="brand">🗺️ MapFI</a>
+      <nav>
+        <a href="calendario.html">Calendario</a>
+        <a href="mapa-calor.html">Mapa de calor</a>
+        <a href="match.html" class="auth-only" hidden>Match</a>
+        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
+        <a href="login.html" class="guest-only">Ingresar</a>
+        <span id="user-slot" class="auth-only muted" hidden></span>
+        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h1>Mapa de calor de saturación</h1>
+      <p class="muted">
+        Verde = baja actividad · Amarillo = media · Rojo = saturado (no recomendado).
+        Filtra por segmento para ver la saturación de un público específico.
+      </p>
+      <div class="card">
+        <div class="grid cols-2">
+          <div><label>Carrera</label><select id="hCarrera" class="filtro"></select></div>
+          <div><label>Generación / año</label><select id="hNivel" class="filtro"></select></div>
+        </div>
+      </div>
+      <div class="row" style="margin:14px 0">
+        <span class="badge alto">VERDE</span>
+        <span class="badge medio">AMARILLO</span>
+        <span class="badge bajo">ROJO</span>
+      </div>
+      <div id="heatmap"><div class="placeholder">Cargando…</div></div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/heatmap-view.js"></script>
+  <script>
+    (async function () {
+      const cat = await Filters.cargar();
+      Filters.poblarSelect(document.getElementById("hCarrera"), cat.carreras, "id", "nombre", "Todas las carreras");
+      Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "Todos los años");
+      const cont = document.getElementById("heatmap");
+      function render() {
+        const filtros = {};
+        const c = document.getElementById("hCarrera").value; if (c) filtros.carreraId = c;
+        const n = document.getElementById("hNivel").value;   if (n) filtros.nivel = n;
+        HeatmapView.montar(cont, filtros);
+      }
+      document.querySelectorAll(".filtro").forEach((s) => s.addEventListener("change", render));
+      render();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+/**
+ * MapFI — server.js
+ * Servidor Express: sirve el frontend estatico, autentica a los aportantes con
+ * credenciales propias (bcrypt + sesiones en Postgres) y expone la API REST.
+ *
+ * Capas:  rutas (aqui)  →  js/dao/*  →  PostgreSQL
+ *         rutas (aqui)  →  js/services/*  (logica pura: match, heatmap, fechas)
+ *
+ * Uso:
+ *   npm start            → produccion (PORT desde env)
+ *   npm run dev          → desarrollo con nodemon
+ *   require('./server')  → en tests NO arranca (se exporta `app` para supertest)
+ */
+"use strict";
+
+// Cargar .env (dev local) ANTES de leer process.env. No-op en docker/cloud.
+require("./js/load-env")();
+
+const express = require("express");
+const session = require("express-session");
+const path = require("path");
+
+const { pool } = require("./js/db");
+const { runMigrations } = require("./js/db/migrate");
+
+// DAOs
+const userDao = require("./js/dao/userDao");
+const carreraDao = require("./js/dao/carreraDao");
+const generacionDao = require("./js/dao/generacionDao");
+const entidadDao = require("./js/dao/entidadDao");
+const periodoDao = require("./js/dao/periodoDao");
+const actividadDao = require("./js/dao/actividadDao");
+const feriadoDao = require("./js/dao/feriadoDao");
+const kpiDao = require("./js/dao/kpiDao");
+
+// Servicios (puros)
+const matchService = require("./js/services/matchService");
+const heatmapService = require("./js/services/heatmapService");
+const holiday = require("./js/services/holidayService");
+
+const bcrypt = require("bcryptjs");
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === "production";
+const HAS_DB = !!process.env.DATABASE_URL;
+
+// ── Reverse proxy (Railway/Render/Nginx) para cookies 'secure' ──────────────
+app.set("trust proxy", 1);
+
+// ── Middleware base ─────────────────────────────────────────────────────────
+app.use(express.json({ limit: "100kb" }));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
+
+// ── Headers de seguridad (helmet-lite) ──────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  if (isProduction) {
+    res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+  }
+  next();
+});
+
+// ── Sesiones ────────────────────────────────────────────────────────────────
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET || "dev-inseguro-cambiar",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+    maxAge: 1000 * 60 * 60 * 8, // 8 horas
+  },
+};
+if (HAS_DB && process.env.NODE_ENV !== "test") {
+  const PgSession = require("connect-pg-simple")(session);
+  sessionConfig.store = new PgSession({
+    pool,
+    tableName: "session",
+    createTableIfMissing: false, // la crea la migracion 001
+  });
+}
+app.use(session(sessionConfig));
+
+// ── Middlewares de autorizacion ─────────────────────────────────────────────
+function requireAuth(req, res, next) {
+  if (req.session && req.session.user) return next();
+  return res.status(401).json({ error: "No autenticado" });
+}
+function requireRole(rol) {
+  return (req, res, next) => {
+    if (req.session && req.session.user && req.session.user.rol === rol) return next();
+    return res.status(403).json({ error: "No autorizado" });
+  };
+}
+
+// Helper: query param a entero o undefined.
+const num = (v) => (v !== undefined && v !== "" ? parseInt(v, 10) : undefined);
+
+// ============================================================================
+// API
+// ============================================================================
+
+// ── Salud ───────────────────────────────────────────────────────────────────
+app.get("/api/health", (req, res) => res.json({ ok: true, service: "mapfi" }));
+
+// ── Autenticacion ────────────────────────────────────────────────────────────
+app.post("/api/auth/login", async (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) return res.status(400).json({ error: "Faltan credenciales" });
+  try {
+    const u = await userDao.buscarPorEmail(email);
+    if (!u || !u.activo) return res.status(401).json({ error: "Credenciales invalidas" });
+    const ok = await bcrypt.compare(password, u.password_hash);
+    if (!ok) return res.status(401).json({ error: "Credenciales invalidas" });
+
+    req.session.user = { id: u.id, nombre: u.nombre, rol: u.rol, entidadId: u.entidad_id };
+    res.json({ ok: true, user: req.session.user });
+  } catch (e) {
+    console.error("[login]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+app.get("/api/auth/me", (req, res) => {
+  res.json({ user: (req.session && req.session.user) || null });
+});
+
+// ── Catalogos (publico — alimenta filtros del calendario) ───────────────────
+app.get("/api/catalogos", async (req, res) => {
+  try {
+    const [carreras, generaciones, entidades, periodoActivo] = await Promise.all([
+      carreraDao.listar(),
+      generacionDao.listar(),
+      entidadDao.listar(),
+      periodoDao.obtenerActivo(),
+    ]);
+    res.json({ carreras, generaciones, entidades, periodoActivo });
+  } catch (e) {
+    console.error("[catalogos]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// ── Actividades ──────────────────────────────────────────────────────────────
+app.get("/api/actividades", async (req, res) => {
+  try {
+    const acts = await actividadDao.listar({
+      carreraId: num(req.query.carreraId),
+      nivel: num(req.query.nivel),
+      entidadId: num(req.query.entidadId),
+      desde: req.query.desde,
+      hasta: req.query.hasta,
+    });
+    res.json(acts);
+  } catch (e) {
+    console.error("[actividades:list]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+app.post("/api/actividades", requireAuth, async (req, res) => {
+  try {
+    const b = req.body || {};
+    if (!b.titulo || !b.fechaInicio || !b.fechaFin || !b.tipo) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+    const entidadId = req.session.user.entidadId || b.entidadId;
+    if (!entidadId) return res.status(400).json({ error: "Sin entidad asociada" });
+
+    const created = await actividadDao.crear(
+      { ...b, entidadId, createdBy: req.session.user.id },
+      b.publico || []
+    );
+    res.status(201).json(created);
+  } catch (e) {
+    console.error("[actividades:create]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+  // TODO(F2): PUT /api/actividades/:id, PATCH estado, DELETE.
+});
+
+// ── Calculador de Match (§3.C) ──────────────────────────────────────────────
+app.post("/api/match/evaluar", requireAuth, async (req, res) => {
+  try {
+    const { inicio, fin, publico } = req.body || {};
+    if (!inicio || !Array.isArray(publico) || publico.length === 0) {
+      return res.status(400).json({ error: "Se requiere 'inicio' y 'publico' objetivo" });
+    }
+    const desde = holiday.toISODate(inicio);
+    const hasta = holiday.toISODate(fin || inicio);
+    const feriados = await feriadoDao.listarFechasEntre(desde, hasta);
+
+    // TODO(F3): cargar contexto completo (bloques, actividades, poblacion) via
+    //           actividadDao.cargarContextoMatch() y pasarlo a evaluar().
+    const out = matchService.evaluar(
+      { inicio: new Date(inicio), fin: new Date(fin || inicio), publico },
+      { feriados }
+    );
+    res.json(out);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
+// ── Mapa de calor (§3.B) ─────────────────────────────────────────────────────
+app.get("/api/heatmap", async (req, res) => {
+  try {
+    const filas = await kpiDao.saturacionSegmento({
+      carreraId: num(req.query.carreraId),
+      nivel: num(req.query.nivel),
+      desde: req.query.desde,
+      hasta: req.query.hasta,
+    });
+    res.json(heatmapService.construir(filas));
+  } catch (e) {
+    console.error("[heatmap]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// ── Feriados (lectura publica) ───────────────────────────────────────────────
+app.get("/api/feriados", async (req, res) => {
+  try {
+    res.json(await feriadoDao.listar());
+  } catch (e) {
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// ── Analitica / KPIs (Fase 4 — solo ADMIN) ──────────────────────────────────
+app.get("/api/analytics/ocupacion", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await kpiDao.ocupacionBloques()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+app.get("/api/analytics/aporte", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await kpiDao.aporteEntidad()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+// TODO(F4): /api/reports/:entidadId/pdf  (reporte de impacto semestral).
+
+// ── Frontend estatico ────────────────────────────────────────────────────────
+// `dotfiles: deny` evita servir .env y otros dotfiles.
+app.use(express.static(__dirname, { dotfiles: "deny", extensions: ["html"] }));
+
+// ============================================================================
+// Arranque
+// ============================================================================
+async function start() {
+  if (HAS_DB) {
+    try {
+      await runMigrations();
+    } catch (e) {
+      console.error("[start] Fallo al migrar:", e.message);
+      process.exit(1);
+    }
+  }
+  app.listen(PORT, () => {
+    console.log(`\n  MapFI escuchando en http://localhost:${PORT}\n`);
+  });
+}
+
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;
