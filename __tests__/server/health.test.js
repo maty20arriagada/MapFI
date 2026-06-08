@@ -24,4 +24,14 @@ describe("API basica", () => {
     const res = await request(app).post("/api/match/evaluar").send({ inicio: "x", publico: [] });
     expect(res.status).toBe(401);
   });
+
+  test("GET /api/admin/usuarios sin rol ADMIN → 403", async () => {
+    const res = await request(app).get("/api/admin/usuarios");
+    expect(res.status).toBe(403);
+  });
+
+  test("POST /api/bloques sin rol ADMIN → 403", async () => {
+    const res = await request(app).post("/api/bloques").send({});
+    expect(res.status).toBe(403);
+  });
 });

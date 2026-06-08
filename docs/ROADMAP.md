@@ -29,7 +29,7 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] CRUD admin (API) de `carrera`, `generacion`, `entidad`, `usuario`.
 - [x] CRUD de `periodo_academico` + marcar el activo (API).
 - [x] `login.html` + `dashboard.html` con estado de sesión.
-- [ ] Pendiente: panel de administración (UI) para los catálogos.
+- [x] **Panel de administración (UI)**: usuarios, entidades, carreras, periodos y bloques.
 
 **Criterio de aceptación:** un usuario `APORTANTE` inicia sesión y ve su dashboard; un `ADMIN` gestiona los catálogos; las contraseñas se guardan hasheadas.
 
@@ -43,8 +43,9 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] Filtros avanzados: carrera, generación, entidad.
 - [x] `holidayService`: feriados + exclusión de findes (con tests).
 - [x] Vista pública (sin login) de solo lectura.
-- [x] Carga de `bloque_horario` (API); import CSV pendiente.
-- [ ] Pendiente: integrar FullCalendar (hoy lista tarjetas) + edición inline.
+- [x] Carga de `bloque_horario` (API + UI admin); import CSV pendiente.
+- [x] Calendario con **FullCalendar** (mes/semana/lista; degrada a lista sin CDN).
+- [ ] Pendiente: edición inline de actividades desde el calendario; import CSV de bloques.
 
 **Criterio de aceptación:** un aportante crea una actividad con público objetivo; el público general la ve filtrada por carrera/año; los feriados aparecen marcados y los findes se ignoran en cálculos.
 

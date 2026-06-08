@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administración · MapFI</title>
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <a href="index.html" class="brand">🗺️ MapFI</a>
+      <nav>
+        <a href="calendario.html">Calendario</a>
+        <a href="mapa-calor.html">Mapa de calor</a>
+        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
+        <a href="admin.html" class="admin-only" hidden>Admin</a>
+        <a href="login.html" class="guest-only">Ingresar</a>
+        <span id="user-slot" class="muted"></span>
+        <button class="btn secondary" onclick="logout()">Salir</button>
+        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section guest-only" hidden>
+      <div class="placeholder">Inicia sesión como administrador para gestionar los catálogos.</div>
+    </section>
+
+    <section class="section" id="noAdmin" hidden>
+      <div class="placeholder">Esta sección es solo para administradores.</div>
+    </section>
+
+    <section class="section admin-only" id="adminPanel" hidden>
+      <h1>Panel de administración</h1>
+
+      <!-- Usuarios -->
+      <div class="card stack" style="margin-bottom:16px">
+        <h2>Usuarios aportantes</h2>
+        <form id="formUsuario">
+          <div class="grid cols-3">
+            <div><label>Correo</label><input name="email" type="email" required /></div>
+            <div><label>Nombre</label><input name="nombre" required /></div>
+            <div><label>Contraseña</label><input name="password" type="text" required /></div>
+            <div><label>Rol</label>
+              <select name="rol"><option value="APORTANTE">Aportante</option><option value="ADMIN">Admin</option></select>
+            </div>
+            <div><label>Entidad</label><select name="entidadId" id="uEntidad"></select></div>
+            <div style="align-self:end"><button class="btn" type="submit" style="width:100%">Crear usuario</button></div>
+          </div>
+        </form>
+        <div id="tablaUsuarios"></div>
+      </div>
+
+      <!-- Entidades -->
+      <div class="card stack" style="margin-bottom:16px">
+        <h2>Entidades</h2>
+        <form id="formEntidad">
+          <div class="grid cols-3">
+            <div><label>Tipo</label>
+              <select name="tipo"><option value="CENTRO_ALUMNOS">Centro de alumnos</option><option value="VINCULACION">Vinculación</option><option value="GEARBOX">Gearbox</option></select>
+            </div>
+            <div><label>Nombre</label><input name="nombre" required /></div>
+            <div><label>Carrera (opcional)</label><select name="carreraId" id="eCarrera"></select></div>
+          </div>
+          <button class="btn" type="submit">Crear entidad</button>
+        </form>
+        <div id="tablaEntidades"></div>
+      </div>
+
+      <!-- Carreras -->
+      <div class="card stack" style="margin-bottom:16px">
+        <h2>Carreras</h2>
+        <form id="formCarrera">
+          <div class="grid cols-3">
+            <div><label>ID</label><input name="id" type="number" required /></div>
+            <div><label>Código</label><input name="codigo" required /></div>
+            <div><label>Nombre</label><input name="nombre" required /></div>
+            <div><label>Color</label><input name="color" type="color" value="#2563EB" /></div>
+            <div style="align-self:end"><button class="btn" type="submit" style="width:100%">Crear carrera</button></div>
+          </div>
+        </form>
+        <div id="tablaCarreras"></div>
+      </div>
+
+      <!-- Periodos -->
+      <div class="card stack" style="margin-bottom:16px">
+        <h2>Periodos académicos</h2>
+        <form id="formPeriodo">
+          <div class="grid cols-3">
+            <div><label>Año</label><input name="anio" type="number" required /></div>
+            <div><label>Semestre</label><select name="semestre"><option value="1">1</option><option value="2">2</option></select></div>
+            <div><label>Inicio</label><input name="fechaInicio" type="date" required /></div>
+            <div><label>Fin</label><input name="fechaFin" type="date" required /></div>
+            <div style="align-self:end"><button class="btn" type="submit" style="width:100%">Crear periodo</button></div>
+          </div>
+        </form>
+        <div id="tablaPeriodos"></div>
+      </div>
+
+      <!-- Bloques horarios -->
+      <div class="card stack">
+        <h2>Bloques horarios (malla base)</h2>
+        <form id="formBloque">
+          <div class="grid cols-3">
+            <div><label>Carrera</label><select name="carreraId" id="bCarrera" required></select></div>
+            <div><label>Año</label><select name="nivel" id="bNivel" required></select></div>
+            <div><label>Día</label>
+              <select name="diaSemana"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option></select>
+            </div>
+            <div><label>Inicio</label><input name="horaInicio" type="time" required /></div>
+            <div><label>Fin</label><input name="horaFin" type="time" required /></div>
+            <div><label>Tipo</label>
+              <select name="tipo"><option value="CLASE">Clase</option><option value="PROTEGIDO">Protegido</option><option value="LIBRE">Libre</option></select>
+            </div>
+          </div>
+          <button class="btn" type="submit">Agregar bloque</button>
+        </form>
+        <div id="tablaBloques"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script src="js/admin-panel.js"></script>
+  <script>
+    async function logout() { try { await api.post("/api/auth/logout"); } finally { location.href = "index.html"; } }
+  </script>
+</body>
+</html>

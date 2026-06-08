@@ -14,9 +14,12 @@
     // 3) Estado de sesion → mostrar/ocultar zonas .auth-only / .guest-only.
     try {
       const { user } = await api.get("/api/auth/me");
+      const esAdmin = !!user && user.rol === "ADMIN";
       document.body.dataset.auth = user ? "si" : "no";
+      document.body.dataset.rol = user ? user.rol : "";
       document.querySelectorAll(".auth-only").forEach((e) => (e.hidden = !user));
       document.querySelectorAll(".guest-only").forEach((e) => (e.hidden = !!user));
+      document.querySelectorAll(".admin-only").forEach((e) => (e.hidden = !esAdmin));
       const slot = document.getElementById("user-slot");
       if (slot && user) slot.textContent = user.nombre;
     } catch (_) {
