@@ -5,7 +5,7 @@ const { query } = require("../db");
 module.exports = {
   async listar() {
     const { rows } = await query(
-      `SELECT id, tipo, nombre, carrera_id, reputacion, sello_coordinacion, activa
+      `SELECT id, tipo, sigla, nombre, carrera_id, reputacion, sello_coordinacion, activa
          FROM entidad WHERE activa = TRUE ORDER BY nombre`
     );
     return rows;
@@ -18,8 +18,8 @@ module.exports = {
 
   async crear(e) {
     const { rows } = await query(
-      `INSERT INTO entidad (tipo, nombre, carrera_id) VALUES ($1,$2,$3) RETURNING *`,
-      [e.tipo, e.nombre, e.carreraId || null]
+      `INSERT INTO entidad (tipo, sigla, nombre, carrera_id) VALUES ($1,$2,$3,$4) RETURNING *`,
+      [e.tipo, e.sigla || null, e.nombre, e.carreraId || null]
     );
     return rows[0];
   },
@@ -27,11 +27,12 @@ module.exports = {
   async actualizar(id, e) {
     const { rows } = await query(
       `UPDATE entidad SET
-         nombre = COALESCE($2, nombre),
-         carrera_id = COALESCE($3, carrera_id),
-         activa = COALESCE($4, activa)
+         sigla = COALESCE($2, sigla),
+         nombre = COALESCE($3, nombre),
+         carrera_id = COALESCE($4, carrera_id),
+         activa = COALESCE($5, activa)
        WHERE id = $1 RETURNING *`,
-      [id, e.nombre, e.carreraId, e.activa]
+      [id, e.sigla, e.nombre, e.carreraId, e.activa]
     );
     return rows[0];
   },

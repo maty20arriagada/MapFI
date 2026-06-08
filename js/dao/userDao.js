@@ -25,8 +25,11 @@ module.exports = {
 
   async listar() {
     const { rows } = await query(
-      `SELECT id, email, nombre, rol, entidad_id, activo
-         FROM usuario ORDER BY nombre`
+      `SELECT u.id, u.email, u.nombre, u.rol, u.entidad_id, u.activo,
+              e.sigla AS entidad_sigla, e.nombre AS entidad_nombre
+         FROM usuario u
+         LEFT JOIN entidad e ON e.id = u.entidad_id
+         ORDER BY u.activo DESC, u.nombre`
     );
     return rows;
   },

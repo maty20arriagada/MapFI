@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS generacion (
 CREATE TABLE IF NOT EXISTS entidad (
     id                  SERIAL      PRIMARY KEY,
     tipo                TEXT        NOT NULL CHECK (tipo IN ('CENTRO_ALUMNOS','VINCULACION','GEARBOX')),
+    sigla               TEXT,                                 -- iniciales, ej. 'CEEIND'
     nombre              TEXT        NOT NULL,
     carrera_id          SMALLINT    REFERENCES carrera(id),   -- NULL salvo centros de alumnos
     -- Campos de gamificacion (Fase 4) — ya presentes para no migrar despues:

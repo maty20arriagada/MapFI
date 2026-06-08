@@ -406,6 +406,12 @@ app.post("/api/admin/usuarios", requireRole("ADMIN"), async (req, res) => {
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
+// Activar / desactivar / editar una cuenta (controla la apertura de cuentas).
+app.patch("/api/admin/usuarios/:id", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await userDao.actualizar(num(req.params.id), req.body || {})); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
 // ── Cambio de contrasena propia ─────────────────────────────────────────────
 app.post("/api/auth/password", requireAuth, async (req, res) => {
   try {

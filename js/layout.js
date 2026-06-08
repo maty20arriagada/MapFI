@@ -21,10 +21,13 @@
   ];
 
   function header() {
-    const links = NAV.map((n) =>
-      `<a href="${n.href}"${n.cls ? ` class="${n.cls}" hidden` : ""}>` +
-      `<span class="icon" data-icon="${n.icon}"></span> ${n.label}</a>`
-    ).join("");
+    const links = NAV.map((n) => {
+      // auth-only / admin-only parten ocultos; guest-only parte visible
+      // (degrada bien si la API tarda o falla).
+      const hide = n.cls && n.cls !== "guest-only" ? " hidden" : "";
+      const cls = n.cls ? ` class="${n.cls}"` : "";
+      return `<a href="${n.href}"${cls}${hide}><span class="icon" data-icon="${n.icon}"></span> ${n.label}</a>`;
+    }).join("");
     return el(`
       <header class="topbar">
         <div class="inner">
@@ -50,10 +53,16 @@
     return el(`
       <footer class="site-footer">
         <div class="inner">
-          <div>MapFI · Facultad de Ingeniería · Universidad de Concepción</div>
-          <div class="credits">Desarrollado por
-            <img src="img/GIIA.png" alt="GIIA - Grupo de Investigación" class="giia-logo" /></div>
+          <div class="foot-brand">
+            <strong>MapFI</strong> · Plataforma de Mapeo de Actividades<br />
+            <span class="muted">Facultad de Ingeniería · Universidad de Concepción</span>
+          </div>
+          <div class="credits">
+            <span>Creado y desarrollado por</span>
+            <img src="img/GIIA.png" alt="GIIA - Grupo de Investigación en Ingeniería" class="giia-logo" />
+          </div>
         </div>
+        <div class="foot-bottom">© <span id="footYear"></span> GIIA — Creado por GIIA para la Facultad de Ingeniería UdeC</div>
       </footer>`);
   }
 
@@ -62,6 +71,9 @@
     const head = header();
     document.body.insertBefore(head, document.body.firstChild);
     document.body.appendChild(footer());
+
+    const fy = document.getElementById("footYear");
+    if (fy) fy.textContent = new Date().getFullYear();
 
     if (global.Icons && global.Icons.hydrate) global.Icons.hydrate(head);
 

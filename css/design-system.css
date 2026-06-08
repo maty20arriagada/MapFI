@@ -5,15 +5,15 @@
  * Tipografía Poppins (títulos) + Open Sans (cuerpo).
  * ======================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 
 :root {
   /* Marca UdeC FI */
-  --brand:         #12395E;   /* navy del logo */
-  --brand-2:       #1B4D7E;
-  --brand-dark:    #0D2A46;
+  --brand:         #0E3257;   /* navy profundo (deriva del logo #12395E) */
+  --brand-2:       #1A4C82;
+  --brand-dark:    #081F39;   /* navy muy profundo */
   --brand-contrast:#FFFFFF;
-  --brand-soft:    #E8EEF4;   /* tinte para fondos/hover */
+  --brand-soft:    #E7EEF6;   /* tinte para fondos/hover */
   --gold:          #C8A24B;   /* dorado institucional */
   --gold-dark:     #8A6D26;
 
@@ -27,13 +27,13 @@
   --surface:   #FFFFFF;
   --surface-2: #FAFBFD;
   --border:    #E3E9F0;
-  --text:      #122236;
-  --text-soft: #5A6B7D;
-  --ring:      rgba(18, 57, 94, .35);
+  --text:      #0F2033;
+  --text-soft: #566678;
+  --ring:      rgba(14, 50, 87, .40);
 
   /* Forma y profundidad */
-  --font-head: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-body: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-head: "Lexend", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --radius:    12px;
   --radius-sm: 8px;
   --shadow:    0 1px 2px rgba(18,34,54,.06), 0 2px 8px rgba(18,34,54,.06);
@@ -60,6 +60,9 @@
 }
 
 * { box-sizing: border-box; }
+
+/* El atributo [hidden] debe ganar siempre, incluso sobre .btn (display:flex). */
+[hidden] { display: none !important; }
 
 html { scroll-behavior: smooth; }
 
@@ -197,7 +200,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--b
 .heat.ROJO     { background: var(--rojo); }
 
 /* ── Tablas ──────────────────────────────────────────────────────────── */
-table { width: 100%; border-collapse: collapse; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: .9rem; }
 th { color: var(--text-soft); font-weight: 600; font-family: var(--font-head); }
 tbody tr { transition: background .12s ease; }
@@ -218,14 +221,27 @@ tbody tr:hover { background: var(--brand-soft); }
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────── */
-.site-footer { flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); margin-top: 32px; }
+.site-footer { flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); margin-top: 40px; }
 .site-footer .inner {
-  max-width: 1160px; margin: 0 auto; padding: 22px var(--space); display: flex;
+  max-width: 1160px; margin: 0 auto; padding: 26px var(--space); display: flex;
   align-items: center; justify-content: space-between; gap: var(--space); flex-wrap: wrap;
-  color: var(--text-soft); font-size: .85rem;
+  color: var(--text-soft); font-size: .88rem; line-height: 1.5;
 }
-.site-footer .credits { display: flex; align-items: center; gap: 8px; }
-.giia-logo { height: 34px; width: auto; opacity: .9; }
+.site-footer .foot-brand strong { color: var(--text); font-family: var(--font-head); }
+.site-footer .credits { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+.giia-logo { height: 42px; width: auto; opacity: .95; }
+.foot-bottom { border-top: 1px solid var(--border); text-align: center; padding: 12px; color: var(--text-soft); font-size: .78rem; }
+
+/* ── Lista de eventos cercanos ───────────────────────────────────────── */
+.evento-item { display: flex; gap: 16px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--border); transition: background .12s ease; }
+.evento-item:last-child { border-bottom: none; }
+.evento-item:hover { background: var(--brand-soft); }
+.evento-fecha {
+  flex-shrink: 0; width: 60px; text-align: center; font-family: var(--font-head);
+  font-weight: 700; color: var(--brand); line-height: 1.15; text-transform: capitalize;
+}
+.evento-fecha span { display: block; font-size: .72rem; font-weight: 500; color: var(--text-soft); }
+.evento-info { min-width: 0; }
 
 /* ── Toast ───────────────────────────────────────────────────────────── */
 #toast-root { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: grid; gap: 8px; }

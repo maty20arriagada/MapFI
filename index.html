@@ -27,9 +27,9 @@
     </section>
 
     <section class="section">
-      <h2><span class="icon title-icon" data-icon="trophy"></span> Ranking de coordinación</h2>
-      <p class="muted">Reconocimiento a los centros que mejor coordinan sus actividades.</p>
-      <div class="card" id="ranking"><div class="placeholder">Cargando…</div></div>
+      <h2><span class="icon title-icon" data-icon="clock"></span> Eventos cercanos</h2>
+      <p class="muted">Las próximas actividades agendadas en la facultad.</p>
+      <div class="card" id="eventos-cercanos"><div class="placeholder">Cargando…</div></div>
     </section>
   </main>
 
@@ -45,19 +45,23 @@
   <script>
     CalendarView.montar(document.getElementById("calendar"), {});
     (async function () {
-      const el = document.getElementById("ranking");
+      const el = document.getElementById("eventos-cercanos");
       try {
-        const top = (await api.get("/api/ranking")).slice(0, 5);
-        el.innerHTML = top.length
-          ? top.map((e, i) =>
-              `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0">
-                 <span>${i + 1}. <strong>${e.nombre}</strong> <span class="muted">· ${e.tipo}</span></span>
-                 <span>${e.reputacion} pts ${e.sello_coordinacion ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + " Sello</span>" : ""}</span>
-               </div>`
-            ).join("")
-          : '<div class="placeholder">Aún sin datos de ranking.</div>';
+        const desde = new Date().toISOString();
+        const acts = (await api.get("/api/actividades?desde=" + encodeURIComponent(desde))).slice(0, 6);
+        if (!acts.length) { el.innerHTML = '<div class="placeholder">No hay eventos próximos agendados.</div>'; return; }
+        el.innerHTML = acts.map((a) => {
+          const d = new Date(a.fecha_inicio);
+          const fecha = d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" });
+          const hora = d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
+          return `<div class="evento-item">
+            <div class="evento-fecha">${fecha}<span>${hora}</span></div>
+            <div class="evento-info"><strong>${a.titulo}</strong>
+              <div class="muted">${a.entidad_nombre} · ${a.tipo}</div></div>
+          </div>`;
+        }).join("");
       } catch (e) {
-        el.innerHTML = '<div class="placeholder">No se pudo cargar el ranking.</div>';
+        el.innerHTML = '<div class="placeholder">No se pudieron cargar los eventos.</div>';
       }
     })();
   </script>

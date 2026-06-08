@@ -20,7 +20,8 @@
       <h1><span class="icon title-icon" data-icon="settings"></span> Panel de administración</h1>
 
       <div class="card stack" style="margin-bottom:16px">
-        <h2>Usuarios aportantes</h2>
+        <h2><span class="icon title-icon" data-icon="users"></span> Cuentas de usuario</h2>
+        <p class="muted">Crea y administra las cuentas de acceso de cada entidad. Puedes activar o desactivar la apertura de cada cuenta.</p>
         <form id="formUsuario">
           <div class="grid cols-3">
             <div><label>Correo</label><input name="email" type="email" required /></div>
@@ -37,13 +38,14 @@
       </div>
 
       <div class="card stack" style="margin-bottom:16px">
-        <h2>Entidades</h2>
+        <h2><span class="icon title-icon" data-icon="graduation-cap"></span> Entidades (centros y direcciones)</h2>
         <form id="formEntidad">
           <div class="grid cols-3">
             <div><label>Tipo</label>
               <select name="tipo"><option value="CENTRO_ALUMNOS">Centro de alumnos</option><option value="VINCULACION">Vinculación</option><option value="GEARBOX">Gearbox</option></select>
             </div>
-            <div><label>Nombre</label><input name="nombre" required /></div>
+            <div><label>Sigla</label><input name="sigla" placeholder="CEEIND" maxlength="12" /></div>
+            <div><label>Nombre completo</label><input name="nombre" placeholder="Centro de Estudiantes de Ingeniería Civil Industrial" required /></div>
             <div><label>Carrera (opcional)</label><select name="carreraId" id="eCarrera"></select></div>
           </div>
           <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Crear entidad</button>

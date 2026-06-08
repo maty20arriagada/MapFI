@@ -18,14 +18,17 @@
     const cat = await api.get("/api/catalogos");
 
     // ── Selects ───────────────────────────────────────────────────────────────
-    $("uEntidad").innerHTML = '<option value="">— sin entidad —</option>' + cat.entidades.map((e) => opt(e.id, e.nombre)).join("");
+    $("uEntidad").innerHTML = '<option value="">— sin entidad (admin) —</option>' +
+      cat.entidades.map((e) => opt(e.id, (e.sigla ? e.sigla + " — " : "") + e.nombre)).join("");
     $("eCarrera").innerHTML = '<option value="">— ninguna —</option>' + cat.carreras.map((c) => opt(c.id, c.nombre)).join("");
     $("bCarrera").innerHTML = cat.carreras.map((c) => opt(c.id, c.nombre)).join("");
     $("bNivel").innerHTML = cat.generaciones.map((g) => opt(g.nivel, g.etiqueta)).join("");
 
     // ── Tablas ────────────────────────────────────────────────────────────────
     tabla($("tablaEntidades"), cat.entidades, [
-      { label: "ID", key: "id" }, { label: "Tipo", key: "tipo" }, { label: "Nombre", key: "nombre" },
+      { label: "Sigla", get: (r) => `<strong>${r.sigla || "—"}</strong>` },
+      { label: "Nombre", key: "nombre" },
+      { label: "Tipo", key: "tipo" },
     ]);
     tabla($("tablaCarreras"), cat.carreras, [
       { label: "ID", key: "id" }, { label: "Código", key: "codigo" }, { label: "Nombre", key: "nombre" },
@@ -34,8 +37,11 @@
 
     const usuarios = await api.get("/api/admin/usuarios");
     tabla($("tablaUsuarios"), usuarios, [
-      { label: "ID", key: "id" }, { label: "Correo", key: "email" }, { label: "Nombre", key: "nombre" },
-      { label: "Rol", key: "rol" }, { label: "Entidad", key: "entidad_id" },
+      { label: "Cuenta", get: (r) => `<strong>${r.entidad_sigla || "—"}</strong><div class="muted" style="font-size:.78rem">${r.entidad_nombre || "Administración"}</div>` },
+      { label: "Usuario", get: (r) => `${r.nombre}<div class="muted" style="font-size:.78rem">${r.email}</div>` },
+      { label: "Rol", key: "rol" },
+      { label: "Estado", get: (r) => (r.activo ? '<span class="badge alto">Activa</span>' : '<span class="badge bajo">Inactiva</span>') },
+      { label: "Acción", get: (r) => `<button class="btn secondary" data-act="toggle-usuario" data-id="${r.id}" data-activo="${r.activo}">${r.activo ? "Desactivar" : "Activar"}</button>` },
     ]);
 
     const periodos = await api.get("/api/periodos");
@@ -84,7 +90,7 @@
       entidadId: d.entidadId ? +d.entidadId : null,
     }));
     form("formEntidad", (d) => api.post("/api/admin/entidades", {
-      tipo: d.tipo, nombre: d.nombre, carreraId: d.carreraId ? +d.carreraId : null,
+      tipo: d.tipo, sigla: d.sigla || null, nombre: d.nombre, carreraId: d.carreraId ? +d.carreraId : null,
     }));
     form("formCarrera", (d) => api.post("/api/admin/carreras", {
       id: +d.id, codigo: d.codigo, nombre: d.nombre, color: d.color,
@@ -105,6 +111,7 @@
       try {
         if (btn.dataset.act === "activar-periodo") await api.post(`/api/admin/periodos/${id}/activar`);
         if (btn.dataset.act === "del-bloque") await api.del(`/api/bloques/${id}`);
+        if (btn.dataset.act === "toggle-usuario") await api.patch(`/api/admin/usuarios/${id}`, { activo: btn.dataset.activo !== "true" });
         toast("Listo", "success"); cargar();
       } catch (err) { toast(err.message, "error"); }
     });

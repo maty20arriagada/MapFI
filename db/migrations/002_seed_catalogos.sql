@@ -40,23 +40,24 @@ ON CONFLICT (nivel) DO NOTHING;
 
 -- ── Entidades aportantes ────────────────────────────────────────────────────
 -- Un centro de estudiantes por carrera + Vinculación + Gearbox.
-INSERT INTO entidad (tipo, nombre, carrera_id) VALUES
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil',                       1),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Aeroespacial',          2),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Biomédica',             3),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Electrónica',           4),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Eléctrica',             5),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Industrial',            6),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Informática',           7),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil de Materiales',         8),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Mecánica',              9),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Metalúrgica',          10),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil de Minas',             11),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil Química',              12),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil en Telecomunicaciones',13),
-    ('CENTRO_ALUMNOS', 'CEE Ingeniería Civil – Plan Común',         14),
-    ('VINCULACION',    'Dirección de Vinculación con el Medio',    NULL),
-    ('GEARBOX',        'Gearbox - Hub de Innovación y Emprendimiento', NULL)
+-- 'sigla' = iniciales mostradas en la UI (ej. CEEIND); 'nombre' = razón completa.
+INSERT INTO entidad (tipo, sigla, nombre, carrera_id) VALUES
+    ('CENTRO_ALUMNOS', 'CEEIC',  'Centro de Estudiantes de Ingeniería Civil',                          1),
+    ('CENTRO_ALUMNOS', 'CEEAE',  'Centro de Estudiantes de Ingeniería Civil Aeroespacial',             2),
+    ('CENTRO_ALUMNOS', 'CEEBIO', 'Centro de Estudiantes de Ingeniería Civil Biomédica',                3),
+    ('CENTRO_ALUMNOS', 'CEEELN', 'Centro de Estudiantes de Ingeniería Civil Electrónica',              4),
+    ('CENTRO_ALUMNOS', 'CEEELE', 'Centro de Estudiantes de Ingeniería Civil Eléctrica',                5),
+    ('CENTRO_ALUMNOS', 'CEEIND', 'Centro de Estudiantes de Ingeniería Civil Industrial',               6),
+    ('CENTRO_ALUMNOS', 'CEEINF', 'Centro de Estudiantes de Ingeniería Civil Informática',              7),
+    ('CENTRO_ALUMNOS', 'CEEMAT', 'Centro de Estudiantes de Ingeniería Civil de Materiales',            8),
+    ('CENTRO_ALUMNOS', 'CEEMEC', 'Centro de Estudiantes de Ingeniería Civil Mecánica',                 9),
+    ('CENTRO_ALUMNOS', 'CEEMET', 'Centro de Estudiantes de Ingeniería Civil Metalúrgica',             10),
+    ('CENTRO_ALUMNOS', 'CEEMIN', 'Centro de Estudiantes de Ingeniería Civil de Minas',                11),
+    ('CENTRO_ALUMNOS', 'CEEQUI', 'Centro de Estudiantes de Ingeniería Civil Química',                 12),
+    ('CENTRO_ALUMNOS', 'CEETEL', 'Centro de Estudiantes de Ingeniería Civil en Telecomunicaciones',   13),
+    ('CENTRO_ALUMNOS', 'CEEPC',  'Centro de Estudiantes de Ingeniería Civil – Plan Común',            14),
+    ('VINCULACION',    'VcM',    'Dirección de Vinculación con el Medio',                            NULL),
+    ('GEARBOX',        'GBX',    'Gearbox - Hub de Innovación y Emprendimiento',                     NULL)
 ON CONFLICT DO NOTHING;
 
 -- ── Periodo académico vigente (ajustar fechas reales) ───────────────────────
