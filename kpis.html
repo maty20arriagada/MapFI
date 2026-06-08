@@ -4,26 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Indicadores · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav>
-        <a href="calendario.html">Calendario</a>
-        <a href="mapa-calor.html">Mapa de calor</a>
-        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
-        <a href="kpis.html" class="admin-only" hidden>KPIs</a>
-        <a href="admin.html" class="admin-only" hidden>Admin</a>
-        <a href="login.html" class="guest-only">Ingresar</a>
-        <span id="user-slot" class="muted"></span>
-        <button class="btn secondary" onclick="logout()">Salir</button>
-        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-      </nav>
-    </div>
-  </header>
-
   <main class="container">
     <section class="section guest-only" hidden>
       <div class="placeholder">Inicia sesión como administrador para ver los indicadores.</div>
@@ -34,12 +18,12 @@
 
     <section class="section admin-only" hidden>
       <div class="row" style="justify-content:space-between">
-        <h1>Panel de indicadores</h1>
-        <button class="btn" id="btnRecalcular">↻ Recalcular reputación</button>
+        <h1><span class="icon title-icon" data-icon="pie-chart"></span> Panel de indicadores</h1>
+        <button class="btn" id="btnRecalcular"><span class="icon" data-icon="refresh-cw"></span> Recalcular reputación</button>
       </div>
 
       <div class="card" style="margin-bottom:16px">
-        <h2>🏅 Ranking de coordinación</h2>
+        <h2><span class="icon title-icon" data-icon="trophy"></span> Ranking de coordinación</h2>
         <div id="tablaRanking"></div>
       </div>
       <div class="card" style="margin-bottom:16px">
@@ -66,10 +50,8 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/kpis-view.js"></script>
-  <script>
-    async function logout() { try { await api.post("/api/auth/logout"); } finally { location.href = "index.html"; } }
-  </script>
 </body>
 </html>

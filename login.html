@@ -4,18 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ingresar · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav><button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button></nav>
-    </div>
-  </header>
-
   <main class="container">
-    <section class="section" style="max-width:420px;margin:40px auto">
+    <section class="section" style="max-width:430px;margin:40px auto">
       <div class="card">
         <h1>Iniciar sesión</h1>
         <p class="muted">Acceso para centros de estudiantes, Vinculación y Gearbox.</p>
@@ -24,12 +18,10 @@
           <input type="email" id="email" name="email" required autocomplete="username" />
           <label for="password">Contraseña</label>
           <input type="password" id="password" name="password" required autocomplete="current-password" />
-          <button class="btn" type="submit" style="width:100%">Entrar</button>
+          <button class="btn" type="submit" style="width:100%"><span class="icon" data-icon="key"></span> Entrar</button>
         </form>
       </div>
-      <p class="muted center" style="margin-top:16px">
-        ¿Sin cuenta? Solicítala al administrador de MapFI.
-      </p>
+      <p class="muted center" style="margin-top:16px">¿Sin cuenta? Solicítala al administrador de MapFI.</p>
     </section>
   </main>
 
@@ -37,6 +29,8 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/app-boot.js"></script>
   <script>
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();

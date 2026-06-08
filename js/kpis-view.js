@@ -26,7 +26,7 @@
       { label: "Tipo", key: "tipo" },
       { label: "Reputación", get: (r) => `${r.reputacion}${bar(r.reputacion, "var(--brand)")}` },
       { label: "Éxitos", key: "eventos_exitosos" },
-      { label: "Sello", get: (r) => (r.sello_coordinacion ? '<span class="badge alto">🏅</span>' : "—") },
+      { label: "Sello", get: (r) => (r.sello_coordinacion ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + "</span>" : "—") },
     ]);
     tabla($("tablaOcupacion"), data.ocupacion, [
       { label: "Carrera", get: (r) => carreraNombre[r.carrera_id] || r.carrera_id },

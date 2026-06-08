@@ -4,27 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calendario · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav>
-        <a href="calendario.html">Calendario</a>
-        <a href="mapa-calor.html">Mapa de calor</a>
-        <a href="match.html" class="auth-only" hidden>Match</a>
-        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
-        <a href="login.html" class="guest-only">Ingresar</a>
-        <span id="user-slot" class="auth-only muted" hidden></span>
-        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-      </nav>
-    </div>
-  </header>
-
   <main class="container">
     <section class="section">
-      <h1>Calendario centralizado</h1>
+      <h1><span class="icon title-icon" data-icon="calendar"></span> Calendario centralizado</h1>
       <div class="card">
         <div class="grid cols-3">
           <div><label>Carrera</label><select id="fCarrera" class="filtro"></select></div>
@@ -40,6 +26,7 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>

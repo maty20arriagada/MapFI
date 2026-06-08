@@ -6,4 +6,5 @@ npm-debug.log
 coverage
 __tests__
 docs
+addons
 *.md

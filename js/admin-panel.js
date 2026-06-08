@@ -43,7 +43,9 @@
       { label: "Año", key: "anio" }, { label: "Sem", key: "semestre" },
       { label: "Inicio", get: (r) => String(r.fecha_inicio).slice(0, 10) },
       { label: "Fin", get: (r) => String(r.fecha_fin).slice(0, 10) },
-      { label: "Activo", get: (r) => r.activo ? "✅" : `<button class="btn secondary" data-act="activar-periodo" data-id="${r.id}">Activar</button>` },
+      { label: "Activo", get: (r) => r.activo
+          ? '<span style="color:var(--verde)">' + Icon("circle-check", { size: 18 }) + "</span>"
+          : `<button class="btn secondary" data-act="activar-periodo" data-id="${r.id}">Activar</button>` },
     ]);
 
     const bloques = await api.get("/api/bloques");

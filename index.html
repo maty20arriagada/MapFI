@@ -3,45 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MapFI · Mapeo de actividades de la Facultad de Ingeniería</title>
+  <title>MapFI · Facultad de Ingeniería UdeC</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav>
-        <a href="calendario.html">Calendario</a>
-        <a href="mapa-calor.html">Mapa de calor</a>
-        <a href="match.html" class="auth-only" hidden>Match</a>
-        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
-        <a href="login.html" class="guest-only">Ingresar</a>
-        <span id="user-slot" class="auth-only muted" hidden></span>
-        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-      </nav>
-    </div>
-  </header>
-
   <main class="container">
-    <section class="section center">
-      <h1>Coordina las actividades de la Facultad de Ingeniería</h1>
-      <p class="muted" style="max-width:640px;margin:0 auto 20px">
-        Calendario centralizado, mapa de calor de saturación y un calculador inteligente
-        de compatibilidad para que ningún evento pise a otro.
-      </p>
-      <div class="row center" style="justify-content:center">
-        <a class="btn" href="calendario.html">Ver calendario</a>
-        <a class="btn secondary" href="login.html">Soy aportante</a>
+    <section class="section">
+      <div class="hero">
+        <h1>Coordina las actividades de la Facultad de Ingeniería</h1>
+        <p>Calendario centralizado, mapa de calor de saturación y un calculador inteligente
+           de compatibilidad para que ningún evento pise a otro.</p>
+        <div class="row" style="justify-content:center">
+          <a class="btn gold" href="calendario.html"><span class="icon" data-icon="calendar"></span> Ver calendario</a>
+          <a class="btn secondary" href="login.html"><span class="icon" data-icon="key"></span> Soy aportante</a>
+        </div>
       </div>
     </section>
 
     <section class="section">
-      <h2>Próximas actividades</h2>
+      <h2><span class="icon title-icon" data-icon="calendar"></span> Próximas actividades</h2>
       <div id="calendar"><div class="placeholder">Cargando…</div></div>
     </section>
 
     <section class="section">
-      <h2>🏅 Ranking de coordinación</h2>
+      <h2><span class="icon title-icon" data-icon="trophy"></span> Ranking de coordinación</h2>
       <p class="muted">Reconocimiento a los centros que mejor coordinan sus actividades.</p>
       <div class="card" id="ranking"><div class="placeholder">Cargando…</div></div>
     </section>
@@ -51,6 +37,7 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
@@ -65,7 +52,7 @@
           ? top.map((e, i) =>
               `<div class="row" style="justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0">
                  <span>${i + 1}. <strong>${e.nombre}</strong> <span class="muted">· ${e.tipo}</span></span>
-                 <span>${e.reputacion} pts ${e.sello_coordinacion ? '<span class="badge alto">🏅</span>' : ""}</span>
+                 <span>${e.reputacion} pts ${e.sello_coordinacion ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + " Sello</span>" : ""}</span>
                </div>`
             ).join("")
           : '<div class="placeholder">Aún sin datos de ranking.</div>';

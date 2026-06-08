@@ -4,26 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mi panel · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav>
-        <a href="calendario.html">Calendario</a>
-        <a href="mapa-calor.html">Mapa de calor</a>
-        <a href="match.html">Match</a>
-        <a href="dashboard.html">Mi panel</a>
-        <a href="kpis.html" class="admin-only" hidden>KPIs</a>
-        <a href="admin.html" class="admin-only" hidden>Admin</a>
-        <span id="user-slot" class="muted"></span>
-        <button class="btn secondary" onclick="logout()">Salir</button>
-        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-      </nav>
-    </div>
-  </header>
-
   <main class="container">
     <section class="section guest-only" hidden>
       <div class="placeholder">Debes <a href="login.html">iniciar sesión</a> para acceder a tu panel.</div>
@@ -31,11 +15,10 @@
 
     <section class="section auth-only" hidden>
       <div class="row" style="justify-content:space-between">
-        <h1>Mi panel</h1>
-        <button class="btn" id="btnNueva">+ Nueva actividad</button>
+        <h1><span class="icon title-icon" data-icon="layout-dashboard"></span> Mi panel</h1>
+        <button class="btn" id="btnNueva"><span class="icon" data-icon="clipboard-list"></span> Nueva actividad</button>
       </div>
 
-      <!-- Formulario de nueva actividad (Fase 2) -->
       <div class="card" id="formCard" hidden style="margin-top:16px">
         <h2>Nueva actividad</h2>
         <form id="actForm">
@@ -57,8 +40,8 @@
           <label>Ubicación</label><input name="ubicacion" />
           <label>Descripción</label><textarea name="descripcion" rows="2"></textarea>
           <div class="row">
-            <button class="btn" type="submit">Guardar</button>
-            <button class="btn secondary" type="button" id="btnPreview">Evaluar compatibilidad</button>
+            <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Guardar</button>
+            <button class="btn secondary" type="button" id="btnPreview"><span class="icon" data-icon="target"></span> Evaluar compatibilidad</button>
             <button class="btn secondary" type="button" id="btnCancelar">Cancelar</button>
           </div>
           <div id="preview" style="margin-top:14px"></div>
@@ -72,7 +55,7 @@
       </div>
 
       <div class="row" style="margin-bottom:16px">
-        <button class="btn secondary" id="btnReporte">⬇️ Descargar reporte de impacto (PDF)</button>
+        <button class="btn secondary" id="btnReporte"><span class="icon" data-icon="download"></span> Descargar reporte de impacto (PDF)</button>
       </div>
 
       <h2>Tus actividades</h2>
@@ -84,6 +67,7 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
@@ -91,8 +75,6 @@
   <script src="js/calendar-view.js"></script>
   <script src="js/match-calculator.js"></script>
   <script>
-    async function logout() { try { await api.post("/api/auth/logout"); } finally { location.href = "index.html"; } }
-
     document.addEventListener("DOMContentLoaded", async () => {
       let user = null;
       try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
@@ -138,7 +120,7 @@
       };
 
       const btnReporte = document.getElementById("btnReporte");
-      if (btnReporte) btnReporte.onclick = () => {
+      btnReporte.onclick = () => {
         if (user.entidadId) window.open("/api/reports/" + user.entidadId + "/pdf", "_blank");
         else toast("Solo las entidades aportantes tienen reporte", "error");
       };
@@ -155,7 +137,7 @@
             document.getElementById("kpiConf").textContent = resumen.confiabilidad_pct + "%";
             document.getElementById("kpiRep").textContent = resumen.reputacion + " pts";
             document.getElementById("kpiSello").innerHTML = resumen.sello_coordinacion
-              ? '<span class="badge alto">🏅 Sello</span>' : "";
+              ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + " Sello</span>" : "";
           } catch (_) {}
         } else {
           document.getElementById("misActividades").innerHTML =

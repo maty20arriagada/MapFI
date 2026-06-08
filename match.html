@@ -4,31 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Calculador de Match · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="inner">
-      <a href="index.html" class="brand">🗺️ MapFI</a>
-      <nav>
-        <a href="calendario.html">Calendario</a>
-        <a href="mapa-calor.html">Mapa de calor</a>
-        <a href="match.html" class="auth-only" hidden>Match</a>
-        <a href="dashboard.html" class="auth-only" hidden>Mi panel</a>
-        <a href="login.html" class="guest-only">Ingresar</a>
-        <span id="user-slot" class="auth-only muted" hidden></span>
-        <button class="btn secondary" onclick="toggleTheme()" title="Cambiar tema">🌓</button>
-      </nav>
-    </div>
-  </header>
-
   <main class="container">
     <section class="section guest-only" hidden>
       <div class="placeholder">Debes <a href="login.html">iniciar sesión</a> para usar el calculador.</div>
     </section>
 
     <section class="section auth-only" hidden>
-      <h1>Calculador de compatibilidad y alcance</h1>
+      <h1><span class="icon title-icon" data-icon="target"></span> Calculador de compatibilidad y alcance</h1>
       <p class="muted">Propón una fecha y un público objetivo para evaluar la viabilidad.</p>
       <div class="grid cols-2">
         <div class="card">
@@ -41,7 +27,7 @@
             <select name="carreraId" id="mCarrera" required></select>
             <label>Generación / año</label>
             <select name="nivel" id="mNivel" required></select>
-            <button class="btn" type="submit" style="width:100%">Evaluar</button>
+            <button class="btn" type="submit" style="width:100%"><span class="icon" data-icon="target"></span> Evaluar</button>
           </form>
         </div>
         <div id="resultado"><div class="placeholder">El resultado aparecerá aquí.</div></div>
@@ -53,6 +39,7 @@
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
   <script src="js/match-calculator.js"></script>
