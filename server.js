@@ -190,6 +190,36 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
   }
 });
 
+// Carga masiva de actividades (import CSV de evaluaciones) — solo ADMIN.
+app.post("/api/actividades/bulk", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const lista = (req.body && req.body.actividades) || [];
+    if (!Array.isArray(lista) || !lista.length) {
+      return res.status(400).json({ error: "No se recibieron actividades" });
+    }
+    let creadas = 0;
+    const errores = [];
+    for (let i = 0; i < lista.length; i++) {
+      const a = lista[i] || {};
+      try {
+        if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !a.entidadId) {
+          throw new Error("Faltan campos obligatorios");
+        }
+        await actividadDao.crear(
+          { ...a, estado: a.estado || "CONFIRMADA", createdBy: req.session.user.id },
+          a.publico || []
+        );
+        creadas++;
+      } catch (e) {
+        errores.push({ fila: a.fila || i + 1, error: e.message });
+      }
+    }
+    res.json({ creadas, errores });
+  } catch (e) {
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 // Helper: el usuario es dueno (su entidad) de la actividad, o es ADMIN.
 async function puedeEditarActividad(req, id) {
   if (req.session.user.rol === "ADMIN") return true;
