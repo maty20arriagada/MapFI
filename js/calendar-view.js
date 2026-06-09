@@ -10,7 +10,10 @@
     EXTRAPROGRAMATICA: "#16A34A",
   };
 
-  async function montar(el, filtros) {
+  // opts.onPick(fechaInicio: Date) — se llama al hacer clic en un día/hora,
+  // para crear una actividad con la fecha ya prerrellenada.
+  async function montar(el, filtros, opts) {
+    opts = opts || {};
     const qs = new URLSearchParams(filtros || {}).toString();
     let acts = [];
     try {
@@ -21,13 +24,13 @@
     }
 
     if (global.FullCalendar && global.FullCalendar.Calendar) {
-      renderCalendario(el, acts);
+      renderCalendario(el, acts, opts);
     } else {
       renderLista(el, acts);
     }
   }
 
-  function renderCalendario(el, acts) {
+  function renderCalendario(el, acts, opts) {
     // Destruir instancia previa (al cambiar filtros) para no duplicar.
     if (el._fc) { try { el._fc.destroy(); } catch (_) {} el._fc = null; }
     el.innerHTML = "";
@@ -58,7 +61,15 @@
           (p.ubicacion ? ` · ${p.ubicacion}` : "");
         if (global.toast) toast(det); else alert(det);
       },
+      dateClick: typeof opts.onPick === "function"
+        ? (info) => {
+            const s = new Date(info.date);
+            if (info.allDay) s.setHours(12, 0, 0, 0); // mediodía por defecto en vista mes
+            opts.onPick(s);
+          }
+        : undefined,
     });
+    if (typeof opts.onPick === "function") el.classList.add("cal-pickable");
     cal.render();
     el._fc = cal;
   }

@@ -21,27 +21,30 @@
 
       <div class="card" id="formCard" hidden style="margin-top:16px">
         <h2>Nuevo evento</h2>
-        <p class="muted">Agenda un evento de tu entidad. Las evaluaciones del calendario académico las gestiona la Dirección de Docencia.</p>
+        <p class="muted">Tip: haz clic en un día del calendario para crearlo con la fecha ya puesta. Solo el título y la fecha son obligatorios.</p>
         <form id="actForm">
           <div class="grid cols-2">
-            <div><label>Título</label><input name="titulo" required /></div>
-            <div><label>Tipo de evento</label>
+            <div><label>Título <span class="req">*</span></label><input name="titulo" required autocomplete="off" /></div>
+            <div><label>Tipo <span class="req">*</span></label>
               <select name="tipo" required>
                 <option value="EVENTO">Evento</option>
                 <option value="EXTRAPROGRAMATICA">Extraprogramática</option>
               </select>
             </div>
-            <div><label>Inicio</label><input type="datetime-local" name="fechaInicio" required /></div>
-            <div><label>Fin</label><input type="datetime-local" name="fechaFin" required /></div>
-            <div><label>Carrera (público objetivo)</label><select name="carreraId" id="aCarrera" required></select></div>
-            <div><label>Año (público objetivo)</label><select name="nivel" id="aNivel" required></select></div>
+            <div><label>Inicio <span class="req">*</span></label><input type="datetime-local" name="fechaInicio" required /></div>
+            <div><label>Fin <span class="req">*</span></label><input type="datetime-local" name="fechaFin" required /></div>
+            <div><label>Carrera (público) <span class="req">*</span></label><select name="carreraId" id="aCarrera" required></select></div>
+            <div><label>Año (público) <span class="req">*</span></label><select name="nivel" id="aNivel" required></select></div>
           </div>
-          <label>Ubicación</label><input name="ubicacion" />
-          <label>Descripción</label><textarea name="descripcion" rows="2"></textarea>
-          <div class="row">
+          <button type="button" class="link-btn" id="toggleDetalles">+ Más detalles (lugar, descripción)</button>
+          <div id="masDetalles" hidden style="margin-top:10px">
+            <label>Ubicación</label><input name="ubicacion" />
+            <label>Descripción</label><textarea name="descripcion" rows="2"></textarea>
+          </div>
+          <div class="row" style="margin-top:12px">
             <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Guardar</button>
             <button class="btn secondary" type="button" id="btnPreview"><span class="icon" data-icon="target"></span> Evaluar compatibilidad</button>
-            <button class="btn secondary" type="button" id="btnCancelar">Cancelar</button>
+            <button class="btn secondary" type="button" id="btnCancelar">Cerrar</button>
           </div>
           <div id="preview" style="margin-top:14px"></div>
         </form>
@@ -74,30 +77,60 @@
   <script src="js/calendar-view.js"></script>
   <script src="js/match-calculator.js"></script>
   <script>
+    const LS_CTX = "mapfi-evento-ctx";
+    function toLocalInput(d) {
+      const p = (n) => String(n).padStart(2, "0");
+      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
       let user = null;
       try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
       if (!user) return;
 
       const cat = await Filters.cargar();
+      const actForm = document.getElementById("actForm");
+      const formCard = document.getElementById("formCard");
       Filters.poblarSelect(document.getElementById("aCarrera"), cat.carreras, "id", "nombre");
       Filters.poblarSelect(document.getElementById("aNivel"), cat.generaciones, "nivel", "etiqueta");
 
-      const formCard = document.getElementById("formCard");
-      document.getElementById("btnNueva").onclick = () => (formCard.hidden = !formCard.hidden);
+      // ── Defaults inteligentes de público: último contexto o carrera del centro ──
+      const ctx = JSON.parse(localStorage.getItem(LS_CTX) || "{}");
+      const miEntidad = (cat.entidades || []).find((e) => e.id === user.entidadId);
+      const carreraDef = ctx.carreraId || (miEntidad && miEntidad.carrera_id) || "";
+      if (carreraDef) actForm.carreraId.value = carreraDef;
+      if (ctx.nivel) actForm.nivel.value = ctx.nivel;
+      if (ctx.ubicacion) actForm.ubicacion.value = ctx.ubicacion;
+
+      // ── Fin = Inicio + 2h automático ──
+      actForm.fechaInicio.addEventListener("change", () => {
+        const fi = actForm.fechaInicio.value, ff = actForm.fechaFin;
+        if (fi && (!ff.value || ff.value <= fi)) {
+          const d = new Date(fi); d.setHours(d.getHours() + 2); ff.value = toLocalInput(d);
+        }
+      });
+
+      // ── Más detalles (colapsable) ──
+      document.getElementById("toggleDetalles").onclick = () => {
+        const m = document.getElementById("masDetalles"); m.hidden = !m.hidden;
+      };
+
+      // ── Abrir formulario (opcionalmente con fecha pre-rellenada) ──
+      function abrirForm(fecha) {
+        formCard.hidden = false;
+        if (fecha) {
+          actForm.fechaInicio.value = toLocalInput(fecha);
+          const d = new Date(fecha); d.setHours(d.getHours() + 2);
+          actForm.fechaFin.value = toLocalInput(d);
+        }
+        formCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        actForm.titulo.focus();
+      }
+      document.getElementById("btnNueva").onclick = () => (formCard.hidden ? abrirForm() : (formCard.hidden = true));
       document.getElementById("btnCancelar").onclick = () => (formCard.hidden = true);
 
-      function payloadFrom(form) {
-        const d = Object.fromEntries(new FormData(form).entries());
-        return {
-          titulo: d.titulo, descripcion: d.descripcion, tipo: d.tipo, ubicacion: d.ubicacion,
-          fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
-          publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
-        };
-      }
-
       document.getElementById("btnPreview").onclick = async () => {
-        const d = Object.fromEntries(new FormData(document.getElementById("actForm")).entries());
+        const d = Object.fromEntries(new FormData(actForm).entries());
         if (!d.fechaInicio || !d.carreraId) return toast("Completa fecha y carrera", "error");
         try {
           const r = await api.post("/api/match/evaluar", {
@@ -108,25 +141,37 @@
         } catch (err) { toast(err.message, "error"); }
       };
 
-      document.getElementById("actForm").onsubmit = async (e) => {
+      // ── Guardar: deja el form abierto para cargar varios seguidos ──
+      actForm.onsubmit = async (e) => {
         e.preventDefault();
+        const d = Object.fromEntries(new FormData(actForm).entries());
         try {
-          await api.post("/api/actividades", payloadFrom(e.target));
-          toast("Actividad creada", "success");
-          formCard.hidden = true; e.target.reset();
+          await api.post("/api/actividades", {
+            titulo: d.titulo, descripcion: d.descripcion, tipo: d.tipo, ubicacion: d.ubicacion,
+            fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
+            publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
+          });
+          localStorage.setItem(LS_CTX, JSON.stringify({ carreraId: d.carreraId, nivel: d.nivel, ubicacion: d.ubicacion }));
+          toast("Evento creado · listo para el siguiente", "success");
+          // Reset parcial: conserva tipo/carrera/año/lugar para el próximo.
+          actForm.titulo.value = "";
+          actForm.fechaInicio.value = "";
+          actForm.fechaFin.value = "";
+          actForm.descripcion.value = "";
+          document.getElementById("preview").innerHTML = "";
+          actForm.titulo.focus();
           cargarLista();
         } catch (err) { toast(err.message, "error"); }
       };
 
-      const btnReporte = document.getElementById("btnReporte");
-      btnReporte.onclick = () => {
+      document.getElementById("btnReporte").onclick = () => {
         if (user.entidadId) window.open("/api/reports/" + user.entidadId + "/pdf", "_blank");
         else toast("Solo las entidades aportantes tienen reporte", "error");
       };
 
       async function cargarLista() {
         if (user.entidadId) {
-          CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId });
+          CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId }, { onPick: abrirForm });
           try {
             const acts = await api.get("/api/actividades?entidadId=" + user.entidadId);
             document.getElementById("kpiTotal").textContent = acts.length + " actividad(es)";
