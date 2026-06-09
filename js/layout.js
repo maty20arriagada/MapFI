@@ -38,7 +38,7 @@
           </a>
           <nav>
             ${links}
-            <span id="user-slot" class="auth-only muted" hidden></span>
+            <a href="cuenta.html" id="user-slot" class="auth-only" hidden title="Mi cuenta"></a>
             <button class="btn secondary auth-only" id="logoutBtn" hidden>
               <span class="icon" data-icon="log-out"></span> Salir
             </button>

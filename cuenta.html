@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi cuenta · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <main class="container">
+    <section class="section guest-only" hidden>
+      <div class="placeholder">Debes <a href="login.html">iniciar sesión</a> para ver tu cuenta.</div>
+    </section>
+
+    <section class="section auth-only" hidden>
+      <div class="page-head">
+        <h1><span class="icon title-icon" data-icon="settings"></span> Mi cuenta</h1>
+        <p class="subtitle">Tus datos de acceso y seguridad.</p>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Datos de la cuenta</h2>
+          <p style="margin:.2em 0"><strong id="ucNombre">—</strong></p>
+          <p class="muted" id="ucEmail" style="margin:.2em 0">—</p>
+          <p style="margin:.6em 0">Rol: <span class="badge gold" id="ucRol">—</span></p>
+          <p class="muted" id="ucEntidad" style="margin:.2em 0"></p>
+        </div>
+
+        <div class="card">
+          <h2>Cambiar contraseña</h2>
+          <form id="formPass">
+            <label>Contraseña actual</label>
+            <input type="password" name="actual" required autocomplete="current-password" />
+            <label>Nueva contraseña</label>
+            <input type="password" name="nueva" required minlength="6" autocomplete="new-password" />
+            <label>Repetir nueva contraseña</label>
+            <input type="password" name="confirm" required minlength="6" autocomplete="new-password" />
+            <p class="muted" style="font-size:.8rem;margin-top:-6px">Mínimo 6 caracteres.</p>
+            <button class="btn" type="submit"><span class="icon" data-icon="key"></span> Actualizar contraseña</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      let user = null;
+      try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
+      if (!user) return;
+
+      document.getElementById("ucNombre").textContent = user.nombre || "";
+      document.getElementById("ucEmail").textContent = user.email || "";
+      document.getElementById("ucRol").textContent = user.rol || "";
+
+      if (user.entidadId) {
+        try {
+          const cat = await api.get("/api/catalogos");
+          const e = (cat.entidades || []).find((x) => x.id === user.entidadId);
+          if (e) document.getElementById("ucEntidad").textContent = (e.sigla ? e.sigla + " — " : "") + e.nombre;
+        } catch (_) {}
+      }
+
+      document.getElementById("formPass").addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const d = Object.fromEntries(new FormData(ev.target).entries());
+        if (d.nueva !== d.confirm) return toast("Las contraseñas no coinciden", "error");
+        try {
+          await api.post("/api/auth/password", { actual: d.actual, nueva: d.nueva });
+          toast("Contraseña actualizada con éxito", "success");
+          ev.target.reset();
+        } catch (err) {
+          toast(err.message || "No se pudo actualizar", "error");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

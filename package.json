@@ -9,6 +9,7 @@
     "test": "jest --forceExit",
     "test:watch": "jest --watch",
     "db:migrate": "node js/db/migrate.js",
+    "admin:reset": "node js/db/reset-admin.js",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
     "docker:db": "docker compose up -d db"
