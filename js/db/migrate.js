@@ -5,8 +5,8 @@
  * - Aplica en orden numerico los archivos db/migrations/*.sql que falten.
  * - Lleva control en la tabla `schema_migrations` (idempotente).
  * - Cada migracion corre dentro de una transaccion (todo o nada).
- * - Al final, crea el usuario ADMIN inicial si SEED_ADMIN_EMAIL/PASSWORD
- *   estan seteados y aun no existe ningun admin.
+ * - Al final, deja SIEMPRE un usuario ADMIN por defecto (admin@mapfi.cl /
+ *   admin1234), sobreescribible con SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD.
  *
  * Uso:
  *   node js/db/migrate.js        → aplica y termina
@@ -71,16 +71,24 @@ async function runMigrations() {
   }
 }
 
-/** Crea el ADMIN inicial (idempotente) si hay credenciales en el entorno. */
+// Credenciales por defecto del admin (si no se definen en el entorno).
+const ADMIN_EMAIL_DEFAULT = "admin@mapfi.cl";
+const ADMIN_PASS_DEFAULT = "admin1234";
+
+/**
+ * Crea el ADMIN inicial (idempotente). SIEMPRE deja una cuenta para poder
+ * ingresar de inmediato; se puede sobreescribir con SEED_ADMIN_EMAIL /
+ * SEED_ADMIN_PASSWORD. No duplica ni pisa un admin ya existente.
+ */
 async function seedAdmin(client) {
-  const email = process.env.SEED_ADMIN_EMAIL;
-  const password = process.env.SEED_ADMIN_PASSWORD;
-  if (!email || !password) return;
+  const email = process.env.SEED_ADMIN_EMAIL || ADMIN_EMAIL_DEFAULT;
+  const password = process.env.SEED_ADMIN_PASSWORD || ADMIN_PASS_DEFAULT;
+  const usandoDefault = !process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD;
 
   const { rows } = await client.query(
     "SELECT 1 FROM usuario WHERE rol = 'ADMIN' LIMIT 1"
   );
-  if (rows.length) return;
+  if (rows.length) return; // ya hay un admin
 
   const hash = await bcrypt.hash(password, 10);
   await client.query(
@@ -90,6 +98,9 @@ async function seedAdmin(client) {
     [email, hash, "Administrador"]
   );
   console.log(`[migrate] usuario ADMIN inicial creado: ${email}`);
+  if (usandoDefault) {
+    console.log("[migrate] AVISO: admin por defecto (admin@mapfi.cl / admin1234). Cambia la contrasena en produccion (.env o desde la app).");
+  }
 }
 
 module.exports = { runMigrations };

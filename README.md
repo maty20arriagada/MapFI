@@ -38,6 +38,18 @@ docker-compose up --build  # levanta Postgres + server y migra
 
 En Windows, doble clic en **`start.bat`**.
 
+### 🔑 Acceso de administrador (por defecto)
+
+En la primera migración se crea automáticamente una cuenta de administrador:
+
+| Correo | Contraseña |
+|--------|------------|
+| `admin@mapfi.cl` | `admin1234` |
+
+> Cámbiala en producción: edita `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` en `.env` **antes** del primer arranque, o cámbiala luego desde la app.
+
+Inicia sesión en `/login.html` y, desde **Admin → Cuentas de usuario**, crea el resto de cuentas (centros de estudiantes, Vinculación, Gearbox e incluso otras cuentas de administrador).
+
 ### Sin Docker
 
 ```bash
