@@ -57,7 +57,8 @@ INSERT INTO entidad (tipo, sigla, nombre, carrera_id) VALUES
     ('CENTRO_ALUMNOS', 'CEETEL', 'Centro de Estudiantes de Ingeniería Civil en Telecomunicaciones',   13),
     ('CENTRO_ALUMNOS', 'CEEPC',  'Centro de Estudiantes de Ingeniería Civil – Plan Común',            14),
     ('VINCULACION',    'VcM',    'Dirección de Vinculación con el Medio',                            NULL),
-    ('GEARBOX',        'GBX',    'Gearbox - Hub de Innovación y Emprendimiento',                     NULL)
+    ('GEARBOX',        'GBX',    'Gearbox - Hub de Innovación y Emprendimiento',                     NULL),
+    ('FACULTAD',       'DOCFI',  'Dirección de Docencia - Facultad de Ingeniería',                   NULL)
 ON CONFLICT DO NOTHING;
 
 -- ── Periodo académico vigente (ajustar fechas reales) ───────────────────────
@@ -88,3 +89,37 @@ INSERT INTO feriado (fecha, nombre, tipo, es_nacional) VALUES
     ('2026-12-08', 'Inmaculada Concepción',             'LEGAL',         TRUE),
     ('2026-12-25', 'Navidad',                           'IRRENUNCIABLE', TRUE)
 ON CONFLICT (fecha) DO NOTHING;
+
+-- ── Ejemplo de MALLA HORARIA (Ing. Civil Industrial, primer año) ────────────
+-- Datos de muestra para validar la vista de Horarios. Edítalos o elimínalos.
+INSERT INTO bloque_horario (carrera_id, nivel, dia_semana, hora_inicio, hora_fin, tipo, descripcion) VALUES
+    (6, 1, 1, '08:30', '10:00', 'CLASE',     'Cálculo I'),
+    (6, 1, 1, '10:15', '11:45', 'CLASE',     'Álgebra y Geometría'),
+    (6, 1, 2, '08:30', '10:00', 'CLASE',     'Física I'),
+    (6, 1, 2, '11:50', '13:20', 'CLASE',     'Química General'),
+    (6, 1, 3, '11:50', '13:20', 'PROTEGIDO', 'Bloque protegido FI'),
+    (6, 1, 4, '14:30', '16:00', 'CLASE',     'Introducción a la Programación'),
+    (6, 1, 5, '10:15', '11:45', 'LIBRE',     'Ventana libre')
+ON CONFLICT DO NOTHING;
+
+-- ── Ejemplo de CALENDARIO ACADÉMICO (muestra) ───────────────────────────────
+-- Una evaluación (Dirección de Docencia) y un evento (CEE Industrial).
+INSERT INTO actividad (titulo, descripcion, entidad_id, periodo_id, fecha_inicio, fecha_fin, tipo, estado, ubicacion)
+SELECT 'Certamen 1 - Cálculo I', 'Primera evaluación del semestre', e.id, p.id,
+       '2026-06-23 18:30:00-04', '2026-06-23 20:00:00-04', 'EXAMEN', 'CONFIRMADA', 'Aula 301'
+FROM entidad e CROSS JOIN periodo_academico p
+WHERE e.sigla = 'DOCFI' AND p.anio = 2026 AND p.semestre = 1
+ON CONFLICT DO NOTHING;
+
+INSERT INTO actividad (titulo, descripcion, entidad_id, periodo_id, fecha_inicio, fecha_fin, tipo, estado, ubicacion)
+SELECT 'Semana del Novato', 'Actividad de bienvenida a primer año', e.id, p.id,
+       '2026-06-16 12:00:00-04', '2026-06-16 16:00:00-04', 'EVENTO', 'CONFIRMADA', 'Patio central FI'
+FROM entidad e CROSS JOIN periodo_academico p
+WHERE e.sigla = 'CEEIND' AND p.anio = 2026 AND p.semestre = 1
+ON CONFLICT DO NOTHING;
+
+-- Público objetivo de las actividades de muestra (Ing. Civil Industrial, 1er año).
+INSERT INTO actividad_publico (actividad_id, carrera_id, nivel)
+SELECT a.id, 6, 1 FROM actividad a
+WHERE a.titulo IN ('Certamen 1 - Cálculo I', 'Semana del Novato')
+ON CONFLICT DO NOTHING;

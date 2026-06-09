@@ -12,6 +12,7 @@
 
   const NAV = [
     { href: "calendario.html", icon: "calendar", label: "Calendario" },
+    { href: "horarios.html", icon: "book-open", label: "Horarios" },
     { href: "mapa-calor.html", icon: "bar-chart-3", label: "Mapa de calor" },
     { href: "match.html", icon: "target", label: "Match", cls: "auth-only" },
     { href: "dashboard.html", icon: "layout-dashboard", label: "Mi panel", cls: "auth-only" },

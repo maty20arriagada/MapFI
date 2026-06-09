@@ -81,24 +81,9 @@
         <div id="tablaPeriodos"></div>
       </div>
 
-      <div class="card stack">
-        <h2>Bloques horarios (malla base)</h2>
-        <form id="formBloque">
-          <div class="grid cols-3">
-            <div><label>Carrera</label><select name="carreraId" id="bCarrera" required></select></div>
-            <div><label>Año</label><select name="nivel" id="bNivel" required></select></div>
-            <div><label>Día</label>
-              <select name="diaSemana"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option></select>
-            </div>
-            <div><label>Inicio</label><input name="horaInicio" type="time" required /></div>
-            <div><label>Fin</label><input name="horaFin" type="time" required /></div>
-            <div><label>Tipo</label>
-              <select name="tipo"><option value="CLASE">Clase</option><option value="PROTEGIDO">Protegido</option><option value="LIBRE">Libre</option></select>
-            </div>
-          </div>
-          <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Agregar bloque</button>
-        </form>
-        <div id="tablaBloques"></div>
+      <div class="card">
+        <h2><span class="icon title-icon" data-icon="book-open"></span> Horarios de clase</h2>
+        <p class="muted">La malla horaria semanal (bloques de clase, protegidos y libres) por carrera y generación se administra en la sección <a href="horarios.html">Horarios</a>.</p>
       </div>
     </section>
   </main>

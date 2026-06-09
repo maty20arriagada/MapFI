@@ -26,6 +26,7 @@ module.exports = {
     const args = [];
     let i = 1;
     if (f.entidadId) { cond.push(`a.entidad_id = $${i++}`); args.push(f.entidadId); }
+    if (f.tipo)      { cond.push(`a.tipo = $${i++}`); args.push(f.tipo); }
     if (f.desde)     { cond.push(`a.fecha_inicio >= $${i++}`); args.push(f.desde); }
     if (f.hasta)     { cond.push(`a.fecha_inicio <= $${i++}`); args.push(f.hasta); }
     if (f.carreraId) { cond.push(`EXISTS (SELECT 1 FROM actividad_publico ap WHERE ap.actividad_id = a.id AND ap.carrera_id = $${i++})`); args.push(f.carreraId); }

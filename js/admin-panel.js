@@ -21,8 +21,6 @@
     $("uEntidad").innerHTML = '<option value="">— sin entidad (admin) —</option>' +
       cat.entidades.map((e) => opt(e.id, (e.sigla ? e.sigla + " — " : "") + e.nombre)).join("");
     $("eCarrera").innerHTML = '<option value="">— ninguna —</option>' + cat.carreras.map((c) => opt(c.id, c.nombre)).join("");
-    $("bCarrera").innerHTML = cat.carreras.map((c) => opt(c.id, c.nombre)).join("");
-    $("bNivel").innerHTML = cat.generaciones.map((g) => opt(g.nivel, g.etiqueta)).join("");
 
     // ── Tablas ────────────────────────────────────────────────────────────────
     tabla($("tablaEntidades"), cat.entidades, [
@@ -54,16 +52,6 @@
           : `<button class="btn secondary" data-act="activar-periodo" data-id="${r.id}">Activar</button>` },
     ]);
 
-    const bloques = await api.get("/api/bloques");
-    const dias = { 1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie" };
-    tabla($("tablaBloques"), bloques, [
-      { label: "Carrera", key: "carrera_id" }, { label: "Año", key: "nivel" },
-      { label: "Día", get: (r) => dias[r.dia_semana] || r.dia_semana },
-      { label: "Inicio", get: (r) => String(r.hora_inicio).slice(0, 5) },
-      { label: "Fin", get: (r) => String(r.hora_fin).slice(0, 5) },
-      { label: "Tipo", key: "tipo" },
-      { label: "", get: (r) => `<button class="btn secondary" data-act="del-bloque" data-id="${r.id}">Eliminar</button>` },
-    ]);
   }
 
   function form(id, handler) {
@@ -98,19 +86,13 @@
     form("formPeriodo", (d) => api.post("/api/admin/periodos", {
       anio: +d.anio, semestre: +d.semestre, fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
     }));
-    form("formBloque", (d) => api.post("/api/bloques", {
-      carreraId: +d.carreraId, nivel: +d.nivel, diaSemana: +d.diaSemana,
-      horaInicio: d.horaInicio, horaFin: d.horaFin, tipo: d.tipo,
-    }));
-
-    // Acciones delegadas (activar periodo / eliminar bloque).
+    // Acciones delegadas (activar periodo / activar-desactivar cuenta).
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-act]");
       if (!btn) return;
       const id = +btn.dataset.id;
       try {
         if (btn.dataset.act === "activar-periodo") await api.post(`/api/admin/periodos/${id}/activar`);
-        if (btn.dataset.act === "del-bloque") await api.del(`/api/bloques/${id}`);
         if (btn.dataset.act === "toggle-usuario") await api.patch(`/api/admin/usuarios/${id}`, { activo: btn.dataset.activo !== "true" });
         toast("Listo", "success"); cargar();
       } catch (err) { toast(err.message, "error"); }

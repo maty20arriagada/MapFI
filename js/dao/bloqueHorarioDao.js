@@ -3,10 +3,17 @@
 const { query } = require("../db");
 
 module.exports = {
-  async listar() {
+  async listar(f = {}) {
+    const cond = [];
+    const args = [];
+    let i = 1;
+    if (f.carreraId) { cond.push(`carrera_id = $${i++}`); args.push(f.carreraId); }
+    if (f.nivel)     { cond.push(`nivel = $${i++}`); args.push(f.nivel); }
+    const where = cond.length ? `WHERE ${cond.join(" AND ")}` : "";
     const { rows } = await query(
       `SELECT id, carrera_id, nivel, dia_semana, hora_inicio, hora_fin, tipo, descripcion
-         FROM bloque_horario ORDER BY carrera_id, nivel, dia_semana, hora_inicio`
+         FROM bloque_horario ${where} ORDER BY dia_semana, hora_inicio`,
+      args
     );
     return rows;
   },

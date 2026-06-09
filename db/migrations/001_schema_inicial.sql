@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS generacion (
 -- Entidades organizadoras (aportantes).
 CREATE TABLE IF NOT EXISTS entidad (
     id                  SERIAL      PRIMARY KEY,
-    tipo                TEXT        NOT NULL CHECK (tipo IN ('CENTRO_ALUMNOS','VINCULACION','GEARBOX')),
+    tipo                TEXT        NOT NULL CHECK (tipo IN ('CENTRO_ALUMNOS','VINCULACION','GEARBOX','FACULTAD')),
     sigla               TEXT,                                 -- iniciales, ej. 'CEEIND'
     nombre              TEXT        NOT NULL,
     carrera_id          SMALLINT    REFERENCES carrera(id),   -- NULL salvo centros de alumnos

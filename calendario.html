@@ -3,22 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calendario · MapFI</title>
+  <title>Calendario académico · MapFI</title>
   <link rel="icon" href="img/udec_FI.svg" />
   <link rel="stylesheet" href="css/design-system.css" />
 </head>
 <body>
   <main class="container">
     <section class="section">
-      <h1><span class="icon title-icon" data-icon="calendar"></span> Calendario centralizado</h1>
-      <div class="card">
-        <div class="grid cols-3">
+      <div class="page-head">
+        <h1><span class="icon title-icon" data-icon="calendar"></span> Calendario académico</h1>
+        <p class="subtitle">Fechas puntuales de la Facultad de Ingeniería: <strong>evaluaciones</strong> y <strong>eventos</strong>. Para los horarios de clase, ve a la sección Horarios.</p>
+      </div>
+
+      <div class="card filters">
+        <div class="grid cols-2">
           <div><label>Carrera</label><select id="fCarrera" class="filtro"></select></div>
           <div><label>Generación / año</label><select id="fNivel" class="filtro"></select></div>
-          <div><label>Entidad</label><select id="fEntidad" class="filtro"></select></div>
+          <div><label>Entidad organizadora</label><select id="fEntidad" class="filtro"></select></div>
+          <div><label>Tipo</label>
+            <select id="fTipo" class="filtro">
+              <option value="">Todos los tipos</option>
+              <option value="EXAMEN">Evaluaciones</option>
+              <option value="HITO_ACADEMICO">Hitos académicos</option>
+              <option value="EVENTO">Eventos</option>
+              <option value="EXTRAPROGRAMATICA">Extraprogramáticas</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div id="calendar" style="margin-top:16px"><div class="placeholder">Cargando…</div></div>
+
+      <div class="card admin-only" id="adminFecha" hidden style="margin-top:16px">
+        <h2><span class="icon title-icon" data-icon="pencil"></span> Agregar fecha académica</h2>
+        <p class="muted">Para evaluaciones e hitos de la facultad (las organiza Docencia). Los centros agregan sus eventos desde "Mi panel".</p>
+        <form id="formFecha">
+          <div class="grid cols-3">
+            <div><label>Tipo</label>
+              <select name="tipo"><option value="EXAMEN">Evaluación</option><option value="HITO_ACADEMICO">Hito académico</option><option value="EVENTO">Evento institucional</option></select>
+            </div>
+            <div style="grid-column: span 2"><label>Título</label><input name="titulo" placeholder="Certamen 1 - Cálculo I" required /></div>
+            <div><label>Inicio</label><input type="datetime-local" name="fechaInicio" required /></div>
+            <div><label>Fin</label><input type="datetime-local" name="fechaFin" required /></div>
+            <div><label>Entidad</label><select name="entidadId" id="aEntidad"></select></div>
+            <div><label>Carrera (público)</label><select name="carreraId" id="aCarrera" required></select></div>
+            <div><label>Año (público)</label><select name="nivel" id="aNivel" required></select></div>
+            <div><label>Ubicación</label><input name="ubicacion" placeholder="Aula 301" /></div>
+          </div>
+          <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Agregar al calendario</button>
+        </form>
+      </div>
+
+      <div class="tt-legend">
+        <span><i style="background:#DC2626"></i> Evaluación</span>
+        <span><i style="background:#7C3AED"></i> Hito académico</span>
+        <span><i style="background:#2563EB"></i> Evento</span>
+        <span><i style="background:#16A34A"></i> Extraprogramática</span>
+      </div>
+
+      <div id="calendar"><div class="placeholder">Cargando…</div></div>
     </section>
   </main>
 
@@ -34,20 +75,52 @@
   <script src="js/calendar-view.js"></script>
   <script>
     (async function () {
+      let isAdmin = false;
+      try { const r = await api.get("/api/auth/me"); isAdmin = !!r.user && r.user.rol === "ADMIN"; } catch (_) {}
+
       const cat = await Filters.cargar();
       Filters.poblarSelect(document.getElementById("fCarrera"), cat.carreras, "id", "nombre", "Todas las carreras");
       Filters.poblarSelect(document.getElementById("fNivel"), cat.generaciones, "nivel", "etiqueta", "Todos los años");
       Filters.poblarSelect(document.getElementById("fEntidad"), cat.entidades, "id", "nombre", "Todas las entidades");
+
       const cal = document.getElementById("calendar");
       function render() {
         const filtros = {};
         const c = document.getElementById("fCarrera").value; if (c) filtros.carreraId = c;
         const n = document.getElementById("fNivel").value;   if (n) filtros.nivel = n;
         const e = document.getElementById("fEntidad").value; if (e) filtros.entidadId = e;
+        const t = document.getElementById("fTipo").value;    if (t) filtros.tipo = t;
         CalendarView.montar(cal, filtros);
       }
       document.querySelectorAll(".filtro").forEach((s) => s.addEventListener("change", render));
       render();
+
+      // Formulario admin (evaluaciones / fechas académicas).
+      if (isAdmin) {
+        Filters.poblarSelect(document.getElementById("aCarrera"), cat.carreras, "id", "nombre");
+        Filters.poblarSelect(document.getElementById("aNivel"), cat.generaciones, "nivel", "etiqueta");
+        const aEnt = document.getElementById("aEntidad");
+        // Entidad con "SIGLA — Nombre", preseleccionando Dirección de Docencia.
+        aEnt.innerHTML = cat.entidades.map((e) =>
+          `<option value="${e.id}"${e.sigla === "DOCFI" ? " selected" : ""}>${(e.sigla ? e.sigla + " — " : "") + e.nombre}</option>`
+        ).join("");
+
+        document.getElementById("formFecha").addEventListener("submit", async (ev) => {
+          ev.preventDefault();
+          const d = Object.fromEntries(new FormData(ev.target).entries());
+          try {
+            await api.post("/api/actividades", {
+              titulo: d.titulo, tipo: d.tipo, ubicacion: d.ubicacion,
+              fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, entidadId: +d.entidadId, estado: "CONFIRMADA",
+              publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
+            });
+            toast("Fecha agregada al calendario", "success");
+            ev.target.reset();
+            aEnt.value = (cat.entidades.find((e) => e.sigla === "DOCFI") || {}).id || "";
+            render();
+          } catch (err) { toast(err.message, "error"); }
+        });
+      }
     })();
   </script>
 </body>

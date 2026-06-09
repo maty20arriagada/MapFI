@@ -16,20 +16,19 @@
     <section class="section auth-only" hidden>
       <div class="row" style="justify-content:space-between">
         <h1><span class="icon title-icon" data-icon="layout-dashboard"></span> Mi panel</h1>
-        <button class="btn" id="btnNueva"><span class="icon" data-icon="clipboard-list"></span> Nueva actividad</button>
+        <button class="btn" id="btnNueva"><span class="icon" data-icon="clipboard-list"></span> Nuevo evento</button>
       </div>
 
       <div class="card" id="formCard" hidden style="margin-top:16px">
-        <h2>Nueva actividad</h2>
+        <h2>Nuevo evento</h2>
+        <p class="muted">Agenda un evento de tu entidad. Las evaluaciones del calendario académico las gestiona la Dirección de Docencia.</p>
         <form id="actForm">
           <div class="grid cols-2">
             <div><label>Título</label><input name="titulo" required /></div>
-            <div><label>Tipo</label>
+            <div><label>Tipo de evento</label>
               <select name="tipo" required>
                 <option value="EVENTO">Evento</option>
-                <option value="HITO_ACADEMICO">Hito académico</option>
                 <option value="EXTRAPROGRAMATICA">Extraprogramática</option>
-                <option value="EXAMEN">Examen</option>
               </select>
             </div>
             <div><label>Inicio</label><input type="datetime-local" name="fechaInicio" required /></div>

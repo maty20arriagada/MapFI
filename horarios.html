@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horarios · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <main class="container">
+    <section class="section">
+      <div class="page-head">
+        <h1><span class="icon title-icon" data-icon="book-open"></span> Horarios de clases</h1>
+        <p class="subtitle">Malla semanal recurrente de cada carrera y generación. Es independiente del calendario académico (evaluaciones y eventos).</p>
+      </div>
+
+      <div class="card filters">
+        <div class="grid cols-2">
+          <div><label>Carrera</label><select id="hCarrera"></select></div>
+          <div><label>Generación / año</label><select id="hNivel"></select></div>
+        </div>
+      </div>
+
+      <div class="card admin-only" id="adminBloque" hidden style="margin-top:16px">
+        <h2><span class="icon title-icon" data-icon="pencil"></span> Agregar bloque</h2>
+        <p class="muted">Se agrega a la carrera y generación seleccionadas arriba.</p>
+        <form id="formBloque">
+          <div class="grid cols-3">
+            <div><label>Día</label>
+              <select name="diaSemana"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option></select>
+            </div>
+            <div><label>Inicio</label><input type="time" name="horaInicio" required /></div>
+            <div><label>Fin</label><input type="time" name="horaFin" required /></div>
+            <div><label>Tipo</label>
+              <select name="tipo"><option value="CLASE">Clase</option><option value="PROTEGIDO">Protegido</option><option value="LIBRE">Libre</option></select>
+            </div>
+            <div style="grid-column: span 2"><label>Asignatura / descripción</label><input name="descripcion" placeholder="Cálculo I" /></div>
+          </div>
+          <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Agregar bloque</button>
+        </form>
+      </div>
+
+      <div class="tt-legend">
+        <span><i style="background:var(--brand)"></i> Clase</span>
+        <span><i style="background:var(--gold-dark)"></i> Bloque protegido</span>
+        <span><i style="background:var(--verde)"></i> Ventana libre</span>
+      </div>
+
+      <div id="timetable"><div class="placeholder">Selecciona carrera y generación para ver el horario.</div></div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script src="js/filters.js"></script>
+  <script src="js/horarios-view.js"></script>
+  <script>
+    (async function () {
+      let isAdmin = false;
+      try { const r = await api.get("/api/auth/me"); isAdmin = !!r.user && r.user.rol === "ADMIN"; } catch (_) {}
+
+      const cat = await Filters.cargar();
+      Filters.poblarSelect(document.getElementById("hCarrera"), cat.carreras, "id", "nombre", "— Carrera —");
+      Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "— Generación —");
+
+      const cont = document.getElementById("timetable");
+      const filtros = () => ({
+        carreraId: document.getElementById("hCarrera").value || null,
+        nivel: document.getElementById("hNivel").value || null,
+      });
+      const render = () => HorariosView.montar(cont, filtros(), { isAdmin });
+
+      document.getElementById("hCarrera").addEventListener("change", render);
+      document.getElementById("hNivel").addEventListener("change", render);
+
+      const formBloque = document.getElementById("formBloque");
+      formBloque.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const f = filtros();
+        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        const d = Object.fromEntries(new FormData(e.target).entries());
+        try {
+          await api.post("/api/bloques", {
+            carreraId: +f.carreraId, nivel: +f.nivel, diaSemana: +d.diaSemana,
+            horaInicio: d.horaInicio, horaFin: d.horaFin, tipo: d.tipo, descripcion: d.descripcion,
+          });
+          toast("Bloque agregado", "success"); e.target.reset(); render();
+        } catch (err) { toast(err.message, "error"); }
+      });
+
+      cont.addEventListener("click", async (e) => {
+        const btn = e.target.closest('[data-act="del-bloque"]');
+        if (!btn) return;
+        try { await api.del("/api/bloques/" + btn.dataset.id); toast("Bloque eliminado", "success"); render(); }
+        catch (err) { toast(err.message, "error"); }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

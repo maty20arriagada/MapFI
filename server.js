@@ -159,6 +159,7 @@ app.get("/api/actividades", async (req, res) => {
       carreraId: num(req.query.carreraId),
       nivel: num(req.query.nivel),
       entidadId: num(req.query.entidadId),
+      tipo: req.query.tipo,
       desde: req.query.desde,
       hasta: req.query.hasta,
     });
@@ -347,8 +348,12 @@ app.get("/api/reports/:id/pdf", requireAuth, async (req, res) => {
 
 // ── Bloques horarios (lectura publica · escritura ADMIN) ────────────────────
 app.get("/api/bloques", async (req, res) => {
-  try { res.json(await bloqueHorarioDao.listar()); }
-  catch (e) { res.status(500).json({ error: "Error interno" }); }
+  try {
+    res.json(await bloqueHorarioDao.listar({
+      carreraId: num(req.query.carreraId),
+      nivel: num(req.query.nivel),
+    }));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 app.post("/api/bloques", requireRole("ADMIN"), async (req, res) => {
   try { res.status(201).json(await bloqueHorarioDao.crear(req.body || {})); }
