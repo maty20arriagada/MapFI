@@ -91,6 +91,7 @@ mapfi/
 | [docs/ALGORITMO_MATCH.md](docs/ALGORITMO_MATCH.md) | Cómo funciona el calculador de compatibilidad |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Fases, hitos y criterios de aceptación |
 | [docs/DESPLIEGUE.md](docs/DESPLIEGUE.md) | Hosting local, facultad y nube |
+| [docs/DESPLIEGUE_SERVIDOR.md](docs/DESPLIEGUE_SERVIDOR.md) | **Plan de despliegue en el servidor** (DB privada, HTTPS, backups) |
 | [docs/GUIA_TECNICA.md](docs/GUIA_TECNICA.md) | Cómo extender el código |
 | [docs/GUIA_APORTANTE.md](docs/GUIA_APORTANTE.md) | Manual del usuario (centros, Vinculación, Gearbox) |
 

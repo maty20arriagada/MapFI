@@ -5,8 +5,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - ${POSTGRES_PORT}:5432
+    # La BD NO publica puertos al host: solo el backend la alcanza por la red
+    # interna de compose (host 'db', puerto 5432). Asi nunca queda expuesta en
+    # el servidor. Para desarrollo en el host (npm run dev contra esta BD), usa
+    # el override docker-compose.dev.yaml (ver package.json > docker:db).
+    expose:
+      - "5432"
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
@@ -39,6 +43,11 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
     volumes:
       - node_modules:/app/node_modules
 

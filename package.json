@@ -11,8 +11,10 @@
     "db:migrate": "node js/db/migrate.js",
     "admin:reset": "node js/db/reset-admin.js",
     "docker:up": "docker compose up --build",
+    "docker:prod": "docker compose up -d --build",
+    "docker:logs": "docker compose logs -f server",
     "docker:down": "docker compose down",
-    "docker:db": "docker compose up -d db"
+    "docker:db": "docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d db"
   },
   "keywords": [
     "calendario",
