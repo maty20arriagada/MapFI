@@ -88,6 +88,13 @@
       try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
       if (!user) return;
 
+      // Los eventos los crean entidades aportantes; un ADMIN (sin entidad) usa
+      // el Calendario para fechas académicas, así que ocultamos el alta aquí.
+      if (!user.entidadId) {
+        document.getElementById("btnNueva").hidden = true;
+        document.getElementById("formCard").hidden = true;
+      }
+
       const cat = await Filters.cargar();
       const actForm = document.getElementById("actForm");
       const formCard = document.getElementById("formCard");

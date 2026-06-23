@@ -16,11 +16,11 @@ const bcrypt = require("bcryptjs");
 const { pool } = require("./index");
 
 async function main() {
-  const email = process.argv[2] || process.env.SEED_ADMIN_EMAIL || "admin@mapfi.cl";
+  const email = (process.argv[2] || process.env.SEED_ADMIN_EMAIL || "admin@mapfi.cl").trim().toLowerCase();
   const password = process.argv[3] || process.env.SEED_ADMIN_PASSWORD || "admin1234";
   const hash = await bcrypt.hash(password, 10);
 
-  const { rows } = await pool.query("SELECT id FROM usuario WHERE email = $1", [email]);
+  const { rows } = await pool.query("SELECT id FROM usuario WHERE lower(email) = $1", [email]);
   if (rows.length) {
     await pool.query(
       "UPDATE usuario SET password_hash = $2, rol = 'ADMIN', activo = TRUE WHERE email = $1",

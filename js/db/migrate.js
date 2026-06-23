@@ -81,7 +81,7 @@ const ADMIN_PASS_DEFAULT = "admin1234";
  * SEED_ADMIN_PASSWORD. No duplica ni pisa un admin ya existente.
  */
 async function seedAdmin(client) {
-  const email = process.env.SEED_ADMIN_EMAIL || ADMIN_EMAIL_DEFAULT;
+  const email = (process.env.SEED_ADMIN_EMAIL || ADMIN_EMAIL_DEFAULT).trim().toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD || ADMIN_PASS_DEFAULT;
   const usandoDefault = !process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD;
 
