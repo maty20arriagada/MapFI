@@ -36,8 +36,10 @@
   var overlay = null;
 
   function renderIcon(nombre) {
-    if (global.Icons && global.Icons.render) {
-      return global.Icons.render(nombre, { size: 32, color: "var(--gold)" });
+    // API real de icons.js: Icon(nombre, opts) → SVG con currentColor;
+    // el color lo da el wrapper .tour-icon vía CSS.
+    if (typeof global.Icon === "function") {
+      return global.Icon(nombre, { size: 40 });
     }
     return "";
   }
@@ -96,6 +98,8 @@
       overlay = null;
       pasoActual = 0;
     }
+    // Sin esto, cada apertura sumaba un listener y las flechas avanzaban doble.
+    document.removeEventListener("keydown", manejarTeclado);
   }
 
   function bindEventos() {

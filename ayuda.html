@@ -37,6 +37,9 @@
               <li>Guarda. Tu evento aparecerá en el calendario público inmediatamente.</li>
             </ol>
             <p class="muted">También puedes hacer clic en un día del calendario para crear un evento con la fecha ya puesta.</p>
+            <button class="btn gold" id="btnVerTour" type="button">
+              <span class="icon" data-icon="rocket"></span> Ver recorrido guiado
+            </button>
           </section>
 
           <section id="importar-csv" class="card" style="margin-bottom:20px">
@@ -140,6 +143,13 @@
   <script src="js/theme-toggle.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
+  <script src="js/views/tour.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var btn = document.getElementById("btnVerTour");
+      if (btn) btn.addEventListener("click", function () { if (window.Tour) Tour.iniciar(); });
+    });
+  </script>
   <script>
     document.querySelectorAll(".faq-q").forEach(function (btn) {
       btn.addEventListener("click", function () {

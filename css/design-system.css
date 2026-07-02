@@ -356,7 +356,9 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 }
 .onboarding-banner .ob-body li {
   padding: 4px 0; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
 }
+.onboarding-banner .ob-body li svg { color: var(--brand); flex-shrink: 0; }
 .onboarding-banner .ob-actions {
   display: flex; flex-direction: column; gap: 8px;
   flex-shrink: 0; min-width: 200px;
@@ -392,7 +394,7 @@ main > .section:nth-child(3) { animation-delay: .12s; }
   display: flex; align-items: center; justify-content: center;
   border-bottom: 1px solid var(--border);
 }
-.tour-icon { display: flex; }
+.tour-icon { display: flex; color: var(--gold); }
 .tour-body { padding: 22px 24px; }
 .tour-body h2 {
   font-family: var(--font-head); color: var(--brand);
