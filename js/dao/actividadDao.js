@@ -35,7 +35,7 @@ module.exports = {
     const where = cond.length ? `WHERE ${cond.join(" AND ")}` : "";
     const { rows } = await query(
       `SELECT a.id, a.titulo, a.descripcion, a.entidad_id, e.nombre AS entidad_nombre,
-              a.fecha_inicio, a.fecha_fin, a.tipo, a.estado, a.ubicacion,
+              a.fecha_inicio, a.fecha_fin, a.tipo, a.ramo, a.estado, a.ubicacion,
               a.alcance_estimado, a.compatibilidad_pct
          FROM actividad a
          JOIN entidad e ON e.id = a.entidad_id
@@ -63,11 +63,11 @@ module.exports = {
       const { rows } = await client.query(
         `INSERT INTO actividad
            (titulo, descripcion, entidad_id, periodo_id, fecha_inicio, fecha_fin,
-            tipo, estado, ubicacion, alcance_estimado, compatibilidad_pct, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+            tipo, ramo, estado, ubicacion, alcance_estimado, compatibilidad_pct, created_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          RETURNING id`,
         [a.titulo, a.descripcion, a.entidadId, a.periodoId || null,
-         a.fechaInicio, a.fechaFin, a.tipo, a.estado || "PROPUESTA",
+         a.fechaInicio, a.fechaFin, a.tipo, a.ramo || null, a.estado || "PROPUESTA",
          a.ubicacion || null, a.alcanceEstimado || null,
          a.compatibilidadPct || null, a.createdBy || null]
       );
@@ -100,11 +100,12 @@ module.exports = {
            fecha_inicio = COALESCE($4, fecha_inicio),
            fecha_fin = COALESCE($5, fecha_fin),
            tipo = COALESCE($6, tipo),
-           estado = COALESCE($7, estado),
-           ubicacion = COALESCE($8, ubicacion),
+           ramo = COALESCE($7, ramo),
+           estado = COALESCE($8, estado),
+           ubicacion = COALESCE($9, ubicacion),
            updated_at = now()
          WHERE id = $1`,
-        [id, a.titulo, a.descripcion, a.fechaInicio, a.fechaFin, a.tipo, a.estado, a.ubicacion]
+        [id, a.titulo, a.descripcion, a.fechaInicio, a.fechaFin, a.tipo, a.ramo, a.estado, a.ubicacion]
       );
       if (Array.isArray(publico)) {
         await client.query(`DELETE FROM actividad_publico WHERE actividad_id = $1`, [id]);
@@ -131,6 +132,45 @@ module.exports = {
     return { id, estado };
   },
 
+  /** Cambia el estado de varias actividades (revision de importaciones). */
+  async cambiarEstadoBulk(ids, estado) {
+    if (!ids.length) return { actualizadas: 0 };
+    const { rowCount } = await query(
+      `UPDATE actividad SET estado = $2, updated_at = now() WHERE id = ANY($1::int[])`,
+      [ids, estado]
+    );
+    return { actualizadas: rowCount };
+  },
+
+  /** Actividades en PROPUESTA (pendientes de revision del admin). */
+  async listarPendientes() {
+    const { rows } = await query(
+      `SELECT a.id, a.titulo, a.tipo, a.ramo, a.fecha_inicio, a.fecha_fin,
+              a.ubicacion, e.sigla AS entidad_sigla, e.nombre AS entidad_nombre
+         FROM actividad a JOIN entidad e ON e.id = a.entidad_id
+        WHERE a.estado = 'PROPUESTA'
+        ORDER BY a.fecha_inicio`
+    );
+    return rows;
+  },
+
+  /**
+   * Pares de actividades CONFIRMADAS que se solapan en el tiempo y comparten
+   * al menos un segmento de publico (§16.4). Devuelve ids involucrados.
+   */
+  async conflictos() {
+    const { rows } = await query(
+      `SELECT DISTINCT a1.id, a2.id AS conflicta_con, a2.titulo AS conflicta_titulo
+         FROM actividad a1
+         JOIN actividad a2 ON a1.id <> a2.id AND a1.periodo && a2.periodo
+         JOIN actividad_publico ap1 ON ap1.actividad_id = a1.id
+         JOIN actividad_publico ap2 ON ap2.actividad_id = a2.id
+          AND ap2.carrera_id = ap1.carrera_id AND ap2.nivel = ap1.nivel
+        WHERE a1.estado = 'CONFIRMADA' AND a2.estado = 'CONFIRMADA'`
+    );
+    return rows;
+  },
+
   async eliminar(id) {
     await query(`DELETE FROM actividad WHERE id = $1`, [id]); // cascade borra actividad_publico
     return { id };
@@ -139,7 +179,7 @@ module.exports = {
   /** Todas las actividades de una entidad con campos para reputacion/reportes. */
   async listarCompleto(entidadId) {
     const { rows } = await query(
-      `SELECT id, titulo, fecha_inicio, fecha_fin, tipo, estado,
+      `SELECT id, titulo, fecha_inicio, fecha_fin, tipo, ramo, estado,
               alcance_estimado, compatibilidad_pct, created_at
          FROM actividad WHERE entidad_id = $1 ORDER BY fecha_inicio`,
       [entidadId]

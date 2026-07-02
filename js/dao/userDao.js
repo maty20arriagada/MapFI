@@ -8,8 +8,8 @@ module.exports = {
   async buscarPorEmail(email) {
     const { rows } = await query(
       `SELECT id, email, password_hash, nombre, rol, entidad_id, activo
-         FROM usuario WHERE email = $1`,
-      [email]
+         FROM usuario WHERE lower(email) = lower($1)`,
+      [String(email || "").trim()]
     );
     return rows[0] || null;
   },
@@ -39,7 +39,7 @@ module.exports = {
       `INSERT INTO usuario (email, password_hash, nombre, rol, entidad_id)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, nombre, rol, entidad_id, activo`,
-      [email, passwordHash, nombre, rol, entidadId || null]
+      [String(email).trim().toLowerCase(), passwordHash, nombre, rol, entidadId || null]
     );
     return rows[0];
   },

@@ -9,11 +9,13 @@
       <div style="width:${w}%;background:${color || "var(--brand)"};height:12px"></div></div>`;
   }
 
+  const esc = window.escapeHtml || ((s) => s);
+
   function tabla(cont, rows, cols) {
     cont.innerHTML = (!rows || !rows.length)
       ? '<p class="muted">Sin datos.</p>'
       : `<table><thead><tr>${cols.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>` +
-        `<tbody>${rows.map((r) => `<tr>${cols.map((c) => `<td>${c.get ? c.get(r) : (r[c.key] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+        `<tbody>${rows.map((r) => `<tr>${cols.map((c) => `<td>${c.get ? c.get(r) : esc(r[c.key] ?? "")}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
   }
 
   async function cargar() {
@@ -41,7 +43,7 @@
       { label: "Alcance", key: "alcance_total" },
     ]);
     tabla($("tablaReprog"), data.reprogramados, [
-      { label: "Entidad", get: (r) => entidadNombre[r.entidad_id] || ("#" + r.entidad_id) },
+      { label: "Entidad", get: (r) => esc(entidadNombre[r.entidad_id] || ("#" + r.entidad_id)) },
       { label: "Año", key: "anio" },
       { label: "Total", key: "total" },
       { label: "Reprog.", key: "reprogramados" },
@@ -55,7 +57,13 @@
     if (user && user.rol !== "ADMIN") { $("noAdmin").hidden = false; return; }
     if (!user) return;
 
-    try { await cargar(); } catch (e) { toast("No se pudieron cargar los KPIs", "error"); }
+    try { await cargar(); } catch (e) {
+      toast("No se pudieron cargar los KPIs", "error");
+      ["tablaRanking","tablaOcupacion","tablaAporte","tablaReprog"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && !el.textContent.trim()) el.innerHTML = '<p class="muted">Sin datos disponibles.</p>';
+      });
+    }
 
     const btn = $("btnRecalcular");
     if (btn) btn.onclick = async () => {

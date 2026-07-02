@@ -43,9 +43,9 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] Filtros avanzados: carrera, generación, entidad.
 - [x] `holidayService`: feriados + exclusión de findes (con tests).
 - [x] Vista pública (sin login) de solo lectura.
-- [x] Carga de `bloque_horario` (API + UI admin); import CSV pendiente.
-- [x] Calendario con **FullCalendar** (mes/semana/lista; degrada a lista sin CDN).
-- [ ] Pendiente: edición inline de actividades desde el calendario; import CSV de bloques.
+- [x] Carga de `bloque_horario` (API + UI admin).
+- [x] Calendario con **FullCalendar** (mes/semana/lista; vendoreado localmente).
+- [x] Edición inline de actividades (tabla de eventos + modal).
 
 **Criterio de aceptación:** un aportante crea una actividad con público objetivo; el público general la ve filtrada por carrera/año; los feriados aparecen marcados y los findes se ignoran en cálculos.
 
@@ -60,7 +60,7 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] `cargarContextoMatch` + tabla `matricula` (alcance real).
 - [x] `heatmapService` + `vw_saturacion_segmento` + endpoint.
 - [x] `mapa-calor.html` con escala de color, filtrable por segmento.
-- [ ] Pendiente: persistir compat/alcance al guardar la actividad; grilla heatmap tipo calendario.
+- [x] Persistencia de compatibilidad y alcance estimado al guardar actividad.
 
 **Criterio de aceptación:** al proponer una fecha sobre un examen del segmento, el sistema marca compatibilidad BAJA y sugiere 3 bloques mejores Lun–Vie; el mapa de calor refleja la saturación de un segmento específico.
 
@@ -75,9 +75,31 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] Reporte de impacto en **PDF** por entidad (pdfkit) + resumen JSON.
 - [x] Panel de KPIs (`kpis.html`): ocupación, aporte, reprogramaciones, ranking.
 - [x] Endpoints `/api/analytics/*` sobre las vistas (Looker/PowerBI/Python).
-- [ ] Pendiente: cron de cálculo de reputación + envío automático del PDF al cierre de semestre.
+- [x] Panel de revisión de importaciones CSV (admin aprueba/rechaza propuestas de CEE).
 
 **Criterio de aceptación:** al cierre de semestre cada entidad descarga su PDF de impacto; el admin ve los KPIs iniciales; un analista consulta las vistas desde una herramienta externa.
+
+---
+
+## Fases 5–8 · Cierre de MVP, Tutoriales, UX y Robustez ✅
+
+Ejecutadas en julio 2026. Detalle completo en [`PLAN_DE_IMPLEMENTACION.md`](../PLAN_DE_IMPLEMENTACION.md).
+
+- [x] Seguridad: rate limiting, sanitización XSS, cookies SameSite strict, CSRF.
+- [x] Tags CHARLA / TALLER / ENTREGA + campo `ramo` en actividad.
+- [x] Dashboard con selección multi-carrera / multi-año (producto cartesiano).
+- [x] Tabla "Mis Eventos" con edición inline (cambio de fecha, estado, eliminación).
+- [x] Conflictos visuales en calendario (badge ⚠️, borde naranja en overlaps).
+- [x] Importación CSV híbrida (CEE → PROPUESTA → admin revisa).
+- [x] Plantilla CSV descargable.
+- [x] Logo GIIA vectorizado (SVG) con filtro dark mode.
+- [x] Sistema de tutoriales: banner de bienvenida, tour guiado 5 pasos, tooltips contextuales.
+- [x] Centro de ayuda (`ayuda.html`) con FAQ y guías paso a paso.
+- [x] Correcciones UX: errores amigables, loaders, mensajes claros, links clickeables.
+- [x] JS inline extraído a módulos (`dashboard-view.js`, `calendario-view.js`).
+- [x] Tests: +18 tests nuevos (DAO + API) — total 60 tests.
+- [x] Migración 007: fechas semilla relativas al año actual.
+- [x] Documentación actualizada (README, GUIA_APORTANTE, ROADMAP, PLAN_DE_IMPLEMENTACION).
 
 ---
 
@@ -87,7 +109,9 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - Notificaciones por email (recordatorios de carga / topes detectados).
 - Función de **clonación de calendario anual** (un clic para el año siguiente).
 - App móvil (PWA) sobre la misma API.
+- Exportación .ics para Google Calendar / Apple Calendar.
 - Importación masiva de mallas horarias desde el sistema académico.
+- Namespace `window.MapFI` para todos los módulos globales.
 
 ---
 

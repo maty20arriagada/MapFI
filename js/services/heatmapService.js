@@ -36,5 +36,3 @@ function construir(filas = []) {
 }
 
 module.exports = { construir, color, UMBRAL };
-
-// TODO(F3): umbrales relativos al tamano del segmento; ponderar examenes.

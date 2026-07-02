@@ -60,6 +60,16 @@ app.use((req, res, next) => {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+  res.setHeader("Content-Security-Policy",
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline'; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+    "font-src 'self' https://fonts.gstatic.com; " +
+    "img-src 'self' data:; " +
+    "connect-src 'self'; " +
+    "frame-ancestors 'self'; " +
+    "form-action 'self'"
+  );
   if (isProduction) {
     res.setHeader("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
   }
@@ -73,7 +83,7 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict", // la app es same-origin completa; strict corta CSRF
     secure: isProduction,
     maxAge: 1000 * 60 * 60 * 8, // 8 horas
   },
@@ -87,6 +97,57 @@ if (HAS_DB && process.env.NODE_ENV !== "test") {
   });
 }
 app.use(session(sessionConfig));
+
+// ── Anti-CSRF: validar Origin/Referer en metodos que mutan ──────────────────
+// Complementa sameSite=strict. Si el navegador envia Origin (o Referer) y no
+// coincide con el Host propio, se rechaza. Peticiones sin ambos (curl, tests)
+// pasan: la proteccion CSRF aplica a navegadores, que siempre los envian.
+app.use((req, res, next) => {
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
+  const origin = req.headers.origin || req.headers.referer;
+  if (!origin) return next();
+  try {
+    if (new URL(origin).host !== req.headers.host) {
+      return res.status(403).json({ error: "Origen no permitido" });
+    }
+  } catch (_) {
+    return res.status(403).json({ error: "Origen no permitido" });
+  }
+  next();
+});
+
+// ── Rate limiting del login (inline, sin dependencias — patron helmet-lite) ─
+// Maximo 5 intentos fallidos por IP cada 15 minutos. En memoria del proceso:
+// suficiente para una instancia; si algun dia hay varias, mover a Redis/BD.
+const LOGIN_MAX_INTENTOS = 5;
+const LOGIN_VENTANA_MS = 15 * 60 * 1000;
+const loginIntentos = new Map(); // ip -> { count, expira }
+function loginLimiter(req, res, next) {
+  const ip = req.ip || "?";
+  const ahora = Date.now();
+  const reg = loginIntentos.get(ip);
+  if (reg && reg.expira <= ahora) loginIntentos.delete(ip);
+  const activo = loginIntentos.get(ip);
+  if (activo && activo.count >= LOGIN_MAX_INTENTOS) {
+    const min = Math.ceil((activo.expira - ahora) / 60000);
+    return res.status(429).json({ error: `Demasiados intentos. Prueba de nuevo en ${min} min.` });
+  }
+  next();
+}
+function loginFallido(req) {
+  const ip = req.ip || "?";
+  const reg = loginIntentos.get(ip) || { count: 0, expira: Date.now() + LOGIN_VENTANA_MS };
+  reg.count++;
+  loginIntentos.set(ip, reg);
+}
+function loginExitoso(req) {
+  loginIntentos.delete(req.ip || "?");
+}
+// Limpieza periodica para que el Map no crezca indefinidamente.
+setInterval(() => {
+  const ahora = Date.now();
+  for (const [ip, reg] of loginIntentos) if (reg.expira <= ahora) loginIntentos.delete(ip);
+}, 10 * 60 * 1000).unref();
 
 // ── Middlewares de autorizacion ─────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -111,15 +172,16 @@ const num = (v) => (v !== undefined && v !== "" ? parseInt(v, 10) : undefined);
 app.get("/api/health", (req, res) => res.json({ ok: true, service: "mapfi" }));
 
 // ── Autenticacion ────────────────────────────────────────────────────────────
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "Faltan credenciales" });
   try {
     const u = await userDao.buscarPorEmail(email);
-    if (!u || !u.activo) return res.status(401).json({ error: "Credenciales invalidas" });
+    if (!u || !u.activo) { loginFallido(req); return res.status(401).json({ error: "Correo o contraseña incorrectos" }); }
     const ok = await bcrypt.compare(password, u.password_hash);
-    if (!ok) return res.status(401).json({ error: "Credenciales invalidas" });
+    if (!ok) { loginFallido(req); return res.status(401).json({ error: "Correo o contraseña incorrectos" }); }
 
+    loginExitoso(req);
     req.session.user = { id: u.id, email: u.email, nombre: u.nombre, rol: u.rol, entidadId: u.entidad_id };
     res.json({ ok: true, user: req.session.user });
   } catch (e) {
@@ -190,23 +252,33 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
   }
 });
 
-// Carga masiva de actividades (import CSV de evaluaciones) — solo ADMIN.
-app.post("/api/actividades/bulk", requireRole("ADMIN"), async (req, res) => {
+// Carga masiva de actividades (import CSV) — flujo HIBRIDO (§16.5):
+//   · ADMIN     → las actividades entran CONFIRMADAS directo.
+//   · APORTANTE → entran como PROPUESTA a nombre de SU entidad, y el admin
+//                 las revisa en "Pendientes de revision" (aprueba/rechaza).
+app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
   try {
     const lista = (req.body && req.body.actividades) || [];
     if (!Array.isArray(lista) || !lista.length) {
       return res.status(400).json({ error: "No se recibieron actividades" });
+    }
+    const esAdmin = req.session.user.rol === "ADMIN";
+    if (!esAdmin && !req.session.user.entidadId) {
+      return res.status(403).json({ error: "Tu cuenta no tiene entidad asociada" });
     }
     let creadas = 0;
     const errores = [];
     for (let i = 0; i < lista.length; i++) {
       const a = lista[i] || {};
       try {
-        if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !a.entidadId) {
+        // Aportante: no puede elegir entidad ni estado — se fuerzan.
+        const entidadId = esAdmin ? a.entidadId : req.session.user.entidadId;
+        const estado = esAdmin ? (a.estado || "CONFIRMADA") : "PROPUESTA";
+        if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !entidadId) {
           throw new Error("Faltan campos obligatorios");
         }
         await actividadDao.crear(
-          { ...a, estado: a.estado || "CONFIRMADA", createdBy: req.session.user.id },
+          { ...a, entidadId, estado, createdBy: req.session.user.id },
           a.publico || []
         );
         creadas++;
@@ -214,10 +286,46 @@ app.post("/api/actividades/bulk", requireRole("ADMIN"), async (req, res) => {
         errores.push({ fila: a.fila || i + 1, error: e.message });
       }
     }
-    res.json({ creadas, errores });
+    res.json({ creadas, errores, estado: esAdmin ? "CONFIRMADA" : "PROPUESTA" });
   } catch (e) {
     res.status(500).json({ error: "Error interno" });
   }
+});
+
+// Pendientes de revision (importaciones de aportantes) — solo ADMIN.
+app.get("/api/admin/pendientes", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await actividadDao.listarPendientes()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Aprobar / rechazar en bloque. APROBAR→CONFIRMADA · RECHAZAR→SUSPENDIDA.
+app.post("/api/admin/actividades/revisar", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const { ids, accion } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length || !["APROBAR", "RECHAZAR"].includes(accion)) {
+      return res.status(400).json({ error: "Se requiere 'ids' y accion APROBAR|RECHAZAR" });
+    }
+    const estado = accion === "APROBAR" ? "CONFIRMADA" : "SUSPENDIDA";
+    res.json(await actividadDao.cambiarEstadoBulk(ids.map(Number).filter(Boolean), estado));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Conflictos entre actividades confirmadas (choques de horario+publico, §16.4).
+app.get("/api/actividades/conflictos", async (req, res) => {
+  try { res.json(await actividadDao.conflictos()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Plantilla CSV descargable (§16.6) — publica, una sola fuente de verdad.
+app.get("/api/plantilla-csv", (req, res) => {
+  const csv =
+    "titulo,ramo,tipo,inicio,fin,carreras,niveles,ubicacion\n" +
+    '"Certamen 1","Cálculo I",EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,"Aula Magna"\n' +
+    '"Charla de titulación","",CHARLA,2026-05-06 12:00,,ICI,4|5,"Auditorio"\n' +
+    '"Entrega informe","Física I",ENTREGA,2026-06-10 23:59,,*,1,\n';
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="plantilla-mapfi.csv"');
+  res.send("﻿" + csv); // BOM para que Excel respete UTF-8
 });
 
 // Helper: el usuario es dueno (su entidad) de la actividad, o es ADMIN.

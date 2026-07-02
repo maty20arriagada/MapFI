@@ -13,7 +13,13 @@ Guía para levantar MapFI en local, en el servidor de la facultad (Docker) o en 
 
 ## 2. Despliegue con Docker (recomendado)
 
-Es el camino pensado para el **servidor de la facultad**: un solo comando.
+> Para el **servidor de la facultad**, sigue la guía dedicada:
+> **[DESPLIEGUE_SERVIDOR.md](DESPLIEGUE_SERVIDOR.md)** (incluye HTTPS, backups y el
+> detalle de por qué la BD queda privada).
+
+Es el camino pensado para el servidor: un solo comando. **La base de datos no
+publica ningún puerto** — solo el backend la alcanza por la red interna de Docker;
+al host solo se expone el puerto de la app.
 
 ```bash
 # 1. Clonar y entrar
@@ -112,11 +118,11 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ## 7. Respaldos (producción)
 
 ```bash
-# Backup
-docker exec -t mapfi-db-1 pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup_$(date +%F).sql
+# Backup (usa el servicio de compose, sin depender del nombre del contenedor)
+docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" > backup_$(date +%F).sql
 
 # Restore
-cat backup_2026-06-08.sql | docker exec -i mapfi-db-1 psql -U $POSTGRES_USER $POSTGRES_DB
+cat backup_2026-06-08.sql | docker compose exec -T db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
 ```
 
 > Programar el backup como tarea diaria en el servidor de la facultad (cron).

@@ -16,28 +16,47 @@
     <section class="section auth-only" hidden>
       <div class="row" style="justify-content:space-between">
         <h1><span class="icon title-icon" data-icon="layout-dashboard"></span> Mi panel</h1>
-        <button class="btn" id="btnNueva"><span class="icon" data-icon="clipboard-list"></span> Nuevo evento</button>
+        <div class="row">
+          <button class="btn secondary" id="btnImportarCsv"><span class="icon" data-icon="file-text"></span> Importar CSV</button>
+          <button class="btn" id="btnNueva"><span class="icon" data-icon="clipboard-list"></span> Nuevo evento</button>
+        </div>
       </div>
 
+      <!-- Nuevo evento (multi-carrera / multi-año) -->
       <div class="card" id="formCard" hidden style="margin-top:16px">
         <h2>Nuevo evento</h2>
-        <p class="muted">Tip: haz clic en un día del calendario para crearlo con la fecha ya puesta. Solo el título y la fecha son obligatorios.</p>
+        <p class="muted">Tip: haz clic en un día del calendario para fijar la fecha. Un evento puede aplicar a varias carreras y años a la vez.</p>
         <form id="actForm">
           <div class="grid cols-2">
             <div><label>Título <span class="req">*</span></label><input name="titulo" required autocomplete="off" /></div>
             <div><label>Tipo <span class="req">*</span></label>
               <select name="tipo" required>
                 <option value="EVENTO">Evento</option>
+                <option value="CHARLA">Charla</option>
+                <option value="TALLER">Taller</option>
+                <option value="ENTREGA">Entrega</option>
                 <option value="EXTRAPROGRAMATICA">Extraprogramática</option>
               </select>
             </div>
             <div><label>Inicio <span class="req">*</span></label><input type="datetime-local" name="fechaInicio" required /></div>
             <div><label>Fin <span class="req">*</span></label><input type="datetime-local" name="fechaFin" required /></div>
-            <div><label>Carrera (público) <span class="req">*</span></label><select name="carreraId" id="aCarrera" required></select></div>
-            <div><label>Año (público) <span class="req">*</span></label><select name="nivel" id="aNivel" required></select></div>
           </div>
-          <button type="button" class="link-btn" id="toggleDetalles">+ Más detalles (lugar, descripción)</button>
+
+          <label style="margin-top:8px">Público objetivo <span class="req">*</span></label>
+          <div class="row" style="gap:24px; align-items:flex-start">
+            <div style="flex:2; min-width:240px">
+              <div class="muted" style="font-size:.8rem;margin-bottom:4px">Carreras · <button type="button" class="link-btn" id="carrTodas">todas / ninguna</button></div>
+              <div id="aCarreras" class="checklist"></div>
+            </div>
+            <div style="flex:1; min-width:150px">
+              <div class="muted" style="font-size:.8rem;margin-bottom:4px">Años · <button type="button" class="link-btn" id="nivTodos">todos / ninguno</button></div>
+              <div id="aNiveles" class="checklist"></div>
+            </div>
+          </div>
+
+          <button type="button" class="link-btn" id="toggleDetalles" style="margin-top:10px">+ Más detalles (ramo, lugar, descripción)</button>
           <div id="masDetalles" hidden style="margin-top:10px">
+            <label>Ramo (si aplica)</label><input name="ramo" placeholder="Cálculo I" />
             <label>Ubicación</label><input name="ubicacion" />
             <label>Descripción</label><textarea name="descripcion" rows="2"></textarea>
           </div>
@@ -50,6 +69,18 @@
         </form>
       </div>
 
+      <!-- Importar CSV (aportante → queda en PROPUESTA para revisión) -->
+      <div class="card" id="csvCard" hidden style="margin-top:16px">
+        <h2><span class="icon title-icon" data-icon="file-text"></span> Importar mis fechas (CSV)</h2>
+        <p class="muted">Sube el semestre completo de una vez. Tus fechas quedarán como <strong>propuestas</strong> hasta que el administrador las apruebe.
+          <a class="link-btn" href="/api/plantilla-csv">Descargar plantilla</a>
+        </p>
+        <input type="file" id="csvFile" accept=".csv,text/csv" />
+        <textarea id="csvText" rows="4" placeholder="…o pega aquí el contenido del CSV"></textarea>
+        <button class="btn" id="btnImportar"><span class="icon" data-icon="save"></span> Importar</button>
+        <div id="importResult" style="margin-top:12px"></div>
+      </div>
+
       <div class="grid cols-3" style="margin:16px 0">
         <div class="card"><h2>Mis actividades</h2><p class="muted" id="kpiTotal">—</p></div>
         <div class="card"><h2>Confiabilidad</h2><p class="muted"><span id="kpiConf">—</span></p></div>
@@ -60,138 +91,32 @@
         <button class="btn secondary" id="btnReporte"><span class="icon" data-icon="download"></span> Descargar reporte de impacto (PDF)</button>
       </div>
 
-      <h2>Tus actividades</h2>
+      <h2>Mis eventos</h2>
+      <div id="tablaEventos"><div class="placeholder">Cargando…</div></div>
+
+      <h2 style="margin-top:24px">Vista de calendario</h2>
       <div id="misActividades"><div class="placeholder">Cargando…</div></div>
     </section>
   </main>
 
   <script src="js/icons.js"></script>
+  <script src="js/sanitize.js"></script>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales-all.global.min.js"></script>
+  <script src="js/csv-utils.js"></script>
+  <script src="js/views/event-table.js"></script>
+  <script src="js/views/onboarding.js"></script>
+  <script src="js/views/tour.js"></script>
+  <script src="js/views/tooltips.js"></script>
+  <script src="js/views/dashboard-view.js"></script>
+  <script src="js/vendor/fullcalendar/index.global.min.js"></script>
+  <script src="js/vendor/fullcalendar/locales-all.global.min.js"></script>
   <script src="js/calendar-view.js"></script>
   <script src="js/match-calculator.js"></script>
-  <script>
-    const LS_CTX = "mapfi-evento-ctx";
-    function toLocalInput(d) {
-      const p = (n) => String(n).padStart(2, "0");
-      return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
-    }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      let user = null;
-      try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
-      if (!user) return;
-
-      const cat = await Filters.cargar();
-      const actForm = document.getElementById("actForm");
-      const formCard = document.getElementById("formCard");
-      Filters.poblarSelect(document.getElementById("aCarrera"), cat.carreras, "id", "nombre");
-      Filters.poblarSelect(document.getElementById("aNivel"), cat.generaciones, "nivel", "etiqueta");
-
-      // ── Defaults inteligentes de público: último contexto o carrera del centro ──
-      const ctx = JSON.parse(localStorage.getItem(LS_CTX) || "{}");
-      const miEntidad = (cat.entidades || []).find((e) => e.id === user.entidadId);
-      const carreraDef = ctx.carreraId || (miEntidad && miEntidad.carrera_id) || "";
-      if (carreraDef) actForm.carreraId.value = carreraDef;
-      if (ctx.nivel) actForm.nivel.value = ctx.nivel;
-      if (ctx.ubicacion) actForm.ubicacion.value = ctx.ubicacion;
-
-      // ── Fin = Inicio + 2h automático ──
-      actForm.fechaInicio.addEventListener("change", () => {
-        const fi = actForm.fechaInicio.value, ff = actForm.fechaFin;
-        if (fi && (!ff.value || ff.value <= fi)) {
-          const d = new Date(fi); d.setHours(d.getHours() + 2); ff.value = toLocalInput(d);
-        }
-      });
-
-      // ── Más detalles (colapsable) ──
-      document.getElementById("toggleDetalles").onclick = () => {
-        const m = document.getElementById("masDetalles"); m.hidden = !m.hidden;
-      };
-
-      // ── Abrir formulario (opcionalmente con fecha pre-rellenada) ──
-      function abrirForm(fecha) {
-        formCard.hidden = false;
-        if (fecha) {
-          actForm.fechaInicio.value = toLocalInput(fecha);
-          const d = new Date(fecha); d.setHours(d.getHours() + 2);
-          actForm.fechaFin.value = toLocalInput(d);
-        }
-        formCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        actForm.titulo.focus();
-      }
-      document.getElementById("btnNueva").onclick = () => (formCard.hidden ? abrirForm() : (formCard.hidden = true));
-      document.getElementById("btnCancelar").onclick = () => (formCard.hidden = true);
-
-      document.getElementById("btnPreview").onclick = async () => {
-        const d = Object.fromEntries(new FormData(actForm).entries());
-        if (!d.fechaInicio || !d.carreraId) return toast("Completa fecha y carrera", "error");
-        try {
-          const r = await api.post("/api/match/evaluar", {
-            inicio: d.fechaInicio, fin: d.fechaFin || d.fechaInicio,
-            publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
-          });
-          MatchCalculator.render(document.getElementById("preview"), r);
-        } catch (err) { toast(err.message, "error"); }
-      };
-
-      // ── Guardar: deja el form abierto para cargar varios seguidos ──
-      actForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const d = Object.fromEntries(new FormData(actForm).entries());
-        try {
-          await api.post("/api/actividades", {
-            titulo: d.titulo, descripcion: d.descripcion, tipo: d.tipo, ubicacion: d.ubicacion,
-            fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
-            publico: [{ carreraId: +d.carreraId, nivel: +d.nivel }],
-          });
-          localStorage.setItem(LS_CTX, JSON.stringify({ carreraId: d.carreraId, nivel: d.nivel, ubicacion: d.ubicacion }));
-          toast("Evento creado · listo para el siguiente", "success");
-          // Reset parcial: conserva tipo/carrera/año/lugar para el próximo.
-          actForm.titulo.value = "";
-          actForm.fechaInicio.value = "";
-          actForm.fechaFin.value = "";
-          actForm.descripcion.value = "";
-          document.getElementById("preview").innerHTML = "";
-          actForm.titulo.focus();
-          cargarLista();
-        } catch (err) { toast(err.message, "error"); }
-      };
-
-      document.getElementById("btnReporte").onclick = () => {
-        if (user.entidadId) window.open("/api/reports/" + user.entidadId + "/pdf", "_blank");
-        else toast("Solo las entidades aportantes tienen reporte", "error");
-      };
-
-      async function cargarLista() {
-        if (user.entidadId) {
-          CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId }, { onPick: abrirForm });
-          try {
-            const acts = await api.get("/api/actividades?entidadId=" + user.entidadId);
-            document.getElementById("kpiTotal").textContent = acts.length + " actividad(es)";
-          } catch (_) {}
-          try {
-            const resumen = await api.get("/api/entidades/" + user.entidadId + "/resumen");
-            document.getElementById("kpiConf").textContent = resumen.confiabilidad_pct + "%";
-            document.getElementById("kpiRep").textContent = resumen.reputacion + " pts";
-            document.getElementById("kpiSello").innerHTML = resumen.sello_coordinacion
-              ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + " Sello</span>" : "";
-          } catch (_) {}
-        } else {
-          document.getElementById("misActividades").innerHTML =
-            '<div class="placeholder">Eres ADMIN. Gestiona desde <a href="admin.html">Admin</a> y revisa <a href="kpis.html">KPIs</a>.</div>';
-          document.getElementById("kpiConf").textContent = "—";
-          document.getElementById("kpiRep").textContent = "—";
-        }
-      }
-      cargarLista();
-    });
-  </script>
+  <script>DashboardView.init();</script>
 </body>
 </html>

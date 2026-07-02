@@ -14,5 +14,8 @@ RUN npm install --omit=dev
 # Copiar el resto del codigo fuente
 COPY . .
 
+# Ejecutar como usuario no-root por seguridad
+USER node
+
 # Comando de arranque (aplica migraciones y levanta el server)
 CMD ["sh", "run.sh"]

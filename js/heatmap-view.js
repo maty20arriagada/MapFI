@@ -2,15 +2,13 @@
 (function (global) {
   "use strict";
 
-  // TODO(F3): grilla tipo calendario coloreada por densidad; leyenda de escala.
   async function montar(el, filtros) {
     const qs = new URLSearchParams(filtros || {}).toString();
     try {
       const celdas = await api.get("/api/heatmap" + (qs ? "?" + qs : ""));
       if (!celdas.length) {
         el.innerHTML =
-          '<div class="placeholder">Sin datos de saturacion para el filtro.<br>' +
-          "TODO(F3): grilla coloreada (verde/amarillo/rojo).</div>";
+          '<div class="placeholder">Sin datos de saturación para este filtro.</div>';
         return;
       }
       el.innerHTML = celdas

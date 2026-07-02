@@ -46,6 +46,7 @@
   </main>
 
   <script src="js/icons.js"></script>
+  <script src="js/sanitize.js"></script>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>
@@ -65,8 +66,8 @@
         try {
           const cat = await api.get("/api/catalogos");
           const e = (cat.entidades || []).find((x) => x.id === user.entidadId);
-          if (e) document.getElementById("ucEntidad").textContent = (e.sigla ? e.sigla + " — " : "") + e.nombre;
-        } catch (_) {}
+          document.getElementById("ucEntidad").textContent = e ? (e.sigla ? e.sigla + " — " : "") + e.nombre : "—";
+        } catch (_) { document.getElementById("ucEntidad").textContent = "—"; }
       }
 
       document.getElementById("formPass").addEventListener("submit", async (ev) => {

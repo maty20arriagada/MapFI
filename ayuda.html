@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Centro de Ayuda · MapFI</title>
+  <link rel="icon" href="img/udec_FI.svg" />
+  <link rel="stylesheet" href="css/design-system.css" />
+</head>
+<body>
+  <main class="container">
+    <section class="section">
+      <div class="page-head">
+        <h1><span class="icon title-icon" data-icon="help-circle"></span> Centro de Ayuda</h1>
+        <p class="subtitle">Guías, preguntas frecuentes y recursos para usar MapFI.</p>
+      </div>
+
+      <div class="help-sidebar">
+        <aside class="help-nav">
+          <a href="#primeros-pasos" class="active">Primeros pasos</a>
+          <a href="#importar-csv">Cómo importar desde Excel</a>
+          <a href="#entender-match">Cómo interpretar el Match</a>
+          <a href="#faq">Preguntas frecuentes</a>
+          <a href="#contacto">Contacto</a>
+        </aside>
+
+        <div class="help-content">
+          <section id="primeros-pasos" class="card" style="margin-bottom:20px">
+            <h2><span class="icon title-icon" data-icon="rocket"></span> Primeros pasos</h2>
+            <p>Si eres parte de un Centro de Estudiantes, Vinculación con el Medio o Gearbox, MapFI te permite publicar y gestionar las actividades de tu organización en un calendario centralizado para toda la Facultad de Ingeniería.</p>
+            <ol style="line-height:1.8">
+              <li><strong>Inicia sesión</strong> con las credenciales que te entregó el administrador.</li>
+              <li>Ve a <strong>Mi panel</strong> desde la barra de navegación superior.</li>
+              <li>Haz clic en <strong>Nuevo evento</strong> para crear tu primera actividad.</li>
+              <li>Completa título, tipo y fecha. Selecciona las <strong>carreras y años</strong> del público objetivo.</li>
+              <li>Opcionalmente haz clic en <strong>Evaluar compatibilidad</strong> para verificar que tu fecha no choque con otros eventos, exámenes o feriados.</li>
+              <li>Guarda. Tu evento aparecerá en el calendario público inmediatamente.</li>
+            </ol>
+            <p class="muted">También puedes hacer clic en un día del calendario para crear un evento con la fecha ya puesta.</p>
+          </section>
+
+          <section id="importar-csv" class="card" style="margin-bottom:20px">
+            <h2><span class="icon title-icon" data-icon="file-text"></span> Cómo importar desde Excel</h2>
+            <p>Si ya tienes todas las fechas del semestre en una planilla, puedes subirlas de una sola vez sin digitar una por una.</p>
+            <ol style="line-height:1.8">
+              <li>En <strong>Mi panel</strong> o en el <strong>Calendario académico</strong>, busca la sección <em>"Importar evaluaciones (CSV)"</em>.</li>
+              <li>Haz clic en <strong>Descargar plantilla</strong>. Obtendrás un archivo CSV con las columnas exactas que necesitas.</li>
+              <li>Abre la plantilla en Excel, Google Sheets o cualquier editor. Completa una fila por cada evaluación:</li>
+            </ol>
+            <div class="help-box">
+              <strong>Columnas de la plantilla:</strong>
+              <table style="margin-top:6px">
+                <tr><th>Columna</th><th>Descripción</th><th>Ejemplo</th></tr>
+                <tr><td><code>titulo</code></td><td>Nombre de la evaluación</td><td>Certamen 1</td></tr>
+                <tr><td><code>ramo</code></td><td>Nombre del ramo</td><td>Cálculo I</td></tr>
+                <tr><td><code>tipo</code></td><td>EXAMEN, CHARLA, TALLER, ENTREGA o EVENTO</td><td>EXAMEN</td></tr>
+                <tr><td><code>inicio</code></td><td>Fecha y hora AAAA-MM-DD HH:MM</td><td>2026-04-15 18:30</td></tr>
+                <tr><td><code>fin</code></td><td>Fecha y hora de término (opcional)</td><td>2026-04-15 20:00</td></tr>
+                <tr><td><code>carreras</code></td><td>Códigos separados por | o * para todas</td><td>ICI|ICINF|ICM</td></tr>
+                <tr><td><code>niveles</code></td><td>Años separados por | o * para todos</td><td>1|2</td></tr>
+                <tr><td><code>ubicacion</code></td><td>Lugar (opcional)</td><td>Aula Magna</td></tr>
+              </table>
+            </div>
+            <ol start="4" style="line-height:1.8">
+              <li>Guarda el archivo como CSV (UTF-8) y súbelo o pega su contenido en el área de texto.</li>
+              <li>Haz clic en <strong>Importar</strong>. Tus fechas quedarán como <em>propuestas</em>.</li>
+              <li>El administrador revisará y confirmará tus fechas. Una vez aprobadas, aparecerán en el calendario público.</li>
+            </ol>
+          </section>
+
+          <section id="entender-match" class="card" style="margin-bottom:20px">
+            <h2><span class="icon title-icon" data-icon="target"></span> Cómo interpretar el Match</h2>
+            <p>El calculador de compatibilidad te ayuda a elegir la mejor fecha para tu evento. Esto es lo que significa cada resultado:</p>
+            <div class="grid cols-3" style="margin:16px 0">
+              <div class="card"><span class="badge alto">ALTO (75–100%)</span><p class="muted" style="margin-top:8px">Fecha libre de conflictos. Sin choques con exámenes, clases ni feriados para el público seleccionado.</p></div>
+              <div class="card"><span class="badge medio">MEDIO (45–74%)</span><p class="muted" style="margin-top:8px">Existen algunos conflictos leves (clases, saturación en la semana). Evalúa si puedes mover la fecha.</p></div>
+              <div class="card"><span class="badge bajo">BAJO (0–44%)</span><p class="muted" style="margin-top:8px">Choque importante: examen, feriado o bloque protegido. MapFI te sugerirá 3 horarios alternativos.</p></div>
+            </div>
+            <p><strong>Alcance estimado:</strong> Es la cantidad proyectada de estudiantes que podrían asistir sin conflictos de horario. Depende de la matrícula de cada carrera y año.</p>
+          </section>
+
+          <section id="faq" class="card" style="margin-bottom:20px">
+            <h2><span class="icon title-icon" data-icon="message-circle"></span> Preguntas frecuentes</h2>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Quién puede crear eventos? <span class="chevron">▾</span></button>
+              <div class="faq-a">Los Centros de Estudiantes (14 carreras), Vinculación con el Medio y Gearbox. Cada entidad tiene uno o más usuarios con rol <strong>Aportante</strong>. El administrador general puede crear eventos institucionales y fechas académicas.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Cómo cambio mi contraseña? <span class="chevron">▾</span></button>
+              <div class="faq-a">Ve a <strong>Mi cuenta</strong> (ícono en la barra superior). Allí puedes cambiar tu contraseña. Debes ingresar tu contraseña actual y la nueva (mínimo 6 caracteres).</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Qué significa "compatibilidad baja"? <span class="chevron">▾</span></button>
+              <div class="faq-a">Significa que la fecha propuesta choca con exámenes, feriados o bloques protegidos del público objetivo. Revisa la sección <a href="#entender-match">Cómo interpretar el Match</a> para más detalles. MapFI te sugerirá automáticamente los 3 mejores horarios alternativos de esa semana.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Puedo editar un evento ya publicado? <span class="chevron">▾</span></button>
+              <div class="faq-a">Sí. En <strong>Mi panel</strong>, busca el evento en la tabla <em>"Tus actividades"</em> y haz clic en el ícono de edición ✏️. Puedes cambiar fecha, tipo, estado y público objetivo. Los cambios se reflejan de inmediato en el calendario público.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Cómo agrego un evento para varias carreras a la vez? <span class="chevron">▾</span></button>
+              <div class="faq-a">Al crear un evento, en la sección <strong>Carreras</strong> marca todas las casillas que correspondan. Por ejemplo, si Cálculo I lo dictan para Industrial, Civil e Informática, marca las tres. El evento se crea una sola vez y aparece en los calendarios de las tres carreras.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Mis eventos se ven de inmediato en el calendario público? <span class="chevron">▾</span></button>
+              <div class="faq-a">Si creas un evento manualmente desde <strong>Mi panel</strong>, sí. Si importas por CSV, tus fechas quedan como <strong>propuestas</strong> hasta que el administrador las revise y confirme. Esto asegura calidad y evita duplicados.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Qué es el mapa de calor? <span class="chevron">▾</span></button>
+              <div class="faq-a">Es una vista alternativa al calendario que muestra la densidad de eventos por día mediante colores: <span style="color:var(--verde)">verde</span> (pocos eventos), <span style="color:var(--amarillo)">amarillo</span> (cantidad moderada) y <span style="color:var(--rojo)">rojo</span> (alta saturación). Te ayuda a identificar días recargados antes de agendar.</div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-q" aria-expanded="false">¿Cómo funciona la gamificación y los sellos? <span class="chevron">▾</span></button>
+              <div class="faq-a">Las entidades ganan reputación cuando sus eventos se realizan con éxito y se registran con anticipación. El <strong>Sello de Coordinación Eficiente</strong> se otorga a los centros que mantienen baja tasa de reprogramaciones y usan activamente el calculador de Match. El ranking es visible públicamente.</div>
+            </div>
+          </section>
+
+          <section id="contacto" class="card">
+            <h2><span class="icon title-icon" data-icon="mail"></span> Contacto</h2>
+            <p>¿No encontraste lo que buscabas? Escribe al administrador de la plataforma.</p>
+            <p><a href="mailto:admin@mapfi.cl" class="btn secondary" style="display:inline-flex"><span class="icon" data-icon="mail"></span> admin@mapfi.cl</a></p>
+            <p class="muted" style="margin-top:8px">MapFI es desarrollado por GIIA — Grupo de Investigación en Ingeniería Aplicada, Facultad de Ingeniería, Universidad de Concepción.</p>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/icons.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/ui-toast.js"></script>
+  <script src="js/theme-toggle.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/app-boot.js"></script>
+  <script>
+    document.querySelectorAll(".faq-q").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var expanded = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", !expanded);
+      });
+    });
+
+    (function () {
+      var links = document.querySelectorAll(".help-nav a");
+      links.forEach(function (a) {
+        a.addEventListener("click", function () {
+          links.forEach(function (l) { l.classList.remove("active"); });
+          a.classList.add("active");
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

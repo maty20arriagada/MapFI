@@ -18,6 +18,7 @@
     { href: "dashboard.html", icon: "layout-dashboard", label: "Mi panel", cls: "auth-only" },
     { href: "kpis.html", icon: "pie-chart", label: "KPIs", cls: "admin-only" },
     { href: "admin.html", icon: "settings", label: "Admin", cls: "admin-only" },
+    { href: "ayuda.html", icon: "help-circle", label: "Ayuda" },
     { href: "login.html", icon: "key", label: "Ingresar", cls: "guest-only" },
   ];
 
@@ -59,11 +60,11 @@
             <span class="muted">Facultad de Ingeniería · Universidad de Concepción</span>
           </div>
           <div class="credits">
-            <span>Creado y desarrollado por</span>
-            <img src="img/GIIA.png" alt="GIIA - Grupo de Investigación en Ingeniería" class="giia-logo" />
+            <span>Impulsado por CEEIND 2026 · Plan Estratégico 2030<br /><span class="muted">Desarrollado en colaboración con</span></span>
+            <img src="img/GIIA.svg" alt="GIIA - Grupo de Interés en Inteligencia Artificial UdeC" class="giia-logo" />
           </div>
         </div>
-        <div class="foot-bottom">© <span id="footYear"></span> GIIA — Creado por GIIA para la Facultad de Ingeniería UdeC</div>
+        <div class="foot-bottom">© <span id="footYear"></span> CEEIND &amp; GIIA · Facultad de Ingeniería · Universidad de Concepción</div>
       </footer>`);
   }
 

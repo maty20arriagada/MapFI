@@ -1,0 +1,14 @@
+# Override SOLO para desarrollo en el host.
+# Publica el puerto de Postgres al host para poder correr `npm run dev`
+# (en tu máquina) contra la BD dockerizada.
+#
+#   NO usar en el servidor. En producción se usa solo docker-compose.yaml,
+#   donde la BD queda en la red interna y sin puerto público.
+#
+# Uso:
+#   docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d db
+#   (ya cableado en `npm run docker:db`)
+services:
+  db:
+    ports:
+      - ${POSTGRES_PORT:-5433}:5432

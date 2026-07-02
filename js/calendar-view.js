@@ -8,6 +8,9 @@
     HITO_ACADEMICO: "#7C3AED",
     EXAMEN: "#DC2626",
     EXTRAPROGRAMATICA: "#16A34A",
+    CHARLA: "#F59E0B",
+    TALLER: "#10B981",
+    ENTREGA: "#8B5CF6",
   };
 
   // opts.onPick(fechaInicio: Date) — se llama al hacer clic en un día/hora,
@@ -23,29 +26,44 @@
       return;
     }
 
+    // Choques confirmados (mismo publico + solapamiento temporal, §16.4).
+    // Mapa id → titulo del evento con el que choca, para señalizarlo.
+    let conflictos = new Map();
+    try {
+      (await api.get("/api/actividades/conflictos")).forEach((c) => {
+        if (!conflictos.has(c.id)) conflictos.set(c.id, c.conflicta_titulo);
+      });
+    } catch (_) { /* sin señalizacion si falla; el calendario sigue */ }
+
     if (global.FullCalendar && global.FullCalendar.Calendar) {
-      renderCalendario(el, acts, opts);
+      renderCalendario(el, acts, opts, conflictos);
     } else {
       renderLista(el, acts);
     }
   }
 
-  function renderCalendario(el, acts, opts) {
+  function renderCalendario(el, acts, opts, conflictos) {
+    conflictos = conflictos || new Map();
     // Destruir instancia previa (al cambiar filtros) para no duplicar.
     if (el._fc) { try { el._fc.destroy(); } catch (_) {} el._fc = null; }
     el.innerHTML = "";
 
-    const events = acts.map((a) => ({
-      id: String(a.id),
-      title: a.titulo,
-      start: a.fecha_inicio,
-      end: a.fecha_fin,
-      backgroundColor: COLOR_TIPO[a.tipo] || "#64748B",
-      borderColor: COLOR_TIPO[a.tipo] || "#64748B",
-      extendedProps: {
-        entidad: a.entidad_nombre, tipo: a.tipo, estado: a.estado, ubicacion: a.ubicacion,
-      },
-    }));
+    const events = acts.map((a) => {
+      const choque = conflictos.get(a.id);
+      return {
+        id: String(a.id),
+        title: a.titulo,
+        start: a.fecha_inicio,
+        end: a.fecha_fin,
+        backgroundColor: COLOR_TIPO[a.tipo] || "#64748B",
+        borderColor: choque ? "#F59E0B" : (COLOR_TIPO[a.tipo] || "#64748B"),
+        classNames: choque ? ["evento-conflicto"] : [],
+        extendedProps: {
+          entidad: a.entidad_nombre, tipo: a.tipo, estado: a.estado,
+          ubicacion: a.ubicacion, choque: choque || null,
+        },
+      };
+    });
 
     const cal = new global.FullCalendar.Calendar(el, {
       initialView: "dayGridMonth",
@@ -55,11 +73,21 @@
       weekends: false, // jornada universitaria Lun-Vie (§4)
       headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,listWeek" },
       events,
+      eventDidMount: (info) => {
+        // Tooltip nativo con el detalle; incluye el choque si existe.
+        const p = info.event.extendedProps;
+        let t = `${info.event.title} · ${p.entidad} · ${p.tipo}`;
+        if (p.choque) t += `\nCHOQUE detectado con: ${p.choque}`;
+        info.el.title = t;
+      },
       eventClick: (info) => {
         const p = info.event.extendedProps;
-        const det = `${info.event.title} · ${p.entidad} · ${p.tipo} · ${p.estado}` +
+        let det = `${info.event.title} · ${p.entidad} · ${p.tipo} · ${p.estado}` +
           (p.ubicacion ? ` · ${p.ubicacion}` : "");
-        if (global.toast) toast(det); else alert(det);
+        if (p.choque) det += ` — CHOQUE con: ${p.choque}`;
+        // toast() escribe con textContent (seguro). Sin alert(): si el modulo
+        // de toasts no cargo, lo registramos en consola y seguimos.
+        if (global.toast) toast(det, p.choque ? "error" : undefined); else console.warn("[calendar]", det);
       },
       dateClick: typeof opts.onPick === "function"
         ? (info) => {
@@ -75,10 +103,11 @@
   }
 
   function renderLista(el, acts) {
+    const esc = global.escapeHtml || ((s) => s);
     el.innerHTML = acts.length
       ? acts.map((a) =>
-          `<div class="card" style="margin-bottom:10px"><strong>${a.titulo}</strong>
-             <div class="muted">${a.entidad_nombre} · ${new Date(a.fecha_inicio).toLocaleString("es-CL")} · ${a.tipo}</div></div>`
+          `<div class="card" style="margin-bottom:10px"><strong>${esc(a.titulo)}</strong>
+             <div class="muted">${esc(a.entidad_nombre)} · ${new Date(a.fecha_inicio).toLocaleString("es-CL")} · ${esc(a.tipo)}</div></div>`
         ).join("")
       : '<div class="placeholder">Aún no hay actividades.</div>';
   }

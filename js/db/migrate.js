@@ -81,9 +81,20 @@ const ADMIN_PASS_DEFAULT = "admin1234";
  * SEED_ADMIN_PASSWORD. No duplica ni pisa un admin ya existente.
  */
 async function seedAdmin(client) {
-  const email = process.env.SEED_ADMIN_EMAIL || ADMIN_EMAIL_DEFAULT;
-  const password = process.env.SEED_ADMIN_PASSWORD || ADMIN_PASS_DEFAULT;
   const usandoDefault = !process.env.SEED_ADMIN_EMAIL || !process.env.SEED_ADMIN_PASSWORD;
+
+  // Guard de PRODUCCION: jamas sembrar credenciales por defecto en un entorno
+  // real. Alli el admin inicial DEBE venir de SEED_ADMIN_EMAIL/PASSWORD.
+  if (usandoDefault && process.env.NODE_ENV === "production") {
+    console.error(
+      "[migrate] ERROR: en produccion no se crea admin por defecto. " +
+      "Define SEED_ADMIN_EMAIL y SEED_ADMIN_PASSWORD en el entorno."
+    );
+    return;
+  }
+
+  const email = (process.env.SEED_ADMIN_EMAIL || ADMIN_EMAIL_DEFAULT).trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD || ADMIN_PASS_DEFAULT;
 
   const { rows } = await client.query(
     "SELECT 1 FROM usuario WHERE rol = 'ADMIN' LIMIT 1"
@@ -99,7 +110,7 @@ async function seedAdmin(client) {
   );
   console.log(`[migrate] usuario ADMIN inicial creado: ${email}`);
   if (usandoDefault) {
-    console.log("[migrate] AVISO: admin por defecto (admin@mapfi.cl / admin1234). Cambia la contrasena en produccion (.env o desde la app).");
+    console.log("[migrate] AVISO: admin por defecto SOLO PARA DESARROLLO (admin@mapfi.cl / admin1234). En produccion define SEED_ADMIN_* y cambia la clave.");
   }
 }
 
