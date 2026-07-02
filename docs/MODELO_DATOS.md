@@ -54,8 +54,9 @@ Organizadores aportantes.
 | Columna | Tipo | Notas |
 |---------|------|-------|
 | `id` | `serial` PK | |
-| `tipo` | `text` CHECK | `CENTRO_ALUMNOS` \| `VINCULACION` \| `GEARBOX` |
-| `nombre` | `text` | |
+| `tipo` | `text` CHECK | `CENTRO_ALUMNOS` \| `VINCULACION` \| `GEARBOX` \| `FACULTAD` |
+| `sigla` | `text` | iniciales para la UI, ej. `CEEIND`, `DOCFI` |
+| `nombre` | `text` | razón completa, ej. "Centro de Estudiantes de Ingeniería Civil Industrial" |
 | `carrera_id` | `smallint` FK→carrera | NULL salvo centros de alumnos |
 | `reputacion` | `numeric` | **gamificación (F4)** — default 0 |
 | `eventos_exitosos` | `int` | **gamificación (F4)** |
@@ -106,7 +107,8 @@ El evento/hito. Corazón del calendario y del match.
 | `fecha_inicio` | `timestamptz` | |
 | `fecha_fin` | `timestamptz` | |
 | `periodo` | `tstzrange` GENERATED | `tstzrange(fecha_inicio, fecha_fin)` — índice **GiST** |
-| `tipo` | `text` CHECK | `EVENTO` \| `HITO_ACADEMICO` \| `EXAMEN` \| `EXTRAPROGRAMATICA` |
+| `tipo` | `text` CHECK | `EVENTO` \| `HITO_ACADEMICO` \| `EXAMEN` \| `EXTRAPROGRAMATICA` \| `CHARLA` \| `TALLER` \| `ENTREGA` |
+| `ramo` | `text` | asignatura asociada (ej. "Cálculo I") — migración 006 |
 | `estado` | `text` CHECK | `PROPUESTA` \| `CONFIRMADA` \| `REALIZADA` \| `SUSPENDIDA` \| `REPROGRAMADA` |
 | `ubicacion` | `text` | |
 | `alcance_estimado` | `int` | cacheado del último cálculo de match |
@@ -157,6 +159,28 @@ Feriados nacionales, sándwich y académicos (§4).
 
 > Los **fines de semana** no se almacenan: se excluyen por lógica en `holidayService` (sáb/dom ignorados por defecto).
 
+### 2.6 Población y gamificación
+
+#### `matricula`
+Cantidad de estudiantes por segmento — alimenta el **alcance estimado** del match (migración 004).
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `carrera_id` | `smallint` FK→carrera | PK compuesta |
+| `nivel` | `smallint` FK→generacion | PK compuesta |
+| `cantidad` | `int` | ⚠️ el seed carga 100 por segmento como *placeholder*: ajustar a la matrícula real |
+
+#### `reputacion_log`
+Historial de ajustes de reputación por entidad (migración 005, trazabilidad de la gamificación).
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | `serial` PK | |
+| `entidad_id` | `int` FK→entidad ON DELETE CASCADE | |
+| `delta` | `numeric` | puntos sumados/restados |
+| `motivo` | `text` | |
+| `created_at` | `timestamptz` | |
+
 ---
 
 ## 3. Vistas analíticas (backend desacoplado para KPIs)
@@ -181,15 +205,23 @@ Estas vistas se exponen vía `/api/analytics/*` y pueden conectarse directamente
 - **Solapamiento:** se consulta con `&&` sobre `periodo`, nunca comparando columnas manualmente.
 - **Soft-disable:** catálogos usan `activa/activo` en lugar de borrado físico.
 - **Timestamps:** todo en `timestamptz` (UTC en BD, se formatea en cliente a hora local de Chile).
-- **Seeds:** las 13 carreras, niveles 1–5, entidades base y feriados del año vigente se cargan en `002_seed_catalogos.sql`.
+- **Seeds:** las 14 carreras, niveles 1–5, entidades base (16 + Dirección de Docencia) y feriados del año vigente se cargan en `002_seed_catalogos.sql`.
 
 ---
 
-## 5. Preparación para fases futuras (sin romper el esquema)
+## 5. Historial de migraciones
 
-- **Gamificación (F4):** columnas `reputacion`, `eventos_exitosos`, `sello_coordinacion` ya viven en `entidad`. Un futuro `reputacion_log` registrará el detalle.
-- **Reportes PDF (F4):** se generan leyendo `vw_aporte_entidad` + `actividad` por periodo; no requiere tablas nuevas.
-- **BI (F4):** las vistas ya están; solo se agregan endpoints/credenciales de solo lectura.
+| Migración | Contenido |
+|-----------|-----------|
+| `001_schema_inicial.sql` | Tablas núcleo + `tstzrange` GENERATED con índice GiST + tabla `session` |
+| `002_seed_catalogos.sql` | 14 carreras, generaciones, 17 entidades (con sigla), periodos, feriados y datos de muestra |
+| `003_vistas_analitica.sql` | 4 vistas `vw_*` para heatmap y KPIs |
+| `004_matricula.sql` | Tabla `matricula` (alcance del match) con placeholder de 100/segmento |
+| `005_reputacion_log.sql` | Historial de reputación (gamificación) |
+| `006_tags_y_ramo.sql` | Tipos `CHARLA`/`TALLER`/`ENTREGA` + columna `ramo` |
+| `007_fix_seeds.sql` | Fechas de muestra relativas al deploy (no quedan en el pasado) |
+
+Reglas: las migraciones son **aditivas** (nunca se edita una aplicada), corren automáticamente al arrancar y el registro en `schema_migrations` lo hace **solo el runner** (`js/db/migrate.js`).
 
 ---
 
