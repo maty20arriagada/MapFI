@@ -11,7 +11,7 @@
 
 ## 🎯 ¿Qué resuelve?
 
-La facultad sufre **topes de horario**, **sobrecarga de actividades** y **falta de visibilidad del público objetivo** al levantar iniciativas. MapFI interconecta a los **centros de estudiantes (13 carreras)**, **Vinculación con el Medio** y **Gearbox** sobre un calendario común con inteligencia de coordinación.
+La facultad sufre **topes de horario**, **sobrecarga de actividades** y **falta de visibilidad del público objetivo** al levantar iniciativas. MapFI interconecta a los **centros de estudiantes (14 carreras)**, **Vinculación con el Medio** y **Gearbox** sobre un calendario común con inteligencia de coordinación.
 
 ---
 
@@ -109,7 +109,7 @@ mapfi/
 
 ## 🗺️ Estado
 
-✅ **Fases 1–4 operativas.** Autenticación, **calendario con FullCalendar**, multi-carrera, **algoritmo de Match completo**, mapa de calor, **gamificación** (reputación + sello + ranking), **reportes PDF**, **panel de KPIs/BI**, **importación CSV híbrida**, **sistema de tutoriales** (tour guiado + centro de ayuda + tooltips). 60 tests en verde. Ver [plan de implementación](PLAN_DE_IMPLEMENTACION.md) y [roadmap](docs/ROADMAP.md).
+✅ **Fases 0–8 del plan completas.** Autenticación con rate-limiting, **calendario con FullCalendar** (local, offline-safe), multi-carrera, **algoritmo de Match completo**, mapa de calor, conflictos visuales, **gamificación** (reputación + sello + ranking), **reportes PDF**, **panel de KPIs/BI**, **importación CSV híbrida** (CEE propone → admin aprueba), **sistema de tutoriales** (banner + tour guiado + tooltips + centro de ayuda), sanitización XSS, CSP y namespace `window.MapFI`. 60 tests en verde. Ver [plan de implementación](PLAN_DE_IMPLEMENTACION.md) y [roadmap](docs/ROADMAP.md).
 
 ---
 

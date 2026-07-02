@@ -12,7 +12,7 @@ Plan de ejecución incremental. Cada fase es un entregable demostrable con crite
 - [x] `Dockerfile`, `docker-compose.yaml`, `.env.example`.
 - [x] `package.json` con scripts (`start`, `dev`, `test`, `docker:*`, `db:migrate`).
 - [x] `server.js` arranca, sirve estáticos y expone `/api/health`.
-- [x] Esquema SQL inicial + seeds (13 carreras, niveles, entidades, feriados).
+- [x] Esquema SQL inicial + seeds (14 carreras, niveles, entidades, feriados).
 - [x] Stubs de DAO y servicios con firmas + `TODO`.
 - [x] Documentación (`docs/`) y plan maestro.
 
