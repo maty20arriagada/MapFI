@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
- * MARKETING SIMULATOR — icons.js (v2.9)
+ * MapFI — icons.js
  *
  * Iconos SVG (set Lucide) VENDOREADOS localmente — sin dependencias
  * externas ni peticiones HTTP extra. Reemplazan a los emoji

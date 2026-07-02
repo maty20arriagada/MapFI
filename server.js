@@ -73,7 +73,7 @@ const sessionConfig = {
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: "strict", // la app es same-origin completa; strict corta CSRF
     secure: isProduction,
     maxAge: 1000 * 60 * 60 * 8, // 8 horas
   },
@@ -87,6 +87,57 @@ if (HAS_DB && process.env.NODE_ENV !== "test") {
   });
 }
 app.use(session(sessionConfig));
+
+// ── Anti-CSRF: validar Origin/Referer en metodos que mutan ──────────────────
+// Complementa sameSite=strict. Si el navegador envia Origin (o Referer) y no
+// coincide con el Host propio, se rechaza. Peticiones sin ambos (curl, tests)
+// pasan: la proteccion CSRF aplica a navegadores, que siempre los envian.
+app.use((req, res, next) => {
+  if (!["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) return next();
+  const origin = req.headers.origin || req.headers.referer;
+  if (!origin) return next();
+  try {
+    if (new URL(origin).host !== req.headers.host) {
+      return res.status(403).json({ error: "Origen no permitido" });
+    }
+  } catch (_) {
+    return res.status(403).json({ error: "Origen no permitido" });
+  }
+  next();
+});
+
+// ── Rate limiting del login (inline, sin dependencias — patron helmet-lite) ─
+// Maximo 5 intentos fallidos por IP cada 15 minutos. En memoria del proceso:
+// suficiente para una instancia; si algun dia hay varias, mover a Redis/BD.
+const LOGIN_MAX_INTENTOS = 5;
+const LOGIN_VENTANA_MS = 15 * 60 * 1000;
+const loginIntentos = new Map(); // ip -> { count, expira }
+function loginLimiter(req, res, next) {
+  const ip = req.ip || "?";
+  const ahora = Date.now();
+  const reg = loginIntentos.get(ip);
+  if (reg && reg.expira <= ahora) loginIntentos.delete(ip);
+  const activo = loginIntentos.get(ip);
+  if (activo && activo.count >= LOGIN_MAX_INTENTOS) {
+    const min = Math.ceil((activo.expira - ahora) / 60000);
+    return res.status(429).json({ error: `Demasiados intentos. Prueba de nuevo en ${min} min.` });
+  }
+  next();
+}
+function loginFallido(req) {
+  const ip = req.ip || "?";
+  const reg = loginIntentos.get(ip) || { count: 0, expira: Date.now() + LOGIN_VENTANA_MS };
+  reg.count++;
+  loginIntentos.set(ip, reg);
+}
+function loginExitoso(req) {
+  loginIntentos.delete(req.ip || "?");
+}
+// Limpieza periodica para que el Map no crezca indefinidamente.
+setInterval(() => {
+  const ahora = Date.now();
+  for (const [ip, reg] of loginIntentos) if (reg.expira <= ahora) loginIntentos.delete(ip);
+}, 10 * 60 * 1000).unref();
 
 // ── Middlewares de autorizacion ─────────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -111,15 +162,16 @@ const num = (v) => (v !== undefined && v !== "" ? parseInt(v, 10) : undefined);
 app.get("/api/health", (req, res) => res.json({ ok: true, service: "mapfi" }));
 
 // ── Autenticacion ────────────────────────────────────────────────────────────
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "Faltan credenciales" });
   try {
     const u = await userDao.buscarPorEmail(email);
-    if (!u || !u.activo) return res.status(401).json({ error: "Credenciales invalidas" });
+    if (!u || !u.activo) { loginFallido(req); return res.status(401).json({ error: "Correo o contraseña incorrectos" }); }
     const ok = await bcrypt.compare(password, u.password_hash);
-    if (!ok) return res.status(401).json({ error: "Credenciales invalidas" });
+    if (!ok) { loginFallido(req); return res.status(401).json({ error: "Correo o contraseña incorrectos" }); }
 
+    loginExitoso(req);
     req.session.user = { id: u.id, email: u.email, nombre: u.nombre, rol: u.rol, entidadId: u.entidad_id };
     res.json({ ok: true, user: req.session.user });
   } catch (e) {

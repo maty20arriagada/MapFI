@@ -59,7 +59,9 @@
         const p = info.event.extendedProps;
         const det = `${info.event.title} · ${p.entidad} · ${p.tipo} · ${p.estado}` +
           (p.ubicacion ? ` · ${p.ubicacion}` : "");
-        if (global.toast) toast(det); else alert(det);
+        // toast() escribe con textContent (seguro). Sin alert(): si el modulo
+        // de toasts no cargo, lo registramos en consola y seguimos.
+        if (global.toast) toast(det); else console.warn("[calendar]", det);
       },
       dateClick: typeof opts.onPick === "function"
         ? (info) => {
@@ -75,10 +77,11 @@
   }
 
   function renderLista(el, acts) {
+    const esc = global.escapeHtml || ((s) => s);
     el.innerHTML = acts.length
       ? acts.map((a) =>
-          `<div class="card" style="margin-bottom:10px"><strong>${a.titulo}</strong>
-             <div class="muted">${a.entidad_nombre} · ${new Date(a.fecha_inicio).toLocaleString("es-CL")} · ${a.tipo}</div></div>`
+          `<div class="card" style="margin-bottom:10px"><strong>${esc(a.titulo)}</strong>
+             <div class="muted">${esc(a.entidad_nombre)} · ${new Date(a.fecha_inicio).toLocaleString("es-CL")} · ${esc(a.tipo)}</div></div>`
         ).join("")
       : '<div class="placeholder">Aún no hay actividades.</div>';
   }

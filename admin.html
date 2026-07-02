@@ -26,7 +26,7 @@
           <div class="grid cols-3">
             <div><label>Correo</label><input name="email" type="email" required /></div>
             <div><label>Nombre</label><input name="nombre" required /></div>
-            <div><label>Contraseña</label><input name="password" type="text" required /></div>
+            <div><label>Contraseña</label><input name="password" type="password" autocomplete="new-password" required /></div>
             <div><label>Rol</label>
               <select name="rol"><option value="APORTANTE">Aportante</option><option value="ADMIN">Admin</option></select>
             </div>
@@ -89,6 +89,7 @@
   </main>
 
   <script src="js/icons.js"></script>
+  <script src="js/sanitize.js"></script>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/theme-toggle.js"></script>

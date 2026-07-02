@@ -3,14 +3,17 @@
   "use strict";
 
   const $ = (id) => document.getElementById(id);
-  const opt = (value, label) => `<option value="${value}">${label}</option>`;
+  const esc = window.escapeHtml || ((s) => s);
+  const opt = (value, label) => `<option value="${value}">${esc(label)}</option>`;
 
   function tabla(cont, rows, cols) {
     if (!rows || !rows.length) { cont.innerHTML = '<p class="muted">Sin registros.</p>'; return; }
+    // Las celdas por `key` se escapan siempre; los `get` devuelven HTML propio
+    // y deben escapar internamente los datos de usuario que interpolen.
     cont.innerHTML =
       `<table><thead><tr>${cols.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>` +
       `<tbody>${rows.map((r) =>
-        `<tr>${cols.map((c) => `<td>${c.get ? c.get(r) : (r[c.key] ?? "")}</td>`).join("")}</tr>`
+        `<tr>${cols.map((c) => `<td>${c.get ? c.get(r) : esc(r[c.key] ?? "")}</td>`).join("")}</tr>`
       ).join("")}</tbody></table>`;
   }
 
@@ -24,7 +27,7 @@
 
     // ── Tablas ────────────────────────────────────────────────────────────────
     tabla($("tablaEntidades"), cat.entidades, [
-      { label: "Sigla", get: (r) => `<strong>${r.sigla || "—"}</strong>` },
+      { label: "Sigla", get: (r) => `<strong>${esc(r.sigla || "—")}</strong>` },
       { label: "Nombre", key: "nombre" },
       { label: "Tipo", key: "tipo" },
     ]);
@@ -35,8 +38,8 @@
 
     const usuarios = await api.get("/api/admin/usuarios");
     tabla($("tablaUsuarios"), usuarios, [
-      { label: "Cuenta", get: (r) => `<strong>${r.entidad_sigla || "—"}</strong><div class="muted" style="font-size:.78rem">${r.entidad_nombre || "Administración"}</div>` },
-      { label: "Usuario", get: (r) => `${r.nombre}<div class="muted" style="font-size:.78rem">${r.email}</div>` },
+      { label: "Cuenta", get: (r) => `<strong>${esc(r.entidad_sigla || "—")}</strong><div class="muted" style="font-size:.78rem">${esc(r.entidad_nombre || "Administración")}</div>` },
+      { label: "Usuario", get: (r) => `${esc(r.nombre)}<div class="muted" style="font-size:.78rem">${esc(r.email)}</div>` },
       { label: "Rol", key: "rol" },
       { label: "Estado", get: (r) => (r.activo ? '<span class="badge alto">Activa</span>' : '<span class="badge bajo">Inactiva</span>') },
       { label: "Acción", get: (r) => `<button class="btn secondary" data-act="toggle-usuario" data-id="${r.id}" data-activo="${r.activo}">${r.activo ? "Desactivar" : "Activar"}</button>` },

@@ -48,8 +48,9 @@
       const s = toMin(b.hora_inicio), e = toMin(b.hora_fin);
       const col = (+b.dia_semana) + 1;
       const r1 = 2 + (s - start) / 30, r2 = 2 + (e - start) / 30;
+      const esc = global.escapeHtml || ((x) => x);
       html += '<div class="tt-block ' + b.tipo + '" style="grid-column:' + col + ";grid-row:" + r1 + " / " + r2 + '">' +
-        "<strong>" + (b.descripcion || b.tipo) + "</strong><span>" + fmt(s) + "–" + fmt(e) + "</span>" +
+        "<strong>" + esc(b.descripcion || b.tipo) + "</strong><span>" + fmt(s) + "–" + fmt(e) + "</span>" +
         (opts.isAdmin ? '<button class="tt-del" data-act="del-bloque" data-id="' + b.id + '" title="Eliminar bloque" aria-label="Eliminar bloque">×</button>' : "") +
         "</div>";
     });
