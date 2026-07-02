@@ -242,23 +242,33 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
   }
 });
 
-// Carga masiva de actividades (import CSV de evaluaciones) — solo ADMIN.
-app.post("/api/actividades/bulk", requireRole("ADMIN"), async (req, res) => {
+// Carga masiva de actividades (import CSV) — flujo HIBRIDO (§16.5):
+//   · ADMIN     → las actividades entran CONFIRMADAS directo.
+//   · APORTANTE → entran como PROPUESTA a nombre de SU entidad, y el admin
+//                 las revisa en "Pendientes de revision" (aprueba/rechaza).
+app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
   try {
     const lista = (req.body && req.body.actividades) || [];
     if (!Array.isArray(lista) || !lista.length) {
       return res.status(400).json({ error: "No se recibieron actividades" });
+    }
+    const esAdmin = req.session.user.rol === "ADMIN";
+    if (!esAdmin && !req.session.user.entidadId) {
+      return res.status(403).json({ error: "Tu cuenta no tiene entidad asociada" });
     }
     let creadas = 0;
     const errores = [];
     for (let i = 0; i < lista.length; i++) {
       const a = lista[i] || {};
       try {
-        if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !a.entidadId) {
+        // Aportante: no puede elegir entidad ni estado — se fuerzan.
+        const entidadId = esAdmin ? a.entidadId : req.session.user.entidadId;
+        const estado = esAdmin ? (a.estado || "CONFIRMADA") : "PROPUESTA";
+        if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !entidadId) {
           throw new Error("Faltan campos obligatorios");
         }
         await actividadDao.crear(
-          { ...a, estado: a.estado || "CONFIRMADA", createdBy: req.session.user.id },
+          { ...a, entidadId, estado, createdBy: req.session.user.id },
           a.publico || []
         );
         creadas++;
@@ -266,10 +276,46 @@ app.post("/api/actividades/bulk", requireRole("ADMIN"), async (req, res) => {
         errores.push({ fila: a.fila || i + 1, error: e.message });
       }
     }
-    res.json({ creadas, errores });
+    res.json({ creadas, errores, estado: esAdmin ? "CONFIRMADA" : "PROPUESTA" });
   } catch (e) {
     res.status(500).json({ error: "Error interno" });
   }
+});
+
+// Pendientes de revision (importaciones de aportantes) — solo ADMIN.
+app.get("/api/admin/pendientes", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await actividadDao.listarPendientes()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Aprobar / rechazar en bloque. APROBAR→CONFIRMADA · RECHAZAR→SUSPENDIDA.
+app.post("/api/admin/actividades/revisar", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const { ids, accion } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length || !["APROBAR", "RECHAZAR"].includes(accion)) {
+      return res.status(400).json({ error: "Se requiere 'ids' y accion APROBAR|RECHAZAR" });
+    }
+    const estado = accion === "APROBAR" ? "CONFIRMADA" : "SUSPENDIDA";
+    res.json(await actividadDao.cambiarEstadoBulk(ids.map(Number).filter(Boolean), estado));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Conflictos entre actividades confirmadas (choques de horario+publico, §16.4).
+app.get("/api/actividades/conflictos", async (req, res) => {
+  try { res.json(await actividadDao.conflictos()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Plantilla CSV descargable (§16.6) — publica, una sola fuente de verdad.
+app.get("/api/plantilla-csv", (req, res) => {
+  const csv =
+    "titulo,ramo,tipo,inicio,fin,carreras,niveles,ubicacion\n" +
+    '"Certamen 1","Cálculo I",EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,"Aula Magna"\n' +
+    '"Charla de titulación","",CHARLA,2026-05-06 12:00,,ICI,4|5,"Auditorio"\n' +
+    '"Entrega informe","Física I",ENTREGA,2026-06-10 23:59,,*,1,\n';
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="plantilla-mapfi.csv"');
+  res.send("﻿" + csv); // BOM para que Excel respete UTF-8
 });
 
 // Helper: el usuario es dueno (su entidad) de la actividad, o es ADMIN.

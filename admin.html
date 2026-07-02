@@ -20,6 +20,16 @@
       <h1><span class="icon title-icon" data-icon="settings"></span> Panel de administración</h1>
 
       <div class="card stack" style="margin-bottom:16px">
+        <h2><span class="icon title-icon" data-icon="clipboard-list"></span> Pendientes de revisión</h2>
+        <p class="muted">Fechas importadas por los centros que esperan tu aprobación. Al aprobar quedan <strong>CONFIRMADAS</strong> en el calendario; al rechazar quedan suspendidas.</p>
+        <div class="row" id="pendAcciones" hidden>
+          <button class="btn" data-rev="APROBAR"><span class="icon" data-icon="circle-check"></span> Aprobar seleccionadas</button>
+          <button class="btn secondary" data-rev="RECHAZAR"><span class="icon" data-icon="ban"></span> Rechazar seleccionadas</button>
+        </div>
+        <div id="tablaPendientes"></div>
+      </div>
+
+      <div class="card stack" style="margin-bottom:16px">
         <h2><span class="icon title-icon" data-icon="users"></span> Cuentas de usuario</h2>
         <p class="muted">Crea y administra las cuentas de acceso de cada entidad. Puedes activar o desactivar la apertura de cada cuenta.</p>
         <form id="formUsuario">

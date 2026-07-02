@@ -36,6 +36,32 @@
       { label: "Color", get: (r) => `<span style="background:${r.color};width:24px;height:16px;border-radius:4px;display:inline-block"></span>` },
     ]);
 
+    // ── Pendientes de revision (importaciones de los centros, §16.5) ──────────
+    const pendientes = await api.get("/api/admin/pendientes");
+    const accionesBar = $("pendAcciones");
+    if (accionesBar) accionesBar.hidden = !pendientes.length;
+    if (!pendientes.length) {
+      $("tablaPendientes").innerHTML = '<p class="muted">No hay fechas pendientes de revisión.</p>';
+    } else {
+      const fmtF = (d) => new Date(d).toLocaleString("es-CL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+      $("tablaPendientes").innerHTML =
+        `<table><thead><tr>
+           <th><input type="checkbox" id="pendTodos" title="Seleccionar todo" /></th>
+           <th>Título</th><th>Ramo</th><th>Tipo</th><th>Fecha</th><th>Entidad</th>
+         </tr></thead><tbody>` +
+        pendientes.map((p) =>
+          `<tr><td><input type="checkbox" class="pend-check" value="${p.id}" /></td>
+             <td><strong>${esc(p.titulo)}</strong></td>
+             <td class="muted">${esc(p.ramo || "—")}</td>
+             <td>${esc(p.tipo)}</td>
+             <td>${fmtF(p.fecha_inicio)}</td>
+             <td>${esc(p.entidad_sigla || p.entidad_nombre)}</td></tr>`
+        ).join("") + "</tbody></table>";
+      const todos = $("pendTodos");
+      if (todos) todos.onchange = () =>
+        document.querySelectorAll(".pend-check").forEach((c) => (c.checked = todos.checked));
+    }
+
     const usuarios = await api.get("/api/admin/usuarios");
     tabla($("tablaUsuarios"), usuarios, [
       { label: "Cuenta", get: (r) => `<strong>${esc(r.entidad_sigla || "—")}</strong><div class="muted" style="font-size:.78rem">${esc(r.entidad_nombre || "Administración")}</div>` },
@@ -89,6 +115,21 @@
     form("formPeriodo", (d) => api.post("/api/admin/periodos", {
       anio: +d.anio, semestre: +d.semestre, fechaInicio: d.fechaInicio, fechaFin: d.fechaFin,
     }));
+    // Revision en bloque de pendientes (aprobar/rechazar seleccionadas).
+    document.addEventListener("click", async (e) => {
+      const rev = e.target.closest("[data-rev]");
+      if (!rev) return;
+      const ids = [...document.querySelectorAll(".pend-check:checked")].map((c) => +c.value);
+      if (!ids.length) return toast("Selecciona al menos una fila", "error");
+      const accion = rev.dataset.rev;
+      if (accion === "RECHAZAR" && !confirm(`¿Rechazar ${ids.length} fecha(s)? Quedarán suspendidas.`)) return;
+      try {
+        const r = await api.post("/api/admin/actividades/revisar", { ids, accion });
+        toast(`${r.actualizadas} fecha(s) ${accion === "APROBAR" ? "aprobadas" : "rechazadas"}`, "success");
+        cargar();
+      } catch (err) { toast(err.message, "error"); }
+    });
+
     // Acciones delegadas (activar periodo / activar-desactivar cuenta).
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-act]");

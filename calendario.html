@@ -12,7 +12,7 @@
     <section class="section">
       <div class="page-head">
         <h1><span class="icon title-icon" data-icon="calendar"></span> Calendario académico</h1>
-        <p class="subtitle">Fechas puntuales de la Facultad de Ingeniería: <strong>evaluaciones</strong> y <strong>eventos</strong>. Para los horarios de clase, ve a la sección Horarios.</p>
+        <p class="subtitle">Fechas puntuales de la Facultad de Ingeniería: <strong>evaluaciones</strong> y <strong>eventos</strong>. Para los horarios de clase, ve a la <a href="horarios.html">sección Horarios</a>.</p>
       </div>
 
       <div class="card filters">
@@ -26,6 +26,9 @@
               <option value="EXAMEN">Evaluaciones</option>
               <option value="HITO_ACADEMICO">Hitos académicos</option>
               <option value="EVENTO">Eventos</option>
+              <option value="CHARLA">Charlas</option>
+              <option value="TALLER">Talleres</option>
+              <option value="ENTREGA">Entregas</option>
               <option value="EXTRAPROGRAMATICA">Extraprogramáticas</option>
             </select>
           </div>
@@ -39,9 +42,17 @@
         <form id="formFecha">
           <div class="grid cols-3">
             <div><label>Tipo <span class="req">*</span></label>
-              <select name="tipo"><option value="EXAMEN">Evaluación</option><option value="HITO_ACADEMICO">Hito académico</option><option value="EVENTO">Evento institucional</option></select>
+              <select name="tipo">
+                <option value="EXAMEN">Evaluación</option>
+                <option value="HITO_ACADEMICO">Hito académico</option>
+                <option value="EVENTO">Evento institucional</option>
+                <option value="CHARLA">Charla</option>
+                <option value="TALLER">Taller</option>
+                <option value="ENTREGA">Entrega</option>
+              </select>
             </div>
-            <div style="grid-column: span 2"><label>Título <span class="req">*</span></label><input name="titulo" placeholder="Certamen 1 - Cálculo I" required /></div>
+            <div><label>Título <span class="req">*</span></label><input name="titulo" placeholder="Certamen 1" required /></div>
+            <div><label>Ramo (si aplica)</label><input name="ramo" placeholder="Cálculo I" /></div>
             <div><label>Inicio <span class="req">*</span></label><input type="datetime-local" name="fechaInicio" required /></div>
             <div><label>Fin <span class="req">*</span></label><input type="datetime-local" name="fechaFin" required /></div>
             <div><label>Entidad</label><select name="entidadId" id="aEntidad"></select></div>
@@ -67,15 +78,16 @@
         <h2><span class="icon title-icon" data-icon="file-text"></span> Importar evaluaciones (CSV)</h2>
         <p class="muted">Carga muchas fechas de una vez.
           <button type="button" class="link-btn" id="verFormato">Ver formato</button> ·
-          <button type="button" class="link-btn" id="descPlantilla">Descargar plantilla</button>
+          <a class="link-btn" href="/api/plantilla-csv">Descargar plantilla</a>
         </p>
         <div class="help-box" id="formatoHelp" hidden>
           <strong>Formato</strong> — archivo <code>.csv</code> en UTF-8 (separador <code>,</code> o <code>;</code>). Encabezado y ejemplo:
-          <pre>titulo,tipo,inicio,fin,carreras,niveles,ubicacion
-Certamen 1 Cálculo I,EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,Aula Magna
-Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
+          <pre>titulo,ramo,tipo,inicio,fin,carreras,niveles,ubicacion
+Certamen 1,Cálculo I,EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,Aula Magna
+Certamen 2,Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
           <ul style="margin:6px 0 0 18px">
-            <li><code>tipo</code>: <code>EXAMEN</code> (evaluación), <code>HITO_ACADEMICO</code> o <code>EVENTO</code>.</li>
+            <li><code>tipo</code>: <code>EXAMEN</code>, <code>HITO_ACADEMICO</code>, <code>EVENTO</code>, <code>CHARLA</code>, <code>TALLER</code> o <code>ENTREGA</code>.</li>
+            <li><code>ramo</code>: opcional, nombre de la asignatura (ej. Cálculo I).</li>
             <li><code>inicio</code> / <code>fin</code>: <code>AAAA-MM-DD HH:MM</code>. Si <code>fin</code> queda vacío = inicio + 2 h.</li>
             <li><code>carreras</code>: códigos separados por <code>|</code>, o <code>*</code> = todas. Códigos: IC, ICAE, ICB, ICEL, ICE, ICI, ICINF, ICMAT, ICM, ICMET, ICMIN, ICQ, ICT, ICPC.</li>
             <li><code>niveles</code>: años separados por <code>|</code> (ej. <code>1</code> o <code>1|2</code>), o <code>*</code> = todos.</li>
@@ -92,7 +104,11 @@ Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
         <span><i style="background:#DC2626"></i> Evaluación</span>
         <span><i style="background:#7C3AED"></i> Hito académico</span>
         <span><i style="background:#2563EB"></i> Evento</span>
+        <span><i style="background:#F59E0B"></i> Charla</span>
+        <span><i style="background:#10B981"></i> Taller</span>
+        <span><i style="background:#8B5CF6"></i> Entrega</span>
         <span><i style="background:#16A34A"></i> Extraprogramática</span>
+        <span><i style="background:transparent;border:2px solid #F59E0B;box-sizing:border-box"></i> Choque detectado</span>
       </div>
 
       <div id="calendar"><div class="placeholder">Cargando…</div></div>
@@ -107,6 +123,7 @@ Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
+  <script src="js/csv-utils.js"></script>
   <script src="js/vendor/fullcalendar/index.global.min.js"></script>
   <script src="js/vendor/fullcalendar/locales-all.global.min.js"></script>
   <script src="js/calendar-view.js"></script>
@@ -114,36 +131,6 @@ Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
     function toLocalInput(d) {
       const p = (n) => String(n).padStart(2, "0");
       return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
-    }
-    function normTipo(t) {
-      t = (t || "").toUpperCase().trim();
-      if (["EVALUACION", "EVALUACIÓN", "EXAMEN", "CERTAMEN", "PRUEBA", "CONTROL"].includes(t)) return "EXAMEN";
-      if (["HITO", "HITO_ACADEMICO"].includes(t)) return "HITO_ACADEMICO";
-      if (t === "EXTRAPROGRAMATICA") return "EXTRAPROGRAMATICA";
-      if (t === "EVENTO") return "EVENTO";
-      return "EXAMEN";
-    }
-    function parseFecha(s) {
-      if (!s) return null;
-      const d = new Date(String(s).trim().replace(" ", "T"));
-      return isNaN(d.getTime()) ? null : d;
-    }
-    function parseCSV(text) {
-      text = text.replace(/^﻿/, "");
-      const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
-      if (!lines.length) return { header: [], rows: [] };
-      const delim = (lines[0].split(";").length > lines[0].split(",").length) ? ";" : ",";
-      function parseLine(line) {
-        const out = []; let cur = "", q = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (q) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
-          else { if (ch === '"') q = true; else if (ch === delim) { out.push(cur); cur = ""; } else cur += ch; }
-        }
-        out.push(cur);
-        return out.map((s) => s.trim());
-      }
-      return { header: parseLine(lines[0]).map((h) => h.toLowerCase()), rows: lines.slice(1).map(parseLine) };
     }
 
     (async function () {
@@ -223,30 +210,20 @@ Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
         if (!publico.length) return toast("Selecciona al menos una carrera y un año", "error");
         try {
           await api.post("/api/actividades", {
-            titulo: d.titulo, tipo: d.tipo, ubicacion: d.ubicacion,
+            titulo: d.titulo, tipo: d.tipo, ramo: d.ramo, ubicacion: d.ubicacion,
             fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, entidadId: +d.entidadId, estado: "CONFIRMADA", publico,
           });
           toast(`Fecha agregada a ${publico.length} segmento(s)`, "success");
-          formFecha.titulo.value = ""; formFecha.fechaInicio.value = ""; formFecha.fechaFin.value = ""; formFecha.ubicacion.value = "";
+          formFecha.titulo.value = ""; formFecha.ramo.value = ""; formFecha.fechaInicio.value = "";
+          formFecha.fechaFin.value = ""; formFecha.ubicacion.value = "";
           formFecha.titulo.focus();
           render();
         } catch (err) { toast(err.message, "error"); }
       });
 
-      // ── Importación CSV ──
+      // ── Importación CSV (parser compartido en js/csv-utils.js) ──
       document.getElementById("verFormato").onclick = () => {
         const h = document.getElementById("formatoHelp"); h.hidden = !h.hidden;
-      };
-      document.getElementById("descPlantilla").onclick = () => {
-        const ejemplo =
-          "titulo,tipo,inicio,fin,carreras,niveles,ubicacion\n" +
-          "Certamen 1 Cálculo I,EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM|ICE,1,Aula Magna\n" +
-          "Certamen 2 Física I,EXAMEN,2026-05-20 18:30,2026-05-20 20:00,*,1,\n" +
-          "Entrega Proyecto de Título,HITO_ACADEMICO,2026-06-10 23:59,,ICI,5,\n";
-        const blob = new Blob(["﻿" + ejemplo], { type: "text/csv;charset=utf-8" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob); a.download = "plantilla_evaluaciones.csv"; a.click();
-        URL.revokeObjectURL(a.href);
       };
       document.getElementById("csvFile").onchange = (e) => {
         const f = e.target.files[0]; if (!f) return;
@@ -257,68 +234,28 @@ Certamen 2 Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
         const text = document.getElementById("csvText").value.trim();
         if (!text) return toast("Pega el CSV o sube un archivo", "error");
 
-        const codigoMap = {}; cat.carreras.forEach((c) => (codigoMap[c.codigo.toUpperCase()] = c.id));
-        const siglaMap = {}; cat.entidades.forEach((e) => { if (e.sigla) siglaMap[e.sigla.toUpperCase()] = e.id; });
         const docfi = (cat.entidades.find((e) => e.sigla === "DOCFI") || {}).id;
-        const todasCarreras = cat.carreras.map((c) => c.id);
-        const todosNiveles = cat.generaciones.map((g) => g.nivel);
-
-        const { header, rows } = parseCSV(text);
-        const idx = (n) => header.indexOf(n);
-        const iT = idx("titulo"), iTipo = idx("tipo"), iIni = idx("inicio"), iFin = idx("fin"),
-              iCarr = idx("carreras"), iNiv = idx("niveles"), iUbi = idx("ubicacion"), iEnt = idx("entidad");
-        if (iT < 0 || iIni < 0 || iCarr < 0 || iNiv < 0) {
-          return toast("Encabezado inválido. Revisa 'Ver formato'.", "error");
-        }
-
-        const actividades = [], errores = [];
-        rows.forEach((r, n) => {
-          const fila = n + 2;
-          try {
-            const titulo = (r[iT] || "").trim(); if (!titulo) throw new Error("falta título");
-            const ini = parseFecha(r[iIni]); if (!ini) throw new Error("inicio inválido");
-            let fin = iFin >= 0 ? parseFecha(r[iFin]) : null;
-            if (!fin) { fin = new Date(ini); fin.setHours(fin.getHours() + 2); }
-            const carrRaw = (r[iCarr] || "").trim();
-            const carrIds = (carrRaw === "*" || carrRaw.toUpperCase() === "TODAS")
-              ? todasCarreras
-              : carrRaw.split("|").map((s) => s.trim().toUpperCase()).filter(Boolean).map((code) => {
-                  const id = codigoMap[code]; if (!id) throw new Error("código de carrera desconocido: " + code); return id;
-                });
-            const nivRaw = (r[iNiv] || "").trim();
-            const nivs = (nivRaw === "*" || nivRaw.toUpperCase() === "TODOS")
-              ? todosNiveles
-              : nivRaw.split("|").map((s) => +s.trim()).filter((x) => x);
-            if (!carrIds.length || !nivs.length) throw new Error("faltan carreras o niveles");
-            const publico = [];
-            carrIds.forEach((c) => nivs.forEach((nv) => publico.push({ carreraId: c, nivel: nv })));
-            const entId = (iEnt >= 0 && r[iEnt]) ? (siglaMap[r[iEnt].trim().toUpperCase()] || docfi) : docfi;
-            actividades.push({
-              fila, titulo, tipo: normTipo(r[iTipo]), ubicacion: iUbi >= 0 ? r[iUbi] : "",
-              fechaInicio: ini.toISOString(), fechaFin: fin.toISOString(), entidadId: entId, publico,
-            });
-          } catch (e) { errores.push({ fila, error: e.message }); }
-        });
+        const { actividades, errores } = CsvUtils.construirActividades(text, cat, { defaultEntidadId: docfi });
 
         const box = document.getElementById("importResult");
         if (!actividades.length) {
-          box.innerHTML = '<div class="placeholder">No hay filas válidas para importar.</div>';
-          if (errores.length) box.innerHTML += renderErrores(errores);
+          box.innerHTML = '<div class="placeholder">No hay filas válidas para importar.</div>' + renderErrores(errores);
           return;
         }
         try {
           const res = await api.post("/api/actividades/bulk", { actividades });
           const allErr = errores.concat(res.errores || []);
           toast(res.creadas + " importada(s)" + (allErr.length ? " · " + allErr.length + " con error" : ""), allErr.length ? "error" : "success");
-          box.innerHTML = '<p><strong>' + res.creadas + '</strong> evaluación(es) importada(s).</p>' + (allErr.length ? renderErrores(allErr) : "");
+          box.innerHTML = '<p><strong>' + res.creadas + '</strong> fecha(s) importada(s).</p>' + renderErrores(allErr);
           document.getElementById("csvText").value = ""; document.getElementById("csvFile").value = "";
           render();
         } catch (err) { toast(err.message, "error"); }
       };
 
       function renderErrores(errs) {
+        if (!errs || !errs.length) return "";
         return '<div class="help-box"><strong>Filas con error:</strong><ul style="margin:6px 0 0 18px">' +
-          errs.map((e) => "<li>Fila " + e.fila + ": " + e.error + "</li>").join("") + "</ul></div>";
+          errs.map((e) => "<li>Fila " + e.fila + ": " + escapeHtml(e.error) + "</li>").join("") + "</ul></div>";
       }
     })();
   </script>

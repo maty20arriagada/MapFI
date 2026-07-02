@@ -230,6 +230,7 @@ tbody tr:hover { background: var(--brand-soft); }
 .site-footer .foot-brand strong { color: var(--text); font-family: var(--font-head); }
 .site-footer .credits { display: flex; align-items: center; gap: 10px; font-weight: 500; }
 .giia-logo { height: 42px; width: auto; opacity: .95; }
+[data-theme="dark"] .giia-logo { filter: brightness(0) invert(1); opacity: .9; }
 .foot-bottom { border-top: 1px solid var(--border); text-align: center; padding: 12px; color: var(--text-soft); font-size: .78rem; }
 
 /* ── Lista de eventos cercanos ───────────────────────────────────────── */
@@ -298,6 +299,24 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 
 /* Calendario con creación al hacer clic en un día */
 .cal-pickable .fc-daygrid-day, .cal-pickable .fc-timegrid-slot { cursor: pointer; }
+
+/* Evento con choque detectado (mismo público, horario solapado) */
+.fc-event.evento-conflicto {
+  border: 2px solid #F59E0B !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, .35);
+}
+.fc-event.evento-conflicto .fc-event-title::before {
+  content: "!"; display: inline-flex; align-items: center; justify-content: center;
+  width: 13px; height: 13px; margin-right: 4px; border-radius: 50%;
+  background: #F59E0B; color: #1F2937; font-weight: 800; font-size: .68rem; line-height: 1;
+}
+
+/* ── Tabla "Mis eventos" (edición inline) ────────────────────────────── */
+.event-table .acciones { white-space: nowrap; text-align: right; }
+.event-table .acciones .btn-icon { width: 34px; height: 34px; }
+.event-table tr.editando { background: var(--brand-soft); }
+.event-table tr.editando td { vertical-align: top; }
+.event-table tr.editando input, .event-table tr.editando select { margin-bottom: 4px; }
 .req { color: var(--rojo); margin-left: 2px; }
 .link-btn { background: none; border: none; color: var(--brand); cursor: pointer; font: inherit; font-weight: 600; padding: 0; }
 .link-btn:hover { text-decoration: underline; }
