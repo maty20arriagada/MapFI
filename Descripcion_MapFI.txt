@@ -43,7 +43,7 @@ La plataforma resolverá los problemas históricos de tope de horarios, sobrecar
     * **Alcance Estimado de Beneficiarios:** Proyección de cuánta audiencia real puede asistir libre de topes horarios.
     * **Sugerencias Automáticas:** Si la compatibilidad es baja, el sistema sugerirá automáticamente los 3 mejores bloques alternativos de esa semana para maximizar el rango de horarios y el día del evento.
 
-4. LOGICA CRONOLÓGICA Y GESTIÓN DE FECHAS REALEZAS
+4. LOGICA CRONOLÓGICA Y GESTIÓN DE FECHAS REALES
 --------------------------------------------------------------------------------
 * **Sincronización de Feriados:** Integración automática con el calendario de feriados nacionales y días sándwich decretados.
 * **Exclusión de Fines de Semana:** Por defecto, el cálculo de compatibilidad e indicadores ignorará los días sábado y domingo, centrándose exclusivamente en la realidad de la jornada universitaria (Lunes a Viernes).

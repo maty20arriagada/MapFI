@@ -57,7 +57,13 @@
     if (user && user.rol !== "ADMIN") { $("noAdmin").hidden = false; return; }
     if (!user) return;
 
-    try { await cargar(); } catch (e) { toast("No se pudieron cargar los KPIs", "error"); }
+    try { await cargar(); } catch (e) {
+      toast("No se pudieron cargar los KPIs", "error");
+      ["tablaRanking","tablaOcupacion","tablaAporte","tablaReprog"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el && !el.textContent.trim()) el.innerHTML = '<p class="muted">Sin datos disponibles.</p>';
+      });
+    }
 
     const btn = $("btnRecalcular");
     if (btn) btn.onclick = async () => {

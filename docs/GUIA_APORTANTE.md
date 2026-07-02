@@ -70,9 +70,14 @@ Puedes filtrarlo, por ejemplo, para ver solo "3.er año de Ingeniería Civil Ind
 
 ---
 
-## 7. ¿Y los reconocimientos? (próximamente)
+## 7. Reconocimientos y gamificación
 
-En futuras versiones, los centros que mejor coordinen ganarán un **Sello de Coordinación Eficiente** y un **indicador de confiabilidad**, y recibirán al final del semestre un **reporte PDF de impacto** ideal para rendiciones y postulación a fondos.
+Los centros que mejor coordinen ganan visibilidad en la plataforma:
+
+- **Indicador de confiabilidad**: visible en tu panel como porcentaje de eventos realizados exitosamente.
+- **Sello de Coordinación Eficiente**: se otorga automáticamente a los centros con baja tasa de reprogramaciones y uso activo del calculador de Match.
+- **Reporte PDF de impacto**: descargable desde Mi panel al final del semestre. Ideal para rendiciones de cuentas y postulación a fondos.
+- **Ranking público**: visible en la portada, muestra la reputación de cada entidad.
 
 ---
 

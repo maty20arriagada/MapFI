@@ -24,7 +24,11 @@ La facultad sufre **topes de horario**, **sobrecarga de actividades** y **falta 
 | 🎯 | **Calculador de Match** | Compatibilidad %, alcance estimado y 3 mejores bloques alternativos |
 | 🗓️ | **Lógica cronológica** | Feriados nacionales, exclusión de findes, años académicos paramétricos |
 | 🔐 | **Acceso por roles** | Aportantes (con login) y público general (solo lectura) |
-| 📊 | **KPIs & BI** | Vistas analíticas conectables a Looker / PowerBI / Python *(fase 4)* |
+| 📊 | **KPIs & BI** | Vistas analíticas conectables a Looker / PowerBI / Python |
+| 🏆 | **Gamificación** | Reputación, sello de coordinación, ranking público |
+| 📄 | **Reportes PDF** | Informe de impacto descargable por entidad |
+| 📥 | **Importación CSV** | Carga masiva de fechas desde Excel |
+| 📖 | **Centro de ayuda** | Tutoriales interactivos, tour guiado y FAQ integrada |
 
 ---
 
@@ -105,7 +109,7 @@ mapfi/
 
 ## 🗺️ Estado
 
-✅ **Fases 1–4 operativas.** Autenticación, **calendario con FullCalendar**, **panel de administración**, CRUD de actividades, **algoritmo de Match completo**, mapa de calor, **gamificación** (reputación + sello + ranking), **reportes PDF** de impacto y **panel de KPIs/BI**. 29 tests en verde. Pendientes menores: edición inline, import CSV de bloques, automatización del envío del PDF. Ver [roadmap](docs/ROADMAP.md).
+✅ **Fases 1–4 operativas.** Autenticación, **calendario con FullCalendar**, multi-carrera, **algoritmo de Match completo**, mapa de calor, **gamificación** (reputación + sello + ranking), **reportes PDF**, **panel de KPIs/BI**, **importación CSV híbrida**, **sistema de tutoriales** (tour guiado + centro de ayuda + tooltips). 60 tests en verde. Ver [plan de implementación](PLAN_DE_IMPLEMENTACION.md) y [roadmap](docs/ROADMAP.md).
 
 ---
 

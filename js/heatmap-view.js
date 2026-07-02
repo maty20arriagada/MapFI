@@ -2,7 +2,6 @@
 (function (global) {
   "use strict";
 
-  // TODO(F3): grilla tipo calendario coloreada por densidad; leyenda de escala.
   async function montar(el, filtros) {
     const qs = new URLSearchParams(filtros || {}).toString();
     try {

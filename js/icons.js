@@ -28,6 +28,8 @@
   // Contenido interno de cada icono (viewBox 0 0 24 24, trazo Lucide).
   // Solo el "body": los atributos comunes (stroke, etc.) los pone svg().
   var PATHS = {
+    "help-circle":
+      '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
     "layout-dashboard":
       '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
     "sliders-horizontal":
