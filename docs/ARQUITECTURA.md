@@ -1,6 +1,23 @@
+---
+title: Arquitectura — MapFI
+tags:
+  - documentacion
+  - arquitectura
+  - backend
+  - diseno
+  - mapfi
+date: 2026-07-20
+status: verificado
+aliases:
+  - Arquitectura
+  - docs-arquitectura
+cssclasses:
+  - wide-page
+---
+
 # 🏛️ Arquitectura — MapFI
 
-Documento de arquitectura técnica. Espeja el patrón del **Simulador Marketing B2B** para garantizar coherencia, portabilidad y un despliegue de un solo comando.
+Documento de arquitectura técnica. Describe la estructura, capas y decisiones de diseño de MapFI.
 
 ---
 
@@ -101,7 +118,7 @@ Documento de arquitectura técnica. Espeja el patrón del **Simulador Marketing 
 Toda la configuración entra por variables de entorno (ver `.env.example`):
 
 - **Local con `npm start`** → `.env` apunta a `localhost:5433`.
-- **Docker Compose** → construye `DATABASE_URL` con el host interno `db:5432` (ignora el `DATABASE_URL` del `.env`, igual que el simulador).
+- **Docker Compose** → construye `DATABASE_URL` con el host interno `db:5432` para que el backend se conecte al contenedor de PostgreSQL dentro de la red interna de Docker.
 - **Cloud (Railway/Render)** → las variables se setean en el dashboard.
 
 El server hace **fail-fast** si falta `DATABASE_URL` o `SESSION_SECRET` en producción.
@@ -111,7 +128,7 @@ El server hace **fail-fast** si falta `DATABASE_URL` o `SESSION_SECRET` en produ
 ## 7. Decisiones técnicas notables
 
 1. **`tstzrange` + GiST** para choques de horario y densidad del mapa de calor (en vez de comparar `inicio/fin` a mano). Permite el operador de solapamiento `&&` con índice eficiente.
-2. **Sin framework frontend**: menos superficie de mantenimiento, alineado con "cero capacitación" y con el simulador. Solo se vendorea FullCalendar para el calendario.
+2. **Sin framework frontend**: menos superficie de mantenimiento, alineado con el Principio I (Simplicidad sin build) y el Principio VI (cero capacitación) de la constitución. Solo se vendorea FullCalendar para el calendario.
 3. **Backend desacoplado para KPIs**: los indicadores se exponen como **vistas SQL** + endpoints `/api/analytics/*`, de modo que agregar un KPI no requiere cambiar el esquema base ni romper código (requisito §7).
 4. **Año académico paramétrico** (`periodo_academico`): la plataforma se adapta al cambio de año y permite clonar la estructura anual.
 
