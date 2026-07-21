@@ -10,6 +10,7 @@
     "test:watch": "jest --watch",
     "db:migrate": "node js/db/migrate.js",
     "admin:reset": "node js/db/reset-admin.js",
+    "seed:cuentas": "node js/db/seed-cuentas.js",
     "docker:up": "docker compose up --build",
     "docker:prod": "docker compose up -d --build",
     "docker:logs": "docker compose logs -f server",
