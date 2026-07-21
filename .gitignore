@@ -3,10 +3,19 @@ node_modules/
 npm-debug.log*
 yarn-error.log
 
-# Entorno
+# Entorno y secretos
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+*.bak
 
 # Archivos temporales del sistema
 *.tmp
@@ -17,8 +26,10 @@ tmpclaude-*
 Thumbs.db
 desktop.ini
 
-# Editor
+# Editor y workspace local
 .vscode/
+.obsidian/
+.verb.md
 *.swp
 
 # Artefactos del agente de IA (no subir al repo)

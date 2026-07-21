@@ -1,0 +1,17 @@
+{
+  "readableLineLength": true,
+  "strictLineBreaks": false,
+  "showFrontmatter": true,
+  "livePreview": true,
+  "showLineNumber": true,
+  "useTab": false,
+  "tabSize": 2,
+  "defaultViewMode": "source",
+  "foldHeading": true,
+  "foldIndent": true,
+  "attachmentFolderPath": "img",
+  "newFileLocation": "current",
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": false,
+  "alwaysUpdateLinks": true
+}

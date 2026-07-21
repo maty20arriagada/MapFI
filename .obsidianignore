@@ -1,0 +1,48 @@
+# Obsidian Ignore — MapFI Vault
+# Excluir del graph view y búsqueda de Obsidian
+
+# Dependencias y build
+node_modules/
+dist/
+build/
+coverage/
+
+# Git
+.git/
+.gitignore
+
+# Configuración del sistema
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yaml
+docker-compose*.yml
+.dockerignore
+
+# Archivos de servidor
+run.sh
+start.bat
+Procfile
+nixpacks.toml
+
+# Configuración Speckit (se puede navegar pero no indexar)
+.specify/scripts/
+.specify/templates/
+.specify/integrations/
+
+# Imágenes binarias
+img/*.png
+img/*.jpg
+img/*.gif
+img/*.ico
+
+# Test config
+jest.setup.js
+
+# Archivos que Obsidian no necesita indexar
+package-lock.json
