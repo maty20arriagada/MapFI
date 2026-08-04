@@ -56,6 +56,22 @@ jest.mock("../../js/db", () => {
         }
         return { rows: [] };
       }
+      // Aviso publico de cancelaciones: debe ir ANTES del comodin de abajo,
+      // que si no se lo tragaria (tambien es "FROM actividad a JOIN entidad").
+      if (sql.includes("eliminada_por")) {
+        return { rows: [{
+          id: 502, titulo: "Evento retirado", tipo: "EVENTO",
+          fecha_inicio: "2026-04-01T10:00:00Z", fecha_fin: "2026-04-01T12:00:00Z",
+          entidad_sigla: "CEEIND", entidad_nombre: "CEE Industrial",
+          retirada_en: "2026-04-02T09:00:00Z", motivo_retiro: "se reprograma",
+          eliminada_por: "CEE Industrial",
+        }] };
+      }
+      // Captura del archivado para comprobar que el motivo llega al DAO.
+      if (/^UPDATE actividad\s+SET estado = 'ARCHIVADA'/.test(sql)) {
+        mockPool.__ultimoArchivar = params;
+        return { rows: [{ id: params[0], estado: "ARCHIVADA" }] };
+      }
       if (sql.includes("FROM actividad a") && sql.includes("JOIN entidad e")) {
         // Simula el filtro real: "propias" (sin `estado = ANY`) ve ambas;
         // "publico" (con `estado = ANY`) solo ve la vigente.
@@ -252,6 +268,97 @@ describe("API endpoints públicos", () => {
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/término/i);
+  });
+
+  describe("Eliminar con constancia pública", () => {
+    test("el aviso de cancelaciones es PÚBLICO: sin sesión también se ve", async () => {
+      // Quien más necesita enterarse de que un evento se canceló es el
+      // estudiante que lo vio en el calendario, y ese no tiene cuenta.
+      const res = await request(app).get("/api/actividades/eliminadas");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body[0].titulo).toBe("Evento retirado");
+      expect(res.body[0].eliminada_por).toBe("CEE Industrial");
+    });
+
+    test("el aviso no expone el nombre de la persona que eliminó", async () => {
+      const res = await request(app).get("/api/actividades/eliminadas");
+      const campos = Object.keys(res.body[0]);
+      expect(campos).toContain("eliminada_por");
+      expect(campos).not.toContain("retirada_por"); // id del usuario
+      expect(campos).not.toContain("usuario_nombre");
+    });
+
+    test("el dueño elimina lo suyo y el motivo llega al registro", async () => {
+      const db = require("../../js/db");
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/actividades/501").send({ motivo: "se reprograma para el 20 de mayo" });
+      expect(res.status).toBe(200);
+      expect(res.body.estado).toBe("ARCHIVADA");
+      // params: [id, usuarioId, motivo]
+      expect(db.pool.__ultimoArchivar[2]).toBe("se reprograma para el 20 de mayo");
+    });
+
+    test("sin motivo se guarda null, no una cadena vacía", async () => {
+      const db = require("../../js/db");
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      await agent.delete("/api/actividades/501").send({ motivo: "   " });
+      expect(db.pool.__ultimoArchivar[2]).toBeNull();
+    });
+
+    test("un centro no puede eliminar la actividad de otro", async () => {
+      // La 501 es de la entidad 6; se prueba con una que no existe para ese
+      // aportante (el mock devuelve vacío ⇒ no es suya).
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/actividades/999").send({});
+      expect(res.status).toBe(403);
+    });
+  });
+
+  describe("Regresiones de la revisión de seguridad (2026-08-04)", () => {
+    test("SEG-2 — el código de backend no se sirve como estático", async () => {
+      // express.static(__dirname) publicaba todo el árbol del proyecto.
+      for (const ruta of [
+        "/server.js",
+        "/package.json",
+        "/js/dao/actividadDao.js",
+        "/js/services/matchService.js",
+        "/js/db/migrate.js",
+        "/db/migrations/001_schema_inicial.sql",
+        "/jest.setup.js",
+      ]) {
+        const res = await request(app).get(ruta);
+        expect([404, 403]).toContain(res.status);
+      }
+    });
+
+    test("SEG-2 — el frontend sí se sigue sirviendo", async () => {
+      for (const ruta of ["/js/api-client.js", "/js/sanitize.js", "/js/views/event-table.js", "/css/design-system.css"]) {
+        const res = await request(app).get(ruta);
+        expect(res.status).toBe(200);
+      }
+    });
+
+    test("SEG-5 — no se puede crear una cuenta con contraseña débil", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/admin/usuarios").send({
+        email: "nuevo@mapfi.cl", password: "123", nombre: "Nuevo", rol: "APORTANTE",
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/al menos 8 caracteres/i);
+    });
+
+    test("SEG-5 — el cambio de contraseña propia aplica la misma política", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/auth/password").send({ actual: "test1234", nueva: "corta" });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/al menos 8 caracteres/i);
+    });
   });
 
   describe("Regresiones de la revisión QA (2026-08-04)", () => {

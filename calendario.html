@@ -112,6 +112,15 @@ Certamen 2,Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
       </div>
 
       <div id="calendar"><div class="placeholder">Cargando…</div></div>
+
+      <!-- Aviso de cancelaciones: solo se muestra si hay algo que avisar.
+           Sirve a quien vio una fecha en el calendario y necesita saber que
+           ya no va. Publico: no requiere iniciar sesion. -->
+      <div class="card" id="canceladasCard" hidden style="margin-top:16px">
+        <h2><span class="icon title-icon" data-icon="ban"></span> Actividades canceladas recientemente</h2>
+        <p class="muted">Fechas que estaban publicadas y fueron eliminadas del calendario en los últimos 30 días.</p>
+        <div id="tablaCanceladas"></div>
+      </div>
     </section>
   </main>
 

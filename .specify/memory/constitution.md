@@ -229,4 +229,26 @@ principio existente).
 
 ---
 
+### Propuesta 2 — Superficie servida y confianza en el proxy (revisión de seguridad 2026-08-04)
+
+**Contexto:** la revisión de seguridad encontró dos garantías que el código ya cumple pero
+que ningún principio exigía, y que son fáciles de perder en un cambio futuro:
+
+1. **No servir el backend como estático.** `express.static(__dirname)` publicaba
+   `server.js`, los DAO, las migraciones y `package.json`. Ya se bloqueó, pero nada impide
+   que mañana se añada un archivo de configuración y quede público (SEG-2).
+2. **No confiar en cabeceras de proxy sin proxy.** `trust proxy` incondicional permitía
+   falsificar `X-Forwarded-For` y saltarse el límite de intentos de login (SEG-1).
+
+**Propuesta concreta:** extender el Principio III con dos reglas:
+*"Solo se sirven al navegador los archivos que el navegador necesita; el código de
+servidor, las migraciones y los manifiestos nunca son accesibles por HTTP"* y *"las
+cabeceras de proxy solo se consideran fiables cuando el despliegue declara explícitamente
+que hay un proxy delante"*.
+
+**Estado:** propuesto 2026-08-04. Pendiente de acuerdo del equipo (subiría a **1.1.0**,
+MINOR). Detalle en `docs/REVISION_SEGURIDAD.md`.
+
+---
+
 **Version**: 1.0.1 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-08-03

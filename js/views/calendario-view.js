@@ -25,6 +25,53 @@
       errs.map(function (e) { return "<li>Fila " + e.fila + ": " + (window.escapeHtml || function (s) { return s; })(e.error) + "</li>"; }).join("") + "</ul></div>";
   }
 
+  var esc = function (s) {
+    return (global.escapeHtml || function (x) { return x == null ? "" : String(x); })(s);
+  };
+
+  /**
+   * Aviso publico de cancelaciones (ultimos 30 dias). La tarjeta permanece
+   * oculta si no hay nada que avisar, para no ensuciar la pagina el resto
+   * del tiempo. Muestra el CENTRO responsable, no la persona.
+   */
+  async function renderCanceladas() {
+    var card = document.getElementById("canceladasCard");
+    var cont = document.getElementById("tablaCanceladas");
+    if (!card || !cont) return;
+    var lista = [];
+    try {
+      lista = await api.get("/api/actividades/eliminadas");
+    } catch (_) {
+      return; // si falla, la tarjeta simplemente no aparece
+    }
+    if (!lista.length) { card.hidden = true; return; }
+
+    var fmt = function (d) {
+      return new Date(d).toLocaleString("es-CL", {
+        day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+      });
+    };
+    var fmtDia = function (d) {
+      return new Date(d).toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
+    };
+    cont.innerHTML =
+      '<table><thead><tr>' +
+        '<th>Actividad</th><th>Fecha que tenía</th><th>Eliminada por</th><th>Cuándo</th><th>Motivo</th>' +
+      '</tr></thead><tbody>' +
+      lista.map(function (a) {
+        return '<tr>' +
+          '<td><strong>' + esc(a.titulo) + '</strong><div class="muted" style="font-size:.78rem">' + esc(a.entidad_sigla || a.entidad_nombre) + '</div></td>' +
+          '<td>' + fmt(a.fecha_inicio) + '</td>' +
+          '<td>' + esc(a.eliminada_por) + '</td>' +
+          '<td class="muted">' + fmtDia(a.retirada_en) + '</td>' +
+          '<td class="muted">' + esc(a.motivo_retiro || "—") + '</td>' +
+        '</tr>';
+      }).join("") +
+      '</tbody></table>';
+    card.hidden = false;
+    if (global.Icons) global.Icons.hydrate(card);
+  }
+
   function init() {
     var cal = document.getElementById("calendar");
 
@@ -63,16 +110,22 @@
 
       document.querySelectorAll(".filtro").forEach(function (s) { s.addEventListener("change", render); });
       render();
+      renderCanceladas();
 
       if (!isAdmin) return;
 
       var aEnt = document.getElementById("aEntidad");
+      // Nombres, siglas y codigos vienen de la base y los escribe un admin.
+      // Van escapados igual: sin esto, una comilla en el nombre de una carrera
+      // se sale del atributo `title="..."` y permite inyectar atributos
+      // (revision de seguridad 2026-08-04, SEG-3). dashboard-view.js ya lo
+      // hacia bien; aqui se habia quedado sin escapar.
       aEnt.innerHTML = cat.entidades.map(function (e) {
-        return '<option value="' + e.id + '"' + (e.sigla === "DOCFI" ? " selected" : "") + '>' + ((e.sigla ? e.sigla + " — " : "") + e.nombre) + '</option>';
+        return '<option value="' + e.id + '"' + (e.sigla === "DOCFI" ? " selected" : "") + '>' + esc((e.sigla ? e.sigla + " — " : "") + e.nombre) + '</option>';
       }).join("");
 
       document.getElementById("aCarreras").innerHTML = cat.carreras.map(function (c) {
-        return '<label title="' + c.nombre + '"><input type="checkbox" value="' + c.id + '" />' + c.codigo + '</label>';
+        return '<label title="' + esc(c.nombre) + '"><input type="checkbox" value="' + c.id + '" />' + esc(c.codigo) + '</label>';
       }).join("");
 
       document.getElementById("aNiveles").innerHTML = cat.generaciones.map(function (g) {

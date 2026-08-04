@@ -64,11 +64,11 @@
             <span class="muted">Facultad de Ingeniería · Universidad de Concepción</span>
           </div>
           <div class="credits">
-            <span>Impulsado por CEEIND 2026 · Plan Estratégico 2030<br /><span class="muted">Desarrollado en colaboración con</span></span>
+            <span>Impulsado por CEEIND 2026 · Plan Estratégico 2030<br /><span class="muted">Desarrollado en colaboración con GIIA</span></span>
             <img src="img/GIIA.svg" alt="GIIA - Grupo de Interés en Inteligencia Artificial UdeC" class="giia-logo" />
           </div>
         </div>
-        <div class="foot-bottom">© <span id="footYear"></span> CEEIND &amp; GIIA · Facultad de Ingeniería · Universidad de Concepción</div>
+        <div class="foot-bottom">© <span id="footYear"></span> GIIA · Facultad de Ingeniería · Universidad de Concepción</div>
       </footer>`);
   }
 

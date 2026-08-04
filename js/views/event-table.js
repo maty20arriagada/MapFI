@@ -11,9 +11,10 @@
   // (revision QA, hallazgo M-3). El admin sigue pudiendo todos.
   const ESTADOS_APORTANTE = ["SUSPENDIDA", "REPROGRAMADA"];
   const ESTADOS_ADMIN = ["PROPUESTA", "CONFIRMADA", "REALIZADA", "SUSPENDIDA", "REPROGRAMADA"];
-  // ARCHIVADA no es elegible a mano (se llega archivando y se sale
-  // restituyendo, y eso es cosa del admin), pero el autor SI ve sus
-  // actividades archivadas, asi que necesita insignia propia.
+  // ARCHIVADA es el estado interno de lo ELIMINADO (no se renombro para no
+  // arrastrar una migracion por un cambio de nombre). No es elegible a mano
+  // desde el desplegable, pero el autor sigue viendo lo suyo eliminado, asi
+  // que necesita insignia propia.
   const BADGE = {
     CONFIRMADA: "alto", REALIZADA: "alto", PROPUESTA: "medio",
     REPROGRAMADA: "medio", SUSPENDIDA: "bajo", ARCHIVADA: "bajo",
@@ -86,20 +87,25 @@
           if (btnGuardar) btnGuardar.disabled = false;
         }
       } else if (btn.dataset.act === "eliminar") {
-        // FR-011: el mensaje debe reflejar el comportamiento real — ya no es
-        // un borrado definitivo, se archiva y un administrador puede
-        // restituirlo (E-07).
-        const confirmar = global.confirmDialog
-          ? global.confirmDialog({
-              titulo: "Archivar actividad",
-              mensaje: `"${act.titulo}" se archivará y dejará de mostrarse en el calendario. No se borra: un administrador puede restituirla después.`,
-              textoConfirmar: "Archivar",
+        // FR-011: el mensaje dice exactamente lo que va a pasar. Se pide el
+        // motivo porque casi toda eliminacion es una CANCELACION, y quien ya
+        // habia visto la fecha en el calendario necesita saber por que
+        // desaparecio; ese texto es lo que se publica en el aviso.
+        const respuesta = global.confirmDialog
+          ? await global.confirmDialog({
+              titulo: "Eliminar actividad",
+              mensaje: `"${act.titulo}" dejará de aparecer en el calendario. Quedará registrado públicamente que tu centro la eliminó, para que quien ya la haya visto sepa que se canceló.`,
+              textoConfirmar: "Eliminar",
+              campoMotivo: {
+                etiqueta: "Motivo (opcional, se muestra públicamente)",
+                placeholder: "Ej.: se reprograma para el 20 de mayo",
+              },
             })
-          : Promise.resolve(confirm(`¿Archivar "${act.titulo}"? Deja de mostrarse, pero puede restituirse después.`));
-        if (!(await confirmar)) return;
+          : (confirm(`¿Eliminar "${act.titulo}"? Quedará registrado públicamente que tu centro la eliminó.`) ? { motivo: "" } : false);
+        if (!respuesta) return;
         try {
-          await api.del("/api/actividades/" + id);
-          toast("Evento archivado", "success");
+          await api.del("/api/actividades/" + id, { motivo: respuesta.motivo || null });
+          toast("Actividad eliminada", "success");
           montar(el, entidadId, onChange, opts);
           if (onChange) onChange();
         } catch (e) { toast(e.message, "error"); }
@@ -118,7 +124,7 @@
       <td><span class="badge ${BADGE[a.estado] || "medio"}">${esc(a.estado)}</span></td>
       <td class="acciones">
         <button class="btn-icon" data-act="editar" title="Editar" aria-label="Editar"><span class="icon" data-icon="pencil"></span></button>
-        <button class="btn-icon" data-act="eliminar" title="Archivar" aria-label="Archivar"><span class="icon" data-icon="trash-2"></span></button>
+        <button class="btn-icon" data-act="eliminar" title="Eliminar" aria-label="Eliminar"><span class="icon" data-icon="trash-2"></span></button>
       </td>
     </tr>`;
   }

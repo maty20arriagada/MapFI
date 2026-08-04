@@ -29,6 +29,8 @@
     post: (u, b) => req("POST", u, b),
     put: (u, b) => req("PUT", u, b),
     patch: (u, b) => req("PATCH", u, b),
-    del: (u) => req("DELETE", u),
+    // DELETE admite cuerpo opcional: al eliminar una actividad se envia el
+    // motivo, que es lo que se publica en el aviso de cancelacion.
+    del: (u, b) => req("DELETE", u, b),
   };
 })(window);

@@ -18,6 +18,19 @@ const { pool, query } = require("../db");
 const ESTADOS_VIGENTES = Object.freeze(["PROPUESTA", "CONFIRMADA", "REALIZADA"]);
 const ESTADOS_OCULTOS = Object.freeze(["SUSPENDIDA", "REPROGRAMADA", "ARCHIVADA"]);
 
+// ── Constancia publica de eliminaciones ─────────────────────────────────────
+// Cuando un centro borra algo del calendario casi siempre es porque se
+// CANCELO. Si desaparece en silencio, quien ya lo habia visto llega a un
+// evento que no existe. Por eso la constancia no es un registro de auditoria
+// escondido: es un aviso de cancelacion dirigido a los estudiantes, y por eso
+// la ruta que lo expone es publica.
+const DIAS_AVISO_ELIMINACION = 30;
+// Margen de correccion: si se elimina dentro de la hora siguiente a su
+// creacion se entiende que fue un error de tipeo, no una cancelacion (nadie
+// planifico nada en 40 minutos). No se publica, para que publicar algo por
+// equivocacion no deje su titulo a la vista aunque lo borres enseguida.
+const HORAS_MARGEN_CORRECCION = 1;
+
 /**
  * Agrega a `cond`/`args` la condicion "alias.estado = ANY(vigentes)", usando
  * un solo parametro (arreglo) en vez de generar N placeholders a mano.
@@ -185,8 +198,36 @@ module.exports = {
   },
 
   /**
-   * Todo lo archivado/retirado (cualquier entidad), para la seccion
-   * "Actividades retiradas" del panel de administracion (T029, FR-004).
+   * Eliminaciones recientes para el aviso publico de cancelaciones.
+   * Devuelve el CENTRO responsable, nunca el nombre de la persona que pulso
+   * el boton: para quien lee, el responsable es el centro, y exponer el
+   * nombre individual seria exposicion innecesaria.
+   * @param {number} [dias=30]
+   */
+  async listarEliminadasRecientes(dias) {
+    const ventana = dias || DIAS_AVISO_ELIMINACION;
+    const { rows } = await query(
+      `SELECT a.id, a.titulo, a.tipo, a.fecha_inicio, a.fecha_fin,
+              e.sigla AS entidad_sigla, e.nombre AS entidad_nombre,
+              a.retirada_en, a.motivo_retiro,
+              COALESCE(elim.nombre, 'Administración') AS eliminada_por
+         FROM actividad a
+         JOIN entidad e ON e.id = a.entidad_id
+         LEFT JOIN usuario u ON u.id = a.retirada_por
+         LEFT JOIN entidad elim ON elim.id = u.entidad_id
+        WHERE a.estado = 'ARCHIVADA'
+          AND a.retirada_en IS NOT NULL
+          AND a.retirada_en >= now() - ($1 || ' days')::interval
+          AND a.retirada_en >= a.created_at + ($2 || ' hours')::interval
+        ORDER BY a.retirada_en DESC`,
+      [String(ventana), String(HORAS_MARGEN_CORRECCION)]
+    );
+    return rows;
+  },
+
+  /**
+   * Todo lo eliminado (cualquier entidad, sin ventana de tiempo), para la
+   * seccion del panel de administracion desde la que se puede restituir.
    */
   async listarRetiradas() {
     const { rows } = await query(

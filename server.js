@@ -47,8 +47,20 @@ const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === "production";
 const HAS_DB = !!process.env.DATABASE_URL;
 
-// ── Reverse proxy (Railway/Render/Nginx) para cookies 'secure' ──────────────
-app.set("trust proxy", 1);
+// ── Reverse proxy (Railway/Render/Nginx) ────────────────────────────────────
+// Confiar en las cabeceras de proxy SOLO si de verdad hay uno delante
+// (revision de seguridad 2026-08-04, hallazgo SEG-1). Antes se hacia siempre,
+// y eso permite falsificarlas: con la app expuesta directamente, cualquiera
+// manda un `X-Forwarded-For` distinto en cada intento, `req.ip` cambia y el
+// limite de 5 intentos de login deja de aplicar — fuerza bruta sin freno.
+//
+// Por defecto NO se confia (opcion segura). Si pones nginx delante para
+// servir HTTPS, DEBES activarlo: sin esto `req.secure` es false y las cookies
+// `secure` de produccion no se emiten, con lo que el login no funciona.
+const TRUST_PROXY = ["1", "true", "si", "yes"].includes(
+  String(process.env.TRUST_PROXY || "").trim().toLowerCase()
+);
+if (TRUST_PROXY) app.set("trust proxy", 1);
 
 // ── Middleware base ─────────────────────────────────────────────────────────
 app.use(express.json({ limit: "100kb" }));
@@ -87,6 +99,18 @@ if (isProduction && !process.env.SESSION_SECRET) {
     "Genera una con: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
   );
   process.exit(1);
+}
+// En produccion las cookies van con `secure`, que exige HTTPS. Eso casi
+// siempre significa un nginx delante — y entonces hace falta TRUST_PROXY, o
+// `req.secure` sera false y la cookie de sesion nunca se emitira (login roto,
+// sin ningun error visible). Se avisa fuerte en vez de adivinar.
+if (isProduction && !TRUST_PROXY) {
+  console.warn(
+    "[server] AVISO: NODE_ENV=production sin TRUST_PROXY. Si sirves detras de " +
+    "un proxy (nginx) con HTTPS, define TRUST_PROXY=true o el login fallara. " +
+    "Si la app se expone directamente, dejalo asi: activarlo permitiria " +
+    "falsificar la IP y saltarse el limite de intentos de login."
+  );
 }
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || "dev-inseguro-cambiar",
@@ -203,6 +227,18 @@ function requireRole(rol) {
 
 // Helper: query param a entero o undefined.
 const num = (v) => (v !== undefined && v !== "" ? parseInt(v, 10) : undefined);
+
+// ── Politica de contrasenas (unica) ─────────────────────────────────────────
+// Estaba solo en el cambio de contrasena propia; la creacion de cuentas no
+// validaba nada y admitia una clave de un caracter (revision de seguridad
+// 2026-08-04, SEG-5). Ahora ambas rutas usan esta funcion.
+const PASSWORD_MIN = 8;
+function errorPassword(pass) {
+  if (!pass || typeof pass !== "string" || pass.length < PASSWORD_MIN) {
+    return `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres`;
+  }
+  return null;
+}
 
 // ── Seleccion explicita de campos de actividad (Spec 002, H-04, FR-008) ─────
 // NUNCA propagar el cuerpo de una peticion con `{ ...b }` hacia el DAO: eso
@@ -552,6 +588,19 @@ app.post("/api/admin/actividades/revisar", requireRole("ADMIN"), async (req, res
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
+// Aviso publico de cancelaciones: que se elimino del calendario en los
+// ultimos 30 dias y que centro lo hizo. Es PUBLICA a proposito — quien mas
+// necesita enterarse de que un evento se cancelo es el estudiante que lo
+// vio en el calendario, y ese no tiene cuenta. Devuelve el centro
+// responsable, nunca el nombre de la persona (ver el DAO).
+app.get("/api/actividades/eliminadas", async (req, res) => {
+  try { res.json(await actividadDao.listarEliminadasRecientes()); }
+  catch (e) {
+    console.error("[actividades:eliminadas]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 // Choques de horario+publico entre actividades vigentes (§16.4, H-02, H-14).
 // Requiere rango de fechas: acota la consulta a la ventana visible del
 // calendario en vez de recorrer todo el historial.
@@ -683,7 +732,12 @@ app.delete("/api/actividades/:id", requireAuth, async (req, res) => {
   try {
     const id = num(req.params.id);
     if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
-    res.json(await actividadDao.archivar(id, req.session.user.id));
+    // El motivo es opcional pero muy util para quien ya habia visto la
+    // fecha: es lo que convierte "desaparecio" en "se cancelo porque...".
+    const motivo = (req.body && typeof req.body.motivo === "string")
+      ? req.body.motivo.trim().slice(0, 300) || null
+      : null;
+    res.json(await actividadDao.archivar(id, req.session.user.id, motivo));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
@@ -891,6 +945,8 @@ app.post("/api/admin/usuarios", requireRole("ADMIN"), async (req, res) => {
   try {
     const { email, password, nombre, rol, entidadId } = req.body || {};
     if (!email || !password || !nombre) return res.status(400).json({ error: "Faltan campos obligatorios" });
+    const errorPass = errorPassword(password);
+    if (errorPass) return res.status(400).json({ error: errorPass });
     const hash = await bcrypt.hash(password, 10);
     const u = await userDao.crear({ email, passwordHash: hash, nombre, rol: rol || "APORTANTE", entidadId });
     res.status(201).json(u);
@@ -907,7 +963,8 @@ app.patch("/api/admin/usuarios/:id", requireRole("ADMIN"), async (req, res) => {
 app.post("/api/auth/password", requireAuth, async (req, res) => {
   try {
     const { actual, nueva } = req.body || {};
-    if (!nueva || nueva.length < 6) return res.status(400).json({ error: "La nueva contrasena debe tener al menos 6 caracteres" });
+    const errorPass = errorPassword(nueva);
+    if (errorPass) return res.status(400).json({ error: errorPass });
     const u = await userDao.buscarPorEmail(req.session.user.email);
     if (!u || !(await bcrypt.compare(actual || "", u.password_hash))) {
       return res.status(401).json({ error: "Contrasena actual incorrecta" });
@@ -918,7 +975,31 @@ app.post("/api/auth/password", requireAuth, async (req, res) => {
 });
 
 // ── Frontend estatico ────────────────────────────────────────────────────────
-// `dotfiles: deny` evita servir .env y otros dotfiles.
+// `express.static(__dirname)` publica TODO el arbol del proyecto. `dotfiles:
+// "deny"` tapa .env y .git, pero no server.js, los DAO, las migraciones ni
+// package.json: todos quedaban descargables desde el navegador (revision de
+// seguridad 2026-08-04, hallazgo SEG-2).
+//
+// Se bloquean explicitamente las rutas que son solo de backend. Se comprobo
+// que ninguna pagina carga js/dao, js/services ni js/db antes de cerrarlas.
+//
+// Arreglo de fondo pendiente: mover el frontend a un `public/` propio y servir
+// solo esa carpeta, en vez de mantener esta lista.
+const RUTAS_SOLO_BACKEND = [
+  /^\/js\/(dao|services|db)\//i,          // capa de datos y logica de servidor
+  /^\/db\//i,                              // migraciones = esquema completo
+  /^\/(server|jest\.setup)\.js$/i,
+  /^\/package(-lock)?\.json$/i,
+  /^\/(Dockerfile|docker-compose[\w.-]*\.ya?ml|run\.sh)$/i,
+  /^\/(specs|__tests__|docs|coverage)\//i,
+];
+app.use((req, res, next) => {
+  if (RUTAS_SOLO_BACKEND.some((re) => re.test(req.path))) {
+    return res.status(404).json({ error: "No encontrado" });
+  }
+  next();
+});
+
 app.use(express.static(__dirname, { dotfiles: "deny", extensions: ["html"] }));
 
 // ============================================================================

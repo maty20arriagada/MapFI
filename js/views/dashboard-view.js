@@ -274,7 +274,7 @@
           toast(creadas + " fecha(s) publicadas en el calendario", allErr.length ? "error" : "success");
           box.innerHTML = '<p><strong>' + creadas + '</strong> fecha(s) publicadas como <span class="badge medio">PROPUESTA</span>' +
             (lotes.length > 1 ? ' (en ' + lotes.length + ' lotes)' : '') +
-            '. Ya son visibles en el calendario; el administrador puede retirarlas si corresponde.</p>' + renderErrores(allErr);
+            '. Ya son visibles en el calendario; puedes eliminar cualquiera desde "Mis eventos".</p>' + renderErrores(allErr);
           document.getElementById("csvText").value = ""; document.getElementById("csvFile").value = "";
           cargarLista();
         } catch (err) { toast(err.message, "error"); }

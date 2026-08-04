@@ -62,15 +62,15 @@
         document.querySelectorAll(".pend-check").forEach((c) => (c.checked = todos.checked));
     }
 
-    // ── Actividades retiradas/archivadas (T029, FR-004) ────────────────────────
+    // ── Actividades eliminadas (via de rescate, no flujo normal) ──────────────
     const retiradas = await api.get("/api/admin/actividades/retiradas");
     if (!retiradas.length) {
-      $("tablaRetiradas").innerHTML = '<p class="muted">No hay actividades retiradas.</p>';
+      $("tablaRetiradas").innerHTML = '<p class="muted">No hay actividades eliminadas.</p>';
     } else {
       const fmtF = (d) => new Date(d).toLocaleString("es-CL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
       $("tablaRetiradas").innerHTML =
         `<table><thead><tr>
-           <th>Título</th><th>Entidad</th><th>Fecha</th><th>Motivo</th><th>Retirada</th><th></th>
+           <th>Título</th><th>Entidad</th><th>Fecha</th><th>Motivo</th><th>Eliminada</th><th></th>
          </tr></thead><tbody>` +
         retiradas.map((r) =>
           `<tr><td><strong>${esc(r.titulo)}</strong></td>

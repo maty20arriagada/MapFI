@@ -13,6 +13,10 @@
       '<form method="dialog" class="stack">' +
         '<h3 data-role="titulo"></h3>' +
         '<p data-role="mensaje" class="muted"></p>' +
+        '<label data-role="motivo-campo" hidden>' +
+          '<span data-role="motivo-etiqueta"></span>' +
+          '<textarea data-role="motivo" rows="2" maxlength="300"></textarea>' +
+        '</label>' +
         '<div class="row" style="justify-content:flex-end">' +
           '<button type="button" class="btn secondary" data-role="cancelar">Cancelar</button>' +
           '<button type="submit" class="btn" data-role="confirmar" value="ok"></button>' +
@@ -23,9 +27,18 @@
   }
 
   /**
-   * confirmDialog({ titulo, mensaje, textoConfirmar }) → Promise<boolean>
-   * `mensaje` se inserta con textContent, nunca HTML: los llamadores no
-   * necesitan escapar manualmente el texto que interpolen (Principio III).
+   * Dialogo de confirmacion. `mensaje` y las etiquetas se insertan con
+   * textContent, nunca como HTML: los llamadores no necesitan escapar el
+   * texto que interpolen (Principio III).
+   *
+   * confirmDialog({ titulo, mensaje, textoConfirmar })
+   *   → Promise<boolean>
+   * confirmDialog({ ..., campoMotivo: { etiqueta, placeholder } })
+   *   → Promise<false | { motivo: string }>
+   *
+   * En ambas formas el valor de cancelar es `false` (falsy) y el de aceptar
+   * es truthy, asi que `if (!(await confirmDialog(...))) return;` sigue
+   * funcionando igual con o sin campo.
    */
   global.confirmDialog = function confirmDialog(opts) {
     opts = opts || {};
@@ -33,6 +46,16 @@
     d.querySelector('[data-role="titulo"]').textContent = opts.titulo || "Confirmar";
     d.querySelector('[data-role="mensaje"]').textContent = opts.mensaje || "";
     d.querySelector('[data-role="confirmar"]').textContent = opts.textoConfirmar || "Confirmar";
+
+    const campo = opts.campoMotivo;
+    const contenedorMotivo = d.querySelector('[data-role="motivo-campo"]');
+    const entradaMotivo = d.querySelector('[data-role="motivo"]');
+    contenedorMotivo.hidden = !campo;
+    entradaMotivo.value = "";
+    if (campo) {
+      d.querySelector('[data-role="motivo-etiqueta"]').textContent = campo.etiqueta || "Motivo (opcional)";
+      entradaMotivo.placeholder = campo.placeholder || "";
+    }
 
     return new Promise((resolve) => {
       const form = d.querySelector("form");
@@ -57,7 +80,9 @@
         resolve(valor);
       }
       function onCancel() { terminar(false); }
-      function onSubmit() { terminar(true); }
+      function onSubmit() {
+        terminar(campo ? { motivo: entradaMotivo.value.trim() } : true);
+      }
       function onClose() { terminar(false); } // Escape / cierre nativo
 
       cancelar.addEventListener("click", onCancel);

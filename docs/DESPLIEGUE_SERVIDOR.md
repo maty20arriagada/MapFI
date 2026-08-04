@@ -136,7 +136,19 @@ server {
 }
 ```
 3. Activa HTTPS (Let's Encrypt): `sudo certbot --nginx -d mapfi.fi.udec.cl`.
-4. Con HTTPS funcionando, en `.env` pon `NODE_ENV=production` y `docker compose up -d` (activa cookies `secure`). El backend ya tiene `trust proxy`.
+4. Con HTTPS funcionando, en `.env` pon `NODE_ENV=production` **y `TRUST_PROXY=true`**, luego `docker compose up -d`.
+
+> **`TRUST_PROXY` es obligatorio en este paso y peligroso fuera de él.**
+> Con nginx delante, el backend necesita confiar en `X-Forwarded-*` para saber
+> que la conexión llegó por HTTPS; si no lo activas, las cookies `secure` no se
+> emiten y **el login falla sin dar ningún error visible**.
+>
+> Pero si la app se expone **directamente** (el despliegue simple del paso 3,
+> sin nginx), déjalo en `false`: con él activado cualquiera puede enviar una
+> cabecera `X-Forwarded-For` distinta en cada intento, cambiar su IP aparente y
+> **saltarse el límite de 5 intentos de login** (revisión de seguridad
+> 2026-08-04, hallazgo SEG-1). El servidor avisa al arrancar si detecta
+> `NODE_ENV=production` sin `TRUST_PROXY`.
 
 Firewall: deja abiertos solo 80/443 (o el puerto de la app). **No abras 5432.**
 
