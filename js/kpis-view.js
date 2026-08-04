@@ -31,7 +31,9 @@
       { label: "Sello", get: (r) => (r.sello_coordinacion ? '<span class="badge alto">' + Icon("trophy", { size: 14 }) + "</span>" : "—") },
     ]);
     tabla($("tablaOcupacion"), data.ocupacion, [
-      { label: "Carrera", get: (r) => carreraNombre[r.carrera_id] || r.carrera_id },
+      // `get` se inserta como HTML crudo (ver tabla()), asi que escapa aqui.
+      // La fila de "Reprog." mas abajo ya lo hacia; esta no (SEG-4).
+      { label: "Carrera", get: (r) => esc(carreraNombre[r.carrera_id] || r.carrera_id) },
       { label: "Año", key: "nivel" },
       { label: "Ocupación", get: (r) => `${r.ocupacion_pct ?? 0}%${bar(r.ocupacion_pct, "var(--amarillo)")}` },
     ]);

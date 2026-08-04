@@ -32,11 +32,36 @@ Una plataforma para **coordinar las actividades de la facultad** y evitar que do
 3. Antes de confirmar, mira el **porcentaje de compatibilidad** que te muestra el sistema.
 4. **Guarda.** Tu actividad se publica **de inmediato** en el calendario de toda la facultad — no hay una cola de aprobación previa que la retenga.
 
-> **¿Y si algo no corresponde?** El administrador puede **retirarla** después (deja
-> de mostrarse, pero queda registrado por qué y quién lo hizo). Si tú mismo
-> necesitas quitar una actividad, "Eliminar" en tu panel no la borra para
-> siempre: la **archiva** — puedes pedirle al administrador que la restituya si
-> te equivocaste.
+---
+
+## 3.1 Eliminar una actividad
+
+Puedes **eliminar cualquier actividad que hayas creado tú**, desde **Mi panel →
+Mis eventos → 🗑**. No necesitas pedir permiso a nadie: desaparece del calendario
+al instante.
+
+Al eliminarla se te pedirá un **motivo (opcional)**. Vale la pena escribirlo:
+
+> **Queda un aviso público.** Durante **30 días**, en el calendario aparece
+> "Actividades canceladas recientemente" con qué se eliminó, **qué centro lo
+> hizo** y el motivo que escribiste.
+
+Esto no es un castigo: es la forma de avisarle a quien **ya había visto la fecha**
+y podría presentarse igual. Si escribes "se reprograma para el 20 de mayo", esa
+persona lo entiende de inmediato.
+
+Dos detalles pensados para ti:
+
+- **Solo aparece tu centro, nunca tu nombre.** El aviso dice "CEE Industrial", no
+  quién de tu equipo pulsó el botón.
+- **Si te equivocaste al publicar y lo borras enseguida** (dentro de la primera
+  hora), se entiende que fue una corrección y **no** se publica ningún aviso.
+
+> ⚠️ **No hay botón de deshacer.** Como no hay un administrador revisando a
+> diario, si eliminas algo por error tendrás que volver a crearlo. La actividad
+> no se destruye del todo, así que en un caso grave el administrador de la
+> plataforma puede recuperarla, pero no cuentes con ello: revisa antes de
+> confirmar.
 
 ---
 

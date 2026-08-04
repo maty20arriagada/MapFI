@@ -170,7 +170,26 @@ Detalle en [[../specs/002-auditoria-robustez-corregir/dilemas|Dilemas 002]].
 | **D-3** | ¿Publicar alcances con matrícula ficticia? | **Sí, rotulado** como estimación; se cargará la matrícula oficial de Docencia |
 | **D-4** | ¿Quién manda cuando dos centros chocan? | Confirmación explícita al agendar sobre saturación |
 | **D-5** | ¿Un centro puede apuntar a otras carreras? | Mantener libertad + advertencia y trazabilidad |
-| **nuevo** | ¿El borrado es reversible? | **Sí: archivar, no borrar**; un administrador puede restaurar |
+| **nuevo** | ¿El borrado es reversible? | ~~Sí: archivar, no borrar; un administrador puede restaurar~~ → **revisado el 2026-08-04**, ver abajo |
+
+> ### ↩️ Revisión de E-07 (2026-08-04): eliminar, no archivar
+> El archivado reversible se diseñó suponiendo que **un administrador restituiría**
+> lo borrado por error. Al confirmarse que **no habrá administrador** haciendo
+> moderación diaria, ese flujo dejaba las actividades en un limbo del que nadie
+> las sacaba, y obligaba a los centros a pedir permiso para limpiar lo suyo.
+>
+> **Decisión nueva:** cada centro **elimina lo que él creó**, sin intermediarios, y
+> **queda constancia pública** de quién lo hizo durante 30 días. El aviso no es
+> auditoría: es la forma de avisarle a quien ya había visto la fecha que se
+> canceló — si desaparece en silencio, esa persona se presenta igual.
+>
+> Se conserva la fila en la base (invisible en todas las vistas) porque, sin
+> administrador de guardia, un clic equivocado sería irreversible; `restituir()`
+> pasa a ser rescate excepcional. El riesgo original de E-07 (una cuenta saliente
+> borrando el trabajo de un semestre) sigue cubierto: nada se destruye y todo
+> borrado queda con nombre y fecha, ahora además a la vista de todos.
+>
+> Detalle en [[REVISION_QA|Revisión QA]] y [[MODELO_DATOS|Modelo de datos]].
 
 > ### 🔄 Cambio estructural derivado de D-2
 > Al confirmarse que **no hay revisor diario**, el modelo de **aprobación previa**

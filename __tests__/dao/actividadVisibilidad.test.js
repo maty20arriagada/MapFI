@@ -51,6 +51,34 @@ describe("actividadDao.listar — visibilidad unificada (H-02, FR-003)", () => {
   });
 });
 
+describe("actividadDao.listarEliminadasRecientes — aviso público de cancelaciones", () => {
+  test("acota a los últimos 30 días y respeta el margen de corrección de 1 hora", async () => {
+    await dao.listarEliminadasRecientes();
+    expect(lastCall.sql).toMatch(/estado = 'ARCHIVADA'/);
+    // Ventana de 30 días sobre la fecha de eliminación.
+    expect(lastCall.sql).toMatch(/retirada_en >= now\(\) - \(\$1 \|\| ' days'\)::interval/);
+    expect(lastCall.params[0]).toBe("30");
+    // Margen: lo eliminado dentro de la hora siguiente a su creación es una
+    // corrección de un error de tipeo, no una cancelación — no se publica.
+    expect(lastCall.sql).toMatch(/retirada_en >= a\.created_at \+ \(\$2 \|\| ' hours'\)::interval/);
+    expect(lastCall.params[1]).toBe("1");
+  });
+
+  test("expone el CENTRO responsable, nunca el nombre de la persona", async () => {
+    await dao.listarEliminadasRecientes();
+    // Se selecciona el nombre de la ENTIDAD de quien eliminó (alias `elim`),
+    // con "Administración" como respaldo. `u.nombre` (la persona) no se
+    // devuelve en ningún caso.
+    expect(lastCall.sql).toMatch(/COALESCE\(elim\.nombre, 'Administración'\) AS eliminada_por/);
+    expect(lastCall.sql).not.toMatch(/u\.nombre/);
+  });
+
+  test("la ventana es configurable", async () => {
+    await dao.listarEliminadasRecientes(7);
+    expect(lastCall.params[0]).toBe("7");
+  });
+});
+
 describe("actividadDao.conflictos — conjunto vigente + rango acotado (H-02, H-14)", () => {
   test("usa el conjunto vigente completo (no solo CONFIRMADA) y acota por rango de fechas", async () => {
     await dao.conflictos("2026-04-01", "2026-04-30");

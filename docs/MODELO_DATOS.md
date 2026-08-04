@@ -127,10 +127,29 @@ El evento/hito. Corazón del calendario y del match.
 público, cuenta en saturación y en choques — es `{PROPUESTA, CONFIRMADA,
 REALIZADA}`; el **oculto** es `{SUSPENDIDA, REPROGRAMADA, ARCHIVADA}`. Fuente
 única de verdad: `ESTADOS_VIGENTES` en `js/dao/actividadDao.js` — ninguna otra
-consulta debe repetir esta lista a mano. "Eliminar" una actividad ya **no borra
-la fila**: la archiva (estado `ARCHIVADA` + `retirada_por`/`retirada_en`), y es
-**reversible** vía `restituir()` (vuelve a `PROPUESTA`, limpia la trazabilidad de
-retiro y registra `restituida_por`/`restituida_en`).
+consulta debe repetir esta lista a mano.
+
+### Eliminación con constancia pública
+
+Cada centro **elimina las actividades que él creó**, sin depender de nadie
+(`puedeEditarActividad`). No hay administrador haciendo moderación diaria, así
+que no existe un flujo de aprobación ni de restitución como parte del uso normal.
+
+- **`ARCHIVADA` es el estado interno de lo ELIMINADO.** Se conservó ese nombre
+  para no arrastrar una migración y un `CHECK` nuevo por un cambio de etiqueta:
+  en toda la interfaz se dice "eliminada".
+- **La fila no se borra.** Es la única red de seguridad: sin administrador de
+  guardia, un clic equivocado sería irreversible. `restituir()` queda como **vía
+  de rescate excepcional**, no como flujo normal.
+- **Queda constancia pública** (`listarEliminadasRecientes`, ruta pública
+  `GET /api/actividades/eliminadas`): durante 30 días el calendario muestra qué
+  se eliminó, **qué centro** lo hizo y el motivo. No es auditoría escondida — es
+  un **aviso de cancelación** para quien ya había visto la fecha.
+- **Se publica la entidad, nunca la persona** (`COALESCE(elim.nombre,
+  'Administración')`): el responsable de cara al lector es el centro.
+- **Margen de corrección de 1 hora:** lo eliminado dentro de la hora siguiente a
+  su creación no se publica — es un error de tipeo, no una cancelación. Evita que
+  publicar algo por equivocación deje su título expuesto aunque lo borres.
 
 #### `actividad_publico`
 Público objetivo (relación N:M con segmentos).
