@@ -20,13 +20,19 @@
       <h1><span class="icon title-icon" data-icon="settings"></span> Panel de administración</h1>
 
       <div class="card stack" style="margin-bottom:16px">
-        <h2><span class="icon title-icon" data-icon="clipboard-list"></span> Pendientes de revisión</h2>
-        <p class="muted">Fechas importadas por los centros que esperan tu aprobación. Al aprobar quedan <strong>CONFIRMADAS</strong> en el calendario; al rechazar quedan suspendidas.</p>
+        <h2><span class="icon title-icon" data-icon="clipboard-list"></span> Fechas sin ratificar</h2>
+        <p class="muted">Con moderación reactiva estas fechas ya están <strong>publicadas</strong> en el calendario público — esto no es una cola bloqueante. Ratificar las deja <strong>CONFIRMADAS</strong>; retirarlas las oculta (puedes restituirlas después desde "Actividades retiradas").</p>
         <div class="row" id="pendAcciones" hidden>
-          <button class="btn" data-rev="APROBAR"><span class="icon" data-icon="circle-check"></span> Aprobar seleccionadas</button>
-          <button class="btn secondary" data-rev="RECHAZAR"><span class="icon" data-icon="ban"></span> Rechazar seleccionadas</button>
+          <button class="btn" data-rev="APROBAR"><span class="icon" data-icon="circle-check"></span> Ratificar seleccionadas</button>
+          <button class="btn secondary" data-rev="RECHAZAR"><span class="icon" data-icon="ban"></span> Retirar seleccionadas</button>
         </div>
         <div id="tablaPendientes"></div>
+      </div>
+
+      <div class="card stack" style="margin-bottom:16px">
+        <h2><span class="icon title-icon" data-icon="eye-off"></span> Actividades retiradas</h2>
+        <p class="muted">Lo archivado o retirado por un administrador. No es definitivo: puedes restituir cualquier actividad y vuelve a publicarse.</p>
+        <div id="tablaRetiradas"></div>
       </div>
 
       <div class="card stack" style="margin-bottom:16px">
@@ -102,6 +108,7 @@
   <script src="js/sanitize.js"></script>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
+  <script src="js/ui-confirm.js"></script>
   <script src="js/theme-toggle.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>

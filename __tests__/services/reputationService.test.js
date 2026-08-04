@@ -35,6 +35,23 @@ describe("reputationService.calcular", () => {
     expect(r.sello_coordinacion).toBe(false);
   });
 
+  test("T034 (H-03) — mayoria de eventos evaluados con Match (>=70%) y baja reprogramacion (<=20%) → obtiene el sello", () => {
+    // Antes de H-03, compatibilidad_pct nunca se guardaba al crear una
+    // actividad real (server.js siempre pasaba `undefined` al DAO), asi que
+    // este caso era matematicamente inalcanzable en produccion aunque la
+    // formula de aqui abajo ya lo permitiera en teoria.
+    const base = { created_at: "2026-03-01", fecha_inicio: "2026-03-20" };
+    const acts = [
+      { ...base, estado: "REALIZADA", compatibilidad_pct: 92 },
+      { ...base, estado: "REALIZADA", compatibilidad_pct: 85 },
+      { ...base, estado: "REALIZADA", compatibilidad_pct: 78 },
+      { ...base, estado: "REALIZADA", compatibilidad_pct: 60 },
+      { ...base, estado: "REPROGRAMADA", compatibilidad_pct: null }, // reprogramada antes de evaluar
+    ];
+    const r = rep.calcular(acts);
+    expect(r.sello_coordinacion).toBe(true);
+  });
+
   test("sin anticipacion → no suma bonus de puntualidad", () => {
     const r = rep.calcular([
       { estado: "REALIZADA", created_at: "2026-03-19", fecha_inicio: "2026-03-20", compatibilidad_pct: 80 },

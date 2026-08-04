@@ -51,6 +51,10 @@
       </header>`);
   }
 
+  function skipLink() {
+    return el(`<a href="#main-content" class="skip-link">Saltar al contenido</a>`);
+  }
+
   function footer() {
     return el(`
       <footer class="site-footer">
@@ -72,6 +76,12 @@
     if (document.querySelector(".topbar")) return; // evitar duplicado
     const head = header();
     document.body.insertBefore(head, document.body.firstChild);
+    // T072 (Backlog 2.2, WCAG): la clase .skip-link ya existía en el sistema
+    // de diseño pero no se usaba en ninguna página — se inyecta aquí, una
+    // sola vez, para todas las páginas que cargan layout.js.
+    document.body.insertBefore(skipLink(), head);
+    const main = document.querySelector("main");
+    if (main && !main.id) main.id = "main-content";
     document.body.appendChild(footer());
 
     const fy = document.getElementById("footYear");
@@ -86,6 +96,17 @@
   }
 
   global.logout = async function () {
+    // T067 (H-12): limpiar las claves de localStorage asociadas a ESTA
+    // cuenta antes de cerrar sesión — en un computador compartido de la
+    // sede no deben quedar visibles ni reutilizarse por la siguiente
+    // cuenta que inicie sesión en el mismo equipo (E-11).
+    try {
+      const { user } = await api.get("/api/auth/me");
+      if (user && user.id) {
+        localStorage.removeItem("mapfi-onboarding-done-" + user.id);
+        localStorage.removeItem("mapfi-evento-ctx-" + user.id);
+      }
+    } catch (_) {}
     try { await api.post("/api/auth/logout"); } catch (_) {}
     location.href = "index.html";
   };

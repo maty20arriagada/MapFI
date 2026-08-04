@@ -54,6 +54,32 @@ describe("CsvUtils.construirActividades", () => {
     expect(errores[0].error).toMatch(/Encabezado/);
   });
 
+  test("T051 (H-05) — 120 filas con público completo se dividen en lotes que no superan el límite del servidor", () => {
+    const catCompleto = {
+      carreras: Array.from({ length: 14 }, (_, i) => ({ id: i + 1, codigo: "C" + i })),
+      entidades: [{ id: 17, sigla: "DOCFI" }],
+      generaciones: Array.from({ length: 6 }, (_, i) => ({ nivel: i + 1 })),
+    };
+    const filas = Array.from({ length: 120 }, (_, i) =>
+      `Evaluación ${i},EXAMEN,2026-04-15 18:30,,*,*,`
+    );
+    const csv = "titulo,tipo,inicio,fin,carreras,niveles,ubicacion\n" + filas.join("\n") + "\n";
+    const { actividades, errores } = CsvUtils.construirActividades(csv, catCompleto, { defaultEntidadId: 17 });
+    expect(errores).toHaveLength(0);
+    expect(actividades).toHaveLength(120);
+    expect(actividades[0].publico).toHaveLength(14 * 6); // publico completo, ~2 kB por fila
+
+    const LIMITE_SERVIDOR = 100 * 1024; // express.json({ limit: "100kb" }) en server.js
+    const lotes = CsvUtils.dividirEnLotes(actividades, 80000);
+
+    expect(lotes.length).toBeGreaterThan(1); // 120 filas de ~2kB no caben en un solo envio
+    for (const lote of lotes) {
+      expect(JSON.stringify(lote).length).toBeLessThan(LIMITE_SERVIDOR);
+    }
+    // ningun dato se pierde ni se reordena al dividir
+    expect(lotes.flat()).toEqual(actividades);
+  });
+
   test("normTipo mapea sinónimos y tags nuevos", () => {
     expect(CsvUtils.normTipo("certamen")).toBe("EXAMEN");
     expect(CsvUtils.normTipo("Charla")).toBe("CHARLA");

@@ -49,15 +49,27 @@
       const cat = await Filters.cargar();
       Filters.poblarSelect(document.getElementById("mCarrera"), cat.carreras, "id", "nombre");
       Filters.poblarSelect(document.getElementById("mNivel"), cat.generaciones, "nivel", "etiqueta");
+      // T070: rellena el formulario con la sugerencia elegida.
+      function toLocalInput(d) {
+        const p = (n) => String(n).padStart(2, "0");
+        return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" + p(d.getHours()) + ":" + p(d.getMinutes());
+      }
       document.getElementById("matchForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector("button");
+        const form = e.target;
+        const btn = form.querySelector("button");
         const txt = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = "Evaluando…";
         try {
-          const r = await MatchCalculator.evaluar(e.target);
-          MatchCalculator.render(document.getElementById("resultado"), r);
+          const r = await MatchCalculator.evaluar(form);
+          MatchCalculator.render(document.getElementById("resultado"), r, {
+            onPick: function (s) {
+              form.inicio.value = toLocalInput(new Date(s.inicio));
+              form.fin.value = toLocalInput(new Date(s.fin));
+              toast("Fecha actualizada con la sugerencia", "success");
+            },
+          });
         } catch (err) {
           toast(err.message || "No se pudo evaluar", "error");
         } finally {

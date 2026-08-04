@@ -15,8 +15,8 @@
       const serverMsg = (data && data.error) ? data.error : null;
       const T = {
         400: "Datos inválidos", 401: "Sesión expirada", 403: "No autorizado",
-        404: "No encontrado", 409: "Conflicto", 422: "Datos inválidos",
-        429: "Demasiados intentos", 500: "Error del servidor",
+        404: "No encontrado", 409: "Conflicto", 413: "El archivo es demasiado grande; divídelo en partes",
+        422: "Datos inválidos", 429: "Demasiados intentos", 500: "Error del servidor",
         502: "Servicio no disponible", 503: "Servicio en mantención",
       };
       throw new Error(serverMsg || T[res.status] || "Error inesperado");

@@ -5,6 +5,29 @@
  */
 const { pool, query } = require("../db");
 
+// ── Modelo de visibilidad (moderacion reactiva, Spec 002 / data-model.md) ───
+// FUENTE UNICA DE VERDAD: toda consulta que decida que actividades son
+// "vigentes" (visibles al publico, cuentan en saturacion, cuentan en choques)
+// DEBE usar ESTADOS_VIGENTES. No se debe volver a escribir la lista de estados
+// a mano en ningun otro archivo (server.js, kpiDao, vistas SQL).
+//
+// Con moderacion reactiva (no hay revisor diario, Spec 002 Clarifications):
+// una actividad se publica de inmediato al crearse (PROPUESTA es publica) y
+// el administrador puede retirarla despues. El archivado (antes: borrado
+// fisico) es reversible.
+const ESTADOS_VIGENTES = Object.freeze(["PROPUESTA", "CONFIRMADA", "REALIZADA"]);
+const ESTADOS_OCULTOS = Object.freeze(["SUSPENDIDA", "REPROGRAMADA", "ARCHIVADA"]);
+
+/**
+ * Agrega a `cond`/`args` la condicion "alias.estado = ANY(vigentes)", usando
+ * un solo parametro (arreglo) en vez de generar N placeholders a mano.
+ * @param {string} alias  alias de la tabla actividad en la consulta (ej. "a")
+ */
+function agregarFiltroVigente(alias, cond, args) {
+  args.push(ESTADOS_VIGENTES);
+  cond.push(`${alias}.estado = ANY($${args.length}::text[])`);
+}
+
 /** YYYY-MM-DD de un Date (local). */
 function iso(d) {
   const x = new Date(d);
@@ -21,7 +44,17 @@ function semanaDe(fecha) {
 }
 
 module.exports = {
+  /**
+   * @param {object} f
+   * @param {"publico"|"propias"} [f.alcance="publico"] "propias" muestra
+   *   TODAS las actividades de `f.entidadId` (incluidas ocultas/archivadas) —
+   *   es el calendario del propio autor (FR-004). "publico" (default) solo
+   *   muestra ESTADOS_VIGENTES, sea o no que tambien se filtre por entidad.
+   */
   async listar(f = {}) {
+    if (f.alcance === "propias" && !f.entidadId) {
+      throw new Error("alcance 'propias' requiere entidadId");
+    }
     const cond = [];
     const args = [];
     let i = 1;
@@ -31,6 +64,7 @@ module.exports = {
     if (f.hasta)     { cond.push(`a.fecha_inicio <= $${i++}`); args.push(f.hasta); }
     if (f.carreraId) { cond.push(`EXISTS (SELECT 1 FROM actividad_publico ap WHERE ap.actividad_id = a.id AND ap.carrera_id = $${i++})`); args.push(f.carreraId); }
     if (f.nivel)     { cond.push(`EXISTS (SELECT 1 FROM actividad_publico ap WHERE ap.actividad_id = a.id AND ap.nivel = $${i++})`); args.push(f.nivel); }
+    if (f.alcance !== "propias") agregarFiltroVigente("a", cond, args);
 
     const where = cond.length ? `WHERE ${cond.join(" AND ")}` : "";
     const { rows } = await query(
@@ -66,10 +100,15 @@ module.exports = {
             tipo, ramo, estado, ubicacion, alcance_estimado, compatibilidad_pct, created_by)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
          RETURNING id`,
+        // OJO con `||` en los campos NUMERICOS: un 0 legitimo es falsy y se
+        // guardaba como NULL (revision QA, hallazgo A-1). Una actividad
+        // evaluada con compatibilidad 0 (p.ej. cae en fin de semana) quedaba
+        // indistinguible de una nunca evaluada, y eso subestima el "uso del
+        // Match" del que depende el Sello de Coordinacion. Por eso `??`.
         [a.titulo, a.descripcion, a.entidadId, a.periodoId || null,
          a.fechaInicio, a.fechaFin, a.tipo, a.ramo || null, a.estado || "PROPUESTA",
-         a.ubicacion || null, a.alcanceEstimado || null,
-         a.compatibilidadPct || null, a.createdBy || null]
+         a.ubicacion || null, a.alcanceEstimado ?? null,
+         a.compatibilidadPct ?? null, a.createdBy || null]
       );
       const id = rows[0].id;
       for (const p of publico) {
@@ -103,9 +142,12 @@ module.exports = {
            ramo = COALESCE($7, ramo),
            estado = COALESCE($8, estado),
            ubicacion = COALESCE($9, ubicacion),
+           compatibilidad_pct = COALESCE($10, compatibilidad_pct),
+           alcance_estimado = COALESCE($11, alcance_estimado),
            updated_at = now()
          WHERE id = $1`,
-        [id, a.titulo, a.descripcion, a.fechaInicio, a.fechaFin, a.tipo, a.ramo, a.estado, a.ubicacion]
+        [id, a.titulo, a.descripcion, a.fechaInicio, a.fechaFin, a.tipo, a.ramo, a.estado, a.ubicacion,
+         a.compatibilidadPct, a.alcanceEstimado]
       );
       if (Array.isArray(publico)) {
         await client.query(`DELETE FROM actividad_publico WHERE actividad_id = $1`, [id]);
@@ -142,6 +184,22 @@ module.exports = {
     return { actualizadas: rowCount };
   },
 
+  /**
+   * Todo lo archivado/retirado (cualquier entidad), para la seccion
+   * "Actividades retiradas" del panel de administracion (T029, FR-004).
+   */
+  async listarRetiradas() {
+    const { rows } = await query(
+      `SELECT a.id, a.titulo, a.tipo, a.fecha_inicio, a.fecha_fin,
+              e.sigla AS entidad_sigla, e.nombre AS entidad_nombre,
+              a.retirada_por, a.retirada_en, a.motivo_retiro
+         FROM actividad a JOIN entidad e ON e.id = a.entidad_id
+        WHERE a.estado = 'ARCHIVADA'
+        ORDER BY a.retirada_en DESC NULLS LAST`
+    );
+    return rows;
+  },
+
   /** Actividades en PROPUESTA (pendientes de revision del admin). */
   async listarPendientes() {
     const { rows } = await query(
@@ -155,10 +213,23 @@ module.exports = {
   },
 
   /**
-   * Pares de actividades CONFIRMADAS que se solapan en el tiempo y comparten
-   * al menos un segmento de publico (§16.4). Devuelve ids involucrados.
+   * Pares de actividades VIGENTES (no solo CONFIRMADA — H-02) que se
+   * solapan en el tiempo y comparten al menos un segmento de publico
+   * (§16.4). `desde`/`hasta` acotan la consulta a la ventana que el
+   * calendario esta mostrando (H-14: sin rango, la consulta crece
+   * cuadraticamente con el historial completo de actividades).
+   * @param {string|Date} desde
+   * @param {string|Date} hasta
    */
-  async conflictos() {
+  async conflictos(desde, hasta) {
+    const cond = [];
+    const args = [];
+    agregarFiltroVigente("a1", cond, args);
+    cond.push(`a2.estado = ANY($${args.length}::text[])`); // mismo arreglo, sin repetir el parametro
+    if (desde && hasta) {
+      args.push(desde, hasta);
+      cond.push(`a1.periodo && tstzrange($${args.length - 1}, $${args.length})`);
+    }
     const { rows } = await query(
       `SELECT DISTINCT a1.id, a2.id AS conflicta_con, a2.titulo AS conflicta_titulo
          FROM actividad a1
@@ -166,14 +237,69 @@ module.exports = {
          JOIN actividad_publico ap1 ON ap1.actividad_id = a1.id
          JOIN actividad_publico ap2 ON ap2.actividad_id = a2.id
           AND ap2.carrera_id = ap1.carrera_id AND ap2.nivel = ap1.nivel
-        WHERE a1.estado = 'CONFIRMADA' AND a2.estado = 'CONFIRMADA'`
+        WHERE ${cond.join(" AND ")}`,
+      args
     );
     return rows;
   },
 
-  async eliminar(id) {
-    await query(`DELETE FROM actividad WHERE id = $1`, [id]); // cascade borra actividad_publico
-    return { id };
+  /**
+   * Archiva una actividad (E-07: una cuenta saliente podria borrar el
+   * trabajo de un semestre sin retorno). Reemplaza el borrado fisico:
+   * pasa a ARCHIVADA y registra quien/cuando/por que (FR-009b, FR-009c).
+   * Usada tanto por el autor que "elimina" lo suyo como por el admin que
+   * retira lo de otra entidad (ver `retirar`, que delega aqui).
+   */
+  async archivar(id, usuarioId, motivo = null) {
+    const { rows } = await query(
+      `UPDATE actividad
+          SET estado = 'ARCHIVADA', retirada_por = $2, retirada_en = now(),
+              motivo_retiro = $3, updated_at = now()
+        WHERE id = $1
+        RETURNING id, estado`,
+      [id, usuarioId, motivo]
+    );
+    return rows[0] || { id, estado: null };
+  },
+
+  /** Alias semantico de `archivar` para la accion administrativa de retiro. */
+  async retirar(id, usuarioId, motivo) {
+    return module.exports.archivar(id, usuarioId, motivo);
+  },
+
+  /**
+   * Restituye una actividad archivada o retirada: vuelve a PROPUESTA (el
+   * estado inicial de publicacion bajo moderacion reactiva) y limpia la
+   * trazabilidad de retiro, dejando constancia de quien/cuando restituyo
+   * (FR-009c).
+   */
+  async restituir(id, usuarioId) {
+    const { rows } = await query(
+      `UPDATE actividad
+          SET estado = 'PROPUESTA', retirada_por = NULL, retirada_en = NULL,
+              motivo_retiro = NULL, restituida_por = $2, restituida_en = now(),
+              updated_at = now()
+        WHERE id = $1
+        RETURNING id, estado`,
+      [id, usuarioId]
+    );
+    return rows[0] || { id, estado: null };
+  },
+
+  /**
+   * Segmentos (carrera, nivel) distintos que alcanzan las actividades de una
+   * entidad — usado para saber si corresponde rotular el alcance como
+   * estimacion referencial (T041/T042, H-10).
+   */
+  async segmentosDe(entidadId) {
+    const { rows } = await query(
+      `SELECT DISTINCT ap.carrera_id, ap.nivel
+         FROM actividad_publico ap
+         JOIN actividad a ON a.id = ap.actividad_id
+        WHERE a.entidad_id = $1`,
+      [entidadId]
+    );
+    return rows.map((r) => ({ carreraId: r.carrera_id, nivel: r.nivel }));
   },
 
   /** Todas las actividades de una entidad con campos para reputacion/reportes. */

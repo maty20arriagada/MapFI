@@ -20,17 +20,27 @@
     });
   }
 
-  function render(el, r) {
+  // T070 (Backlog 1.5): las sugerencias ya no son solo informativas — si el
+  // llamador pasa `opts.onPick`, cada una se vuelve un botón que, al
+  // pulsarlo, entrega la sugerencia completa (inicio/fin/compatibilidad)
+  // para que el formulario se rellene con esa fecha.
+  function render(el, r, opts) {
+    opts = opts || {};
     const nivel = (r.nivel || "").toLowerCase();
     const conflictos =
       r.conflictos && r.conflictos.length
         ? "<h3>Conflictos</h3><ul>" + r.conflictos.map((c) => `<li>${c.detalle}</li>`).join("") + "</ul>"
         : '<p class="muted">Sin conflictos detectados.</p>';
+    const puedeElegir = typeof opts.onPick === "function";
     const sugerencias =
       r.sugerencias && r.sugerencias.length
         ? "<h3>Mejores alternativas de la semana</h3><ul>" +
           r.sugerencias
-            .map((s) => `<li>${fmt(s.inicio)} — <strong>${s.compatibilidad_pct}%</strong> · alcance ${s.alcance_estimado}</li>`)
+            .map((s, i) =>
+              puedeElegir
+                ? `<li><button type="button" class="link-btn" data-sug="${i}">${fmt(s.inicio)} — <strong>${s.compatibilidad_pct}%</strong> · alcance ${s.alcance_estimado}</button></li>`
+                : `<li>${fmt(s.inicio)} — <strong>${s.compatibilidad_pct}%</strong> · alcance ${s.alcance_estimado}</li>`
+            )
             .join("") +
           "</ul>"
         : "";
@@ -45,6 +55,12 @@
         ${conflictos}
         ${sugerencias}
       </div>`;
+
+    if (puedeElegir && r.sugerencias && r.sugerencias.length) {
+      el.querySelectorAll("[data-sug]").forEach((btn) => {
+        btn.addEventListener("click", () => opts.onPick(r.sugerencias[+btn.dataset.sug]));
+      });
+    }
   }
 
   global.MatchCalculator = { evaluar, render };

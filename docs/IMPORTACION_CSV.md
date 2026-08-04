@@ -87,3 +87,50 @@ Interpretación:
 | `código de carrera desconocido: X` | El código no existe; revisa la tabla de códigos. |
 | `inicio inválido` | Formato de fecha distinto a `AAAA-MM-DD HH:MM`. |
 | `faltan carreras o niveles` | La celda quedó vacía; usa códigos o `*`. |
+
+---
+
+## Importación de matrícula oficial (T043, Spec 002 · H-10)
+
+La matrícula por (carrera, año) que usa el algoritmo de compatibilidad para
+estimar el **alcance** de una actividad viene sembrada con un **valor
+placeholder** (100 estudiantes por segmento). Mientras no se cargue la
+matrícula real de la **Dirección de Docencia**, los reportes e indicadores de
+alcance muestran el rótulo *"estimación basada en datos referenciales de
+matrícula"* — desaparece automáticamente al importar aquí.
+
+A diferencia de la importación de evaluaciones (arriba), esta es una tarea
+**administrativa por línea de comandos** (no tiene UI web), pensada para
+correrse una vez por semestre cuando Docencia entrega el archivo.
+
+### Formato del archivo
+
+```csv
+carrera,nivel,cantidad
+ICI,1,142
+ICI,2,138
+ICINF,1,95
+```
+
+| Columna | Descripción |
+|---------|-------------|
+| `carrera` | Código de la carrera (ver tabla de códigos arriba). |
+| `nivel` | Año de generación (entero ≥ 1). |
+| `cantidad` | Estudiantes matriculados oficialmente en ese segmento. |
+
+### Cómo importar
+
+```bash
+npm run seed:matricula -- ruta/al/matricula-oficial.csv
+```
+
+O, con el stack en Docker:
+
+```bash
+docker compose exec server node js/db/importar-matricula.js /ruta.csv
+```
+
+Es **idempotente**: se puede volver a correr con un archivo actualizado y
+reemplaza los valores existentes (`UPSERT` por carrera + nivel), marcándolos
+como origen `OFICIAL`. Los segmentos que nunca se importen quedan con su
+valor `REFERENCIAL` (el placeholder) hasta que se carguen.

@@ -17,6 +17,7 @@ jest.mock("../../js/db", () => {
         id, titulo: params[0], entidad_id: params[2],
         fecha_inicio: params[4], fecha_fin: params[5],
         tipo: params[6], ramo: params[7], estado: params[8] || "PROPUESTA",
+        alcance_estimado: params[10], compatibilidad_pct: params[11],
         created_by: params[12],
       });
       return { rows: [{ id }] };
@@ -29,17 +30,31 @@ jest.mock("../../js/db", () => {
       data.actividad_publico = data.actividad_publico.filter((r) => r.actividad_id !== params[0]);
       return { rows: [] };
     }
-    if (/^DELETE FROM actividad WHERE id/.test(sql)) {
-      const idx = data.actividad.findIndex((r) => r.id === params[0]);
-      if (idx >= 0) data.actividad.splice(idx, 1);
-      return { rows: [] };
-    }
     if (/^SELECT \* FROM actividad WHERE id/.test(sql)) {
       const a = data.actividad.find((r) => r.id === params[0]);
       return { rows: a ? [a] : [] };
     }
     if (/FROM actividad_publico WHERE actividad_id/.test(sql)) {
       return { rows: data.actividad_publico.filter((r) => r.actividad_id === params[0]) };
+    }
+    if (/^UPDATE actividad\s+SET estado = 'ARCHIVADA'/.test(sql)) {
+      const a = data.actividad.find((r) => r.id === params[0]);
+      if (a) {
+        a.estado = "ARCHIVADA";
+        a.retirada_por = params[1];
+        a.motivo_retiro = params[2];
+      }
+      return { rows: a ? [{ id: a.id, estado: a.estado }] : [] };
+    }
+    if (/^UPDATE actividad\s+SET estado = 'PROPUESTA'/.test(sql)) {
+      const a = data.actividad.find((r) => r.id === params[0]);
+      if (a) {
+        a.estado = "PROPUESTA";
+        a.retirada_por = null;
+        a.motivo_retiro = null;
+        a.restituida_por = params[1];
+      }
+      return { rows: a ? [{ id: a.id, estado: a.estado }] : [] };
     }
     if (/^UPDATE actividad SET/.test(sql)) {
       const a = data.actividad.find((r) => r.id === params[0]);
@@ -121,14 +136,59 @@ describe("actividadDao — CRUD", () => {
     expect(a.estado).toBe("CONFIRMADA");
   });
 
-  test("eliminar borra actividad", async () => {
+  test("archivar NO borra la actividad: la deja en estado ARCHIVADA (E-07, reversible)", async () => {
     const { id } = await dao.crear(
-      { titulo: "Borrar", fechaInicio: "2026-03-01T10:00:00Z", fechaFin: "2026-03-01T12:00:00Z", tipo: "EVENTO", entidadId: 17 },
+      { titulo: "Archivar", fechaInicio: "2026-03-01T10:00:00Z", fechaFin: "2026-03-01T12:00:00Z", tipo: "EVENTO", entidadId: 17 },
       [{ carreraId: 6, nivel: 1 }]
     );
-    await dao.eliminar(id);
+    await dao.archivar(id, 1, "duplicada");
     const a = await dao.obtener(id);
-    expect(a).toBeNull();
+    expect(a).not.toBeNull();
+    expect(a.estado).toBe("ARCHIVADA");
+    expect(a.retirada_por).toBe(1);
+    expect(a.motivo_retiro).toBe("duplicada");
+  });
+
+  test("restituir vuelve a PROPUESTA y limpia la trazabilidad de retiro", async () => {
+    const { id } = await dao.crear(
+      { titulo: "Restituir", fechaInicio: "2026-03-01T10:00:00Z", fechaFin: "2026-03-01T12:00:00Z", tipo: "EVENTO", entidadId: 17 },
+      [{ carreraId: 6, nivel: 1 }]
+    );
+    await dao.archivar(id, 1, "por error");
+    await dao.restituir(id, 2);
+    const a = await dao.obtener(id);
+    expect(a.estado).toBe("PROPUESTA");
+    expect(a.retirada_por).toBeNull();
+    expect(a.motivo_retiro).toBeNull();
+    expect(a.restituida_por).toBe(2);
+  });
+
+  test("A-1 (revisión QA) — una compatibilidad de 0 se guarda como 0, no como NULL", async () => {
+    // El Match devuelve 0 en los descartes duros (fin de semana, feriado).
+    // Con `||` ese 0 se convertía en NULL y la actividad quedaba como "nunca
+    // evaluada": reputationService cuenta `compatibilidad_pct != null` como
+    // uso del Match, así que el Sello se volvía más difícil de alcanzar.
+    const { id } = await dao.crear(
+      {
+        titulo: "Sábado", fechaInicio: "2026-09-05T10:00:00Z", fechaFin: "2026-09-05T12:00:00Z",
+        tipo: "EVENTO", entidadId: 17, compatibilidadPct: 0, alcanceEstimado: 0,
+      },
+      [{ carreraId: 6, nivel: 1 }]
+    );
+    const a = await dao.obtener(id);
+    expect(a.compatibilidad_pct).toBe(0);
+    expect(a.alcance_estimado).toBe(0);
+    expect(a.compatibilidad_pct).not.toBeNull();
+  });
+
+  test("A-1 — si no se evaluó, sí queda NULL (se distingue de un 0 real)", async () => {
+    const { id } = await dao.crear(
+      { titulo: "Sin evaluar", fechaInicio: "2026-09-07T10:00:00Z", fechaFin: "2026-09-07T12:00:00Z", tipo: "EVENTO", entidadId: 17 },
+      []
+    );
+    const a = await dao.obtener(id);
+    expect(a.compatibilidad_pct).toBeNull();
+    expect(a.alcance_estimado).toBeNull();
   });
 
   test("cargarContextoMatch con público vacío devuelve contexto limpio", async () => {

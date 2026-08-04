@@ -10,8 +10,12 @@ const reputation = require("./reputationService");
  * @param {{id,nombre,tipo}} entidad
  * @param {Array} actividades  (con estado, fecha_inicio, created_at, alcance_estimado, compatibilidad_pct)
  * @param {{anio,semestre}|null} periodo
+ * @param {{matriculaReferencial?:boolean}} [opts]  T041/T042/H-10: si algun
+ *   segmento involucrado usa matricula referencial (no oficial), el alcance
+ *   se rotula como estimacion — desaparece solo al cargar la matricula
+ *   oficial de Docencia (FR-007).
  */
-function construirResumen(entidad, actividades = [], periodo = null) {
+function construirResumen(entidad, actividades = [], periodo = null, opts = {}) {
   const rep = reputation.calcular(actividades);
   const realizadas = actividades.filter((a) => a.estado === "REALIZADA").length;
   const reprogramadas = actividades.filter((a) => a.estado === "SUSPENDIDA" || a.estado === "REPROGRAMADA").length;
@@ -25,6 +29,7 @@ function construirResumen(entidad, actividades = [], periodo = null) {
     reputacion: rep.reputacion,
     confiabilidad_pct: rep.confiabilidad_pct,
     sello_coordinacion: rep.sello_coordinacion,
+    matriculaReferencial: !!opts.matriculaReferencial,
     actividades: actividades.map((a) => ({
       titulo: a.titulo,
       fecha: a.fecha_inicio,
@@ -56,6 +61,10 @@ function generarPDF(resumen, stream) {
   doc.text(`Realizadas: ${t.realizadas}`);
   doc.text(`Suspendidas / reprogramadas: ${t.reprogramadas}`);
   doc.text(`Alcance total estimado: ${t.alcanceTotal} estudiantes`);
+  if (resumen.matriculaReferencial) {
+    doc.fillColor("#B45309").text("  (estimación basada en datos referenciales de matrícula)");
+    doc.fillColor("#0F172A");
+  }
   doc.text(`Reputacion: ${resumen.reputacion}`);
   doc.text(`Confiabilidad: ${resumen.confiabilidad_pct}%`);
   doc.text(`Sello de coordinacion eficiente: ${resumen.sello_coordinacion ? "SI" : "No"}`);

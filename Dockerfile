@@ -1,6 +1,11 @@
 # ── Imagen base oficial de Node.js 20 (Alpine = ligera) ─────────
 FROM node:20-alpine
 
+# Spec 002 / H-01: Alpine no trae datos de zona horaria por defecto — sin
+# tzdata, la variable TZ del compose no tiene efecto y Node/OpenSSL siguen
+# operando en UTC pese a estar "configurados".
+RUN apk add --no-cache tzdata
+
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 

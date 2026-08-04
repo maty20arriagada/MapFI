@@ -26,11 +26,16 @@
       return;
     }
 
-    // Choques confirmados (mismo publico + solapamiento temporal, §16.4).
-    // Mapa id → titulo del evento con el que choca, para señalizarlo.
+    // Choques entre actividades vigentes (mismo publico + solapamiento
+    // temporal, §16.4). Mapa id → titulo del evento con el que choca.
+    // Se acota la consulta a la ventana visible (T025 / H-14): reutiliza el
+    // rango de `filtros` si vino explicito; si no, un semestre alrededor de
+    // hoy, en vez de recorrer todo el historial de actividades.
+    const rango = rangoConsulta(filtros);
     let conflictos = new Map();
     try {
-      (await api.get("/api/actividades/conflictos")).forEach((c) => {
+      const qsConf = new URLSearchParams(rango).toString();
+      (await api.get("/api/actividades/conflictos?" + qsConf)).forEach((c) => {
         if (!conflictos.has(c.id)) conflictos.set(c.id, c.conflicta_titulo);
       });
     } catch (_) { /* sin señalizacion si falla; el calendario sigue */ }
@@ -100,6 +105,18 @@
     if (typeof opts.onPick === "function") el.classList.add("cal-pickable");
     cal.render();
     el._fc = cal;
+  }
+
+  /** Rango a usar para acotar la consulta de choques (T025 / H-14). */
+  function rangoConsulta(filtros) {
+    if (filtros && filtros.desde && filtros.hasta) {
+      return { desde: filtros.desde, hasta: filtros.hasta };
+    }
+    const hoy = new Date();
+    const desde = new Date(hoy.getFullYear(), hoy.getMonth() - 4, 1);
+    const hasta = new Date(hoy.getFullYear(), hoy.getMonth() + 5, 0);
+    const iso = (d) => d.toISOString().slice(0, 10);
+    return { desde: iso(desde), hasta: iso(hasta) };
   }
 
   function renderLista(el, acts) {

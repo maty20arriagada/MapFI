@@ -38,4 +38,21 @@ module.exports = {
     const { rows } = await query(`SELECT * FROM vw_eventos_reprogramados ORDER BY anio DESC`);
     return rows;
   },
+
+  /**
+   * ¿Alguno de los segmentos dados usa matrícula REFERENCIAL (no oficial)?
+   * Decide si una cifra de alcance debe rotularse como estimación mientras
+   * no se cargue la matrícula oficial de Docencia (T041, H-10, FR-007).
+   * @param {Array<{carreraId:number, nivel:number}>} segmentos
+   */
+  async usaMatriculaReferencial(segmentos = []) {
+    if (!segmentos.length) return false;
+    const cond = segmentos.map((_, i) => `(carrera_id = $${2 * i + 1} AND nivel = $${2 * i + 2})`).join(" OR ");
+    const args = segmentos.flatMap((s) => [s.carreraId, s.nivel]);
+    const { rows } = await query(
+      `SELECT 1 FROM matricula WHERE (${cond}) AND origen = 'REFERENCIAL' LIMIT 1`,
+      args
+    );
+    return rows.length > 0;
+  },
 };

@@ -109,14 +109,28 @@ El evento/hito. Corazón del calendario y del match.
 | `periodo` | `tstzrange` GENERATED | `tstzrange(fecha_inicio, fecha_fin)` — índice **GiST** |
 | `tipo` | `text` CHECK | `EVENTO` \| `HITO_ACADEMICO` \| `EXAMEN` \| `EXTRAPROGRAMATICA` \| `CHARLA` \| `TALLER` \| `ENTREGA` |
 | `ramo` | `text` | asignatura asociada (ej. "Cálculo I") — migración 006 |
-| `estado` | `text` CHECK | `PROPUESTA` \| `CONFIRMADA` \| `REALIZADA` \| `SUSPENDIDA` \| `REPROGRAMADA` |
+| `estado` | `text` CHECK | `PROPUESTA` \| `CONFIRMADA` \| `REALIZADA` \| `SUSPENDIDA` \| `REPROGRAMADA` \| `ARCHIVADA` (migración 008) |
 | `ubicacion` | `text` | |
-| `alcance_estimado` | `int` | cacheado del último cálculo de match |
-| `compatibilidad_pct` | `numeric` | cacheado |
+| `alcance_estimado` | `int` | cacheado del último cálculo de match — **persistido de verdad desde la Spec 002** (antes siempre quedaba `NULL`) |
+| `compatibilidad_pct` | `numeric` | cacheado — ídem |
+| `retirada_por` | `int` FK→usuario | quién archivó/retiró (migración 008, moderación reactiva) |
+| `retirada_en` | `timestamptz` | cuándo |
+| `motivo_retiro` | `text` | por qué (texto libre del administrador) |
+| `restituida_por` | `int` FK→usuario | quién deshizo el retiro/archivado (migración 009) |
+| `restituida_en` | `timestamptz` | cuándo |
 | `created_by` | `int` FK→usuario | |
 | `created_at` / `updated_at` | `timestamptz` | |
 
 **Índice clave:** `GIST (periodo)` → permite `WHERE periodo && tstzrange($1,$2)` para detectar topes de forma eficiente.
+
+**Visibilidad (Spec 002 / moderación reactiva):** el conjunto **vigente** —
+público, cuenta en saturación y en choques — es `{PROPUESTA, CONFIRMADA,
+REALIZADA}`; el **oculto** es `{SUSPENDIDA, REPROGRAMADA, ARCHIVADA}`. Fuente
+única de verdad: `ESTADOS_VIGENTES` en `js/dao/actividadDao.js` — ninguna otra
+consulta debe repetir esta lista a mano. "Eliminar" una actividad ya **no borra
+la fila**: la archiva (estado `ARCHIVADA` + `retirada_por`/`retirada_en`), y es
+**reversible** vía `restituir()` (vuelve a `PROPUESTA`, limpia la trazabilidad de
+retiro y registra `restituida_por`/`restituida_en`).
 
 #### `actividad_publico`
 Público objetivo (relación N:M con segmentos).
@@ -168,7 +182,8 @@ Cantidad de estudiantes por segmento — alimenta el **alcance estimado** del ma
 |---------|------|-------|
 | `carrera_id` | `smallint` FK→carrera | PK compuesta |
 | `nivel` | `smallint` FK→generacion | PK compuesta |
-| `cantidad` | `int` | ⚠️ el seed carga 100 por segmento como *placeholder*: ajustar a la matrícula real |
+| `cantidad` | `int` | ⚠️ el seed carga 100 por segmento como *placeholder* |
+| `origen` | `text` CHECK | `OFICIAL` \| `REFERENCIAL` (migración 010, default `REFERENCIAL`). Los reportes que expongan alcance rotulan la cifra como estimación mientras el segmento sea `REFERENCIAL` — el rótulo desaparece solo al importar la matrícula oficial (`npm run seed:matricula`, ver `js/db/importar-matricula.js`). |
 
 #### `reputacion_log`
 Historial de ajustes de reputación por entidad (migración 005, trazabilidad de la gamificación).
@@ -220,6 +235,11 @@ Estas vistas se exponen vía `/api/analytics/*` y pueden conectarse directamente
 | `005_reputacion_log.sql` | Historial de reputación (gamificación) |
 | `006_tags_y_ramo.sql` | Tipos `CHARLA`/`TALLER`/`ENTREGA` + columna `ramo` |
 | `007_fix_seeds.sql` | Fechas de muestra relativas al deploy (no quedan en el pasado) |
+| `008_estados_y_trazabilidad.sql` | Estado `ARCHIVADA` + columnas `retirada_por`/`retirada_en`/`motivo_retiro` (moderación reactiva, Spec 002) |
+| `009_vistas_visibilidad.sql` | Redefine `vw_saturacion_segmento` alineada a `ESTADOS_VIGENTES` + columnas `restituida_por`/`restituida_en` |
+| `010_matricula_origen.sql` | Columna `origen` (`OFICIAL`/`REFERENCIAL`) en `matricula` |
+| `011_saturacion_multidia.sql` | `vw_saturacion_segmento` cuenta cada día que abarca una actividad que cruza medianoche (`generate_series`) |
+| `012_feriados_moviles_2026.sql` | Corrige la fecha del Día de los Pueblos Indígenas 2026 (20→21 jun), verificada contra fuente oficial |
 
 Reglas: las migraciones son **aditivas** (nunca se edita una aplicada), corren automáticamente al arrancar y el registro en `schema_migrations` lo hace **solo el runner** (`js/db/migrate.js`).
 
