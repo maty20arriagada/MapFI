@@ -5,6 +5,16 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      # OJO: `TZ` solo fija la zona del SISTEMA OPERATIVO del contenedor. NO
+      # cambia el parametro `timezone` de PostgreSQL en un volumen ya creado
+      # (ver docs/REVISION_QA.md, hallazgo C-1) — por eso se refuerza abajo
+      # con `command:` y, de forma definitiva, con la migracion 013.
+      TZ: ${TZ:-America/Santiago}
+    # Fija el `timezone` del servidor Postgres explicitamente, sin depender de
+    # lo que initdb haya escrito en postgresql.conf. Necesario para que una
+    # hora sin zona ("2026-04-17T21:00") se interprete como hora de Chile y no
+    # como UTC (H-01: el evento de las 21:00 se publicaba a las 17:00).
+    command: postgres -c timezone=America/Santiago
     # La BD NO publica puertos al host: solo el backend la alcanza por la red
     # interna de compose (host 'db', puerto 5432). Asi nunca queda expuesta en
     # el servidor. Para desarrollo en el host (npm run dev contra esta BD), usa
@@ -38,6 +48,10 @@ services:
       #     por http://localhost (sin HTTPS), que es como se prueba en local.
       #   - production  → cookies `secure`+`sameSite=none` (requiere HTTPS).
       NODE_ENV: ${NODE_ENV:-development}
+      # Spec 002 / H-01: sin TZ fijada, un contenedor Docker arranca en UTC
+      # por defecto y toda hora ingresada por el usuario se guarda corrida
+      # (ver research.md H-01 y __tests__/services/fechas.test.js).
+      TZ: ${TZ:-America/Santiago}
     ports:
       - "127.0.0.1:${PORT:-3000}:3000"
     depends_on:

@@ -30,7 +30,13 @@ Una plataforma para **coordinar las actividades de la facultad** y evitar que do
    - **Público objetivo:** elige las **carreras** y los **años** a los que apunta.
    - **Lugar** (opcional).
 3. Antes de confirmar, mira el **porcentaje de compatibilidad** que te muestra el sistema.
-4. **Guarda.** Tu actividad aparecerá en el calendario de toda la facultad.
+4. **Guarda.** Tu actividad se publica **de inmediato** en el calendario de toda la facultad — no hay una cola de aprobación previa que la retenga.
+
+> **¿Y si algo no corresponde?** El administrador puede **retirarla** después (deja
+> de mostrarse, pero queda registrado por qué y quién lo hizo). Si tú mismo
+> necesitas quitar una actividad, "Eliminar" en tu panel no la borra para
+> siempre: la **archiva** — puedes pedirle al administrador que la restituya si
+> te equivocaste.
 
 ---
 

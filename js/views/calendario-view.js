@@ -94,13 +94,42 @@
           var d = new Date(fi); d.setHours(d.getHours() + 2); ff.value = toLocalInput(d);
         }
       });
+      // T064 (H-08, FR-014, Principio VI): el error se muestra junto al
+      // propio campo (validación nativa del navegador) al perder el foco.
+      formFecha.fechaFin.addEventListener("blur", function () {
+        var fi = formFecha.fechaInicio.value, ff = formFecha.fechaFin;
+        ff.setCustomValidity(fi && ff.value && ff.value <= fi ? "La fecha de término debe ser posterior a la de inicio" : "");
+        ff.reportValidity();
+      });
 
       formFecha.addEventListener("submit", async function (ev) {
         ev.preventDefault();
         var d = Object.fromEntries(new FormData(ev.target).entries());
         var publico = leerPublico();
         if (!publico.length) return toast("Selecciona al menos una carrera y un año", "error");
+        // T062 (H-07, FR-013): deshabilitar ANTES de cualquier ida a la red.
+        // Estaba despues del chequeo de saturacion, dejando una ventana en la
+        // que un doble clic creaba la fecha dos veces (revision QA, M-4).
+        var btnGuardarFecha = formFecha.querySelector('[type=submit]');
+        if (btnGuardarFecha) btnGuardarFecha.disabled = true;
         try {
+          // T073 (dilema D-4): fricción mínima — advertir, no arbitrar, si ya
+          // hay eventos saturando el mismo público en esa semana.
+          try {
+            var chequeo = await api.post("/api/match/evaluar", { inicio: d.fechaInicio, fin: d.fechaFin || d.fechaInicio, publico: publico });
+            var satur = (chequeo.conflictos || []).find(function (c) { return c.tipo === "SATURACION"; });
+            if (satur) {
+              var seguir = global.confirmDialog
+                ? await global.confirmDialog({
+                    titulo: "Fecha con alta demanda",
+                    mensaje: satur.detalle + ". Puedes seguir de todas formas: MapFI no arbitra choques entre centros, solo los muestra.",
+                    textoConfirmar: "Agendar de todas formas",
+                  })
+                : confirm(satur.detalle + ". ¿Agendar de todas formas?");
+              if (!seguir) return;
+            }
+          } catch (_) { /* si la verificacion falla, no bloquea la creacion */ }
+
           await api.post("/api/actividades", {
             titulo: d.titulo, tipo: d.tipo, ramo: d.ramo, ubicacion: d.ubicacion,
             fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, entidadId: +d.entidadId, estado: "CONFIRMADA", publico: publico,
@@ -111,6 +140,7 @@
           formFecha.titulo.focus();
           render();
         } catch (err) { toast(err.message, "error"); }
+        finally { if (btnGuardarFecha) btnGuardarFecha.disabled = false; }
       });
 
       document.getElementById("verFormato").onclick = function () {
@@ -134,14 +164,28 @@
           box.innerHTML = '<div class="placeholder">No hay filas válidas para importar.</div>' + renderErrores(parsed.errores);
           return;
         }
+        // T052/T053 (H-05): una planilla de un semestre completo supera el
+        // límite de tamaño de un solo envío (100 kB) — se divide en lotes y
+        // se envían secuencialmente, acumulando el resultado de todos.
+        var lotes = CsvUtils.dividirEnLotes(parsed.actividades);
+        var btnImportar = document.getElementById("btnImportar");
+        btnImportar.disabled = true;
+        var creadas = 0, procesadas = 0, erroresServidor = [];
         try {
-          var res = await api.post("/api/actividades/bulk", { actividades: parsed.actividades });
-          var allErr = parsed.errores.concat(res.errores || []);
-          toast(res.creadas + " importada(s)" + (allErr.length ? " · " + allErr.length + " con error" : ""), allErr.length ? "error" : "success");
-          box.innerHTML = '<p><strong>' + res.creadas + '</strong> fecha(s) importada(s).</p>' + renderErrores(allErr);
+          for (var i = 0; i < lotes.length; i++) {
+            procesadas += lotes[i].length;
+            box.innerHTML = '<div class="placeholder">Procesando ' + procesadas + ' de ' + parsed.actividades.length + '…</div>';
+            var res = await api.post("/api/actividades/bulk", { actividades: lotes[i] });
+            creadas += res.creadas;
+            erroresServidor = erroresServidor.concat(res.errores || []);
+          }
+          var allErr = parsed.errores.concat(erroresServidor);
+          toast(creadas + " importada(s)" + (allErr.length ? " · " + allErr.length + " con error" : ""), allErr.length ? "error" : "success");
+          box.innerHTML = '<p><strong>' + creadas + '</strong> fecha(s) importada(s)' + (lotes.length > 1 ? ' (en ' + lotes.length + ' lotes)' : '') + '.</p>' + renderErrores(allErr);
           document.getElementById("csvText").value = ""; document.getElementById("csvFile").value = "";
           render();
         } catch (err) { toast(err.message, "error"); }
+        finally { btnImportar.disabled = false; }
       };
 
       if (global.Tooltips) global.Tooltips.init();

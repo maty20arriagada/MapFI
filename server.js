@@ -77,6 +77,17 @@ app.use((req, res, next) => {
 });
 
 // ── Sesiones ────────────────────────────────────────────────────────────────
+// Fail-fast en produccion si falta el secreto (revision QA, hallazgo S-1):
+// antes se caia a un valor por defecto PUBLICO, con el que cualquiera que
+// leyera este repositorio podia firmar una cookie de sesion valida y
+// suplantar a un administrador. Mismo criterio que DATABASE_URL.
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.error(
+    "[server] FATAL: SESSION_SECRET no esta definida y NODE_ENV=production. " +
+    "Genera una con: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\""
+  );
+  process.exit(1);
+}
 const sessionConfig = {
   secret: process.env.SESSION_SECRET || "dev-inseguro-cambiar",
   resave: false,
@@ -117,17 +128,26 @@ app.use((req, res, next) => {
 });
 
 // ── Rate limiting del login (inline, sin dependencias — patron helmet-lite) ─
-// Maximo 5 intentos fallidos por IP cada 15 minutos. En memoria del proceso:
-// suficiente para una instancia; si algun dia hay varias, mover a Redis/BD.
+// Maximo 5 intentos fallidos por IP+CUENTA cada 15 minutos (T065, H-09,
+// FR-015). Antes se limitaba solo por IP: detras de un NAT/proxy compartido
+// (una sede, una red universitaria) una sola persona que olvida su
+// contrasena bloqueaba el login de TODA la facultad (E-09). En memoria del
+// proceso: suficiente para una instancia; si algun dia hay varias, mover a
+// Redis/BD.
 const LOGIN_MAX_INTENTOS = 5;
 const LOGIN_VENTANA_MS = 15 * 60 * 1000;
-const loginIntentos = new Map(); // ip -> { count, expira }
-function loginLimiter(req, res, next) {
+const loginIntentos = new Map(); // "ip|email" -> { count, expira }
+function claveIntento(req) {
   const ip = req.ip || "?";
+  const email = String((req.body && req.body.email) || "").trim().toLowerCase();
+  return `${ip}|${email}`;
+}
+function loginLimiter(req, res, next) {
+  const key = claveIntento(req);
   const ahora = Date.now();
-  const reg = loginIntentos.get(ip);
-  if (reg && reg.expira <= ahora) loginIntentos.delete(ip);
-  const activo = loginIntentos.get(ip);
+  const reg = loginIntentos.get(key);
+  if (reg && reg.expira <= ahora) loginIntentos.delete(key);
+  const activo = loginIntentos.get(key);
   if (activo && activo.count >= LOGIN_MAX_INTENTOS) {
     const min = Math.ceil((activo.expira - ahora) / 60000);
     return res.status(429).json({ error: `Demasiados intentos. Prueba de nuevo en ${min} min.` });
@@ -135,41 +155,209 @@ function loginLimiter(req, res, next) {
   next();
 }
 function loginFallido(req) {
-  const ip = req.ip || "?";
-  const reg = loginIntentos.get(ip) || { count: 0, expira: Date.now() + LOGIN_VENTANA_MS };
+  const key = claveIntento(req);
+  const reg = loginIntentos.get(key) || { count: 0, expira: Date.now() + LOGIN_VENTANA_MS };
   reg.count++;
-  loginIntentos.set(ip, reg);
+  loginIntentos.set(key, reg);
 }
 function loginExitoso(req) {
-  loginIntentos.delete(req.ip || "?");
+  loginIntentos.delete(claveIntento(req));
 }
 // Limpieza periodica para que el Map no crezca indefinidamente.
 setInterval(() => {
   const ahora = Date.now();
-  for (const [ip, reg] of loginIntentos) if (reg.expira <= ahora) loginIntentos.delete(ip);
+  for (const [key, reg] of loginIntentos) if (reg.expira <= ahora) loginIntentos.delete(key);
 }, 10 * 60 * 1000).unref();
 
 // ── Middlewares de autorizacion ─────────────────────────────────────────────
-function requireAuth(req, res, next) {
-  if (req.session && req.session.user) return next();
+// T058/T059 (H-06, FR-012): antes, `req.session.user` se confiaba tal cual
+// se guardo en el login — desactivar una cuenta o cambiarle el rol no tenia
+// efecto hasta que esa sesion expirara sola. Ahora cada peticion autenticada
+// revalida contra la BD (consulta por clave primaria, costo despreciable) y
+// refresca rol/entidad; si la cuenta ya no existe o esta inactiva, se
+// destruye la sesion para que la siguiente peticion reciba limpiamente la
+// pantalla de inicio de sesion en vez de un 401 repetido con una cookie rota.
+async function revalidarSesion(req) {
+  if (!req.session || !req.session.user) return false;
+  const u = await userDao.obtener(req.session.user.id);
+  if (!u || !u.activo) return false;
+  req.session.user.rol = u.rol;
+  req.session.user.entidadId = u.entidad_id;
+  return true;
+}
+function noAutenticado(req, res) {
+  if (req.session) return req.session.destroy(() => res.status(401).json({ error: "No autenticado" }));
   return res.status(401).json({ error: "No autenticado" });
 }
+async function requireAuth(req, res, next) {
+  if (await revalidarSesion(req)) return next();
+  return noAutenticado(req, res);
+}
 function requireRole(rol) {
-  return (req, res, next) => {
-    if (req.session && req.session.user && req.session.user.rol === rol) return next();
-    return res.status(403).json({ error: "No autorizado" });
+  return async (req, res, next) => {
+    if (!(await revalidarSesion(req))) return noAutenticado(req, res);
+    if (req.session.user.rol !== rol) return res.status(403).json({ error: "No autorizado" });
+    return next();
   };
 }
 
 // Helper: query param a entero o undefined.
 const num = (v) => (v !== undefined && v !== "" ? parseInt(v, 10) : undefined);
 
+// ── Seleccion explicita de campos de actividad (Spec 002, H-04, FR-008) ─────
+// NUNCA propagar el cuerpo de una peticion con `{ ...b }` hacia el DAO: eso
+// permite que el cliente cuele campos que no deberia controlar (estado,
+// entidadId, compatibilidad, alcance, createdBy...). Esta funcion es la unica
+// via para construir el objeto de escritura a partir de un body de usuario;
+// TODAS las rutas de escritura de actividades (creacion individual, carga
+// masiva, edicion) DEBEN pasar por aqui. T046 verifica que asi sea.
+function camposActividadPermitidos(b) {
+  b = b || {};
+  return {
+    titulo: b.titulo,
+    descripcion: b.descripcion,
+    tipo: b.tipo,
+    ramo: b.ramo,
+    ubicacion: b.ubicacion,
+    fechaInicio: aInstante(b.fechaInicio),
+    fechaFin: aInstante(b.fechaFin),
+    publico: Array.isArray(b.publico) ? b.publico : undefined,
+  };
+}
+
+// ── Normalizacion de fechas (C-1 / H-01, revision QA 2026-08-04) ────────────
+// El formulario manda horas SIN zona ("2026-04-17T21:00", de un
+// <input type="datetime-local">). Si esa cadena viaja tal cual hasta la BD,
+// quien decide que significa es el `timezone` de la SESION de Postgres — que
+// en un volumen antiguo seguia en UTC, guardando las 21:00 como 17:00.
+//
+// Convirtiendola aqui a Date, node-postgres la envia como instante con
+// desfase explicito y el resultado deja de depender de la zona de la BD.
+// La zona del proceso Node (TZ=America/Santiago, fijada en el Dockerfile y
+// en docker-compose) es la que interpreta la hora del formulario, que es
+// justo lo que el usuario quiso decir.
+/**
+ * @returns {Date|null|undefined} Date si es valida · null si vino pero es
+ *   ilegible · undefined si no vino (para no pisar valores en un update).
+ */
+function aInstante(valor) {
+  if (valor === undefined || valor === null || valor === "") return undefined;
+  if (valor instanceof Date) return isNaN(valor.getTime()) ? null : valor;
+  const d = new Date(valor);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/** Mensaje de error si alguna fecha vino presente pero ilegible. */
+function errorFechaIlegible(b) {
+  if (b.fechaInicio === null || b.fechaFin === null) {
+    return "La fecha u hora no tiene un formato válido";
+  }
+  return null;
+}
+
+// ── Traduccion de errores de base de datos (T055, FR-011, SC-009) ───────────
+// e.code (SQLSTATE) no depende del texto exacto de una restriccion — a
+// diferencia de e.message, que expone nombres internos de tabla/columna que
+// no le sirven a quien esta subiendo un CSV y solo confunden (H-05).
+const MENSAJES_SQLSTATE = {
+  "23505": "Ya existe un registro igual (posible fila duplicada)",
+  "23503": "Hace referencia a un dato que no existe (revisa carrera, entidad o tipo)",
+  "23502": "Falta un dato obligatorio",
+  "23514": "Un valor no cumple una regla del sistema (revisa el tipo o el estado)",
+  "22007": "Formato de fecha inválido",
+  "22008": "Formato de fecha inválido",
+};
+// T063 (H-08, FR-014): validar el rango ANTES de llegar a la BD — si no,
+// falla como una restriccion CHECK generica que server.js no sabe traducir
+// a un mensaje util (ver traducirErrorBD, que no cubre ese caso).
+function errorRangoFechas(fechaInicio, fechaFin) {
+  if (fechaInicio && fechaFin && new Date(fechaFin) <= new Date(fechaInicio)) {
+    return "La fecha de término debe ser posterior a la de inicio";
+  }
+  return null;
+}
+
+function traducirErrorBD(e) {
+  return (e && e.code && MENSAJES_SQLSTATE[e.code]) || (e && e.message) || "Error desconocido";
+}
+
+// ── Evaluacion de Match reutilizable (Spec 002, H-03, FR-005) ───────────────
+// Antes, compatibilidad/alcance solo se calculaban para la PREVIA en
+// pantalla (POST /api/match/evaluar) y nunca se guardaban al crear la
+// actividad real: el reporte de impacto siempre mostraba 0. El servidor
+// ahora los calcula SIEMPRE aqui (nunca confia en lo que mande el cliente:
+// ver H-04) tanto en creacion individual como en carga masiva.
+
+/** Lunes (YYYY-MM-DD) de la semana que contiene `fecha` — debe coincidir con actividadDao.semanaDe(). */
+function lunesDe(fecha) {
+  const d = new Date(fecha);
+  d.setHours(0, 0, 0, 0);
+  const dow = d.getDay() === 0 ? 7 : d.getDay();
+  d.setDate(d.getDate() - (dow - 1));
+  return d.toISOString().slice(0, 10);
+}
+
+/** Clave de cache: mismo contexto de Match para filas de la misma semana + mismo publico. */
+function claveContexto(fecha, publico) {
+  const pub = publico.map((p) => `${p.carreraId}-${p.nivel}`).sort().join(",");
+  return `${lunesDe(fecha)}|${pub}`;
+}
+
+/**
+ * Evalua compatibilidad y alcance de una propuesta (fechaInicio/fechaFin/
+ * publico). `contextoCache` (opcional, Map) evita recargar el contexto de
+ * la semana para cada fila de una carga masiva que comparta semana+publico.
+ * @returns {Promise<{compatibilidadPct:number|null, alcanceEstimado:number|null}>}
+ */
+async function evaluarMatchParaActividad({ fechaInicio, fechaFin, publico }, contextoCache) {
+  if (!Array.isArray(publico) || !publico.length) {
+    return { compatibilidadPct: null, alcanceEstimado: null };
+  }
+  let contexto;
+  if (contextoCache) {
+    const clave = claveContexto(fechaInicio, publico);
+    if (!contextoCache.has(clave)) {
+      contextoCache.set(clave, await actividadDao.cargarContextoMatch(publico, fechaInicio));
+    }
+    contexto = contextoCache.get(clave);
+  } else {
+    contexto = await actividadDao.cargarContextoMatch(publico, fechaInicio);
+  }
+  const r = matchService.evaluar(
+    { inicio: new Date(fechaInicio), fin: new Date(fechaFin || fechaInicio), publico },
+    contexto
+  );
+  return { compatibilidadPct: r.compatibilidad_pct, alcanceEstimado: r.alcance_estimado };
+}
+
 // ============================================================================
 // API
 // ============================================================================
 
 // ── Salud ───────────────────────────────────────────────────────────────────
-app.get("/api/health", (req, res) => res.json({ ok: true, service: "mapfi" }));
+// Incluye version y ultima migracion aplicada (revision QA, hallazgo A-2):
+// durante la revision resulto que el contenedor "en marcha" era de dos meses
+// atras y le faltaban 7 migraciones — pero /api/health respondia ok, asi que
+// "esta corriendo" parecia lo mismo que "esta actualizado". Con esto se
+// distingue de un vistazo, sin entrar al contenedor.
+app.get("/api/health", async (req, res) => {
+  const salida = { ok: true, service: "mapfi", version: require("./package.json").version };
+  try {
+    const { rows } = await pool.query(
+      "SELECT version, applied_at FROM schema_migrations ORDER BY version DESC LIMIT 1"
+    );
+    if (rows[0]) {
+      salida.migracion = rows[0].version;
+      salida.migradoEn = rows[0].applied_at;
+    }
+    const tz = await pool.query("SHOW timezone");
+    salida.tzBaseDatos = tz.rows[0].TimeZone;
+    salida.tzServidor = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (_) {
+    salida.bd = "sin conexion";
+  }
+  res.json(salida);
+});
 
 // ── Autenticacion ────────────────────────────────────────────────────────────
 app.post("/api/auth/login", loginLimiter, async (req, res) => {
@@ -194,8 +382,23 @@ app.post("/api/auth/logout", (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-app.get("/api/auth/me", (req, res) => {
-  res.json({ user: (req.session && req.session.user) || null });
+// Revalida contra la BD igual que requireAuth (revision QA, hallazgo M-6):
+// si no, una cuenta ya desactivada seguia devolviendo su usuario aqui y el
+// frontend mantenia la interfaz de sesion iniciada hasta que el usuario
+// tocara por casualidad una ruta protegida.
+app.get("/api/auth/me", async (req, res) => {
+  try {
+    if (!(await revalidarSesion(req))) {
+      if (req.session && req.session.user) {
+        return req.session.destroy(() => res.json({ user: null }));
+      }
+      return res.json({ user: null });
+    }
+    res.json({ user: req.session.user });
+  } catch (e) {
+    console.error("[auth:me]", e);
+    res.json({ user: null });
+  }
 });
 
 // ── Catalogos (publico — alimenta filtros del calendario) ───────────────────
@@ -217,13 +420,21 @@ app.get("/api/catalogos", async (req, res) => {
 // ── Actividades ──────────────────────────────────────────────────────────────
 app.get("/api/actividades", async (req, res) => {
   try {
+    const entidadId = num(req.query.entidadId);
+    const u = req.session.user;
+    // "propias" (ve tambien lo oculto/archivado) SOLO si la sesion es el
+    // ADMIN o la propia entidad consultada — nunca por el solo hecho de que
+    // el cliente pida ese entidadId (H-04: la autoridad la decide el
+    // servidor, no el parametro de la consulta).
+    const esPropia = !!u && !!entidadId && (u.rol === "ADMIN" || u.entidadId === entidadId);
     const acts = await actividadDao.listar({
       carreraId: num(req.query.carreraId),
       nivel: num(req.query.nivel),
-      entidadId: num(req.query.entidadId),
+      entidadId,
       tipo: req.query.tipo,
       desde: req.query.desde,
       hasta: req.query.hasta,
+      alcance: esPropia ? "propias" : "publico",
     });
     res.json(acts);
   } catch (e) {
@@ -234,18 +445,33 @@ app.get("/api/actividades", async (req, res) => {
 
 app.post("/api/actividades", requireAuth, async (req, res) => {
   try {
-    const b = req.body || {};
+    const b = camposActividadPermitidos(req.body);
+    const errorIlegible = errorFechaIlegible(b);
+    if (errorIlegible) return res.status(400).json({ error: errorIlegible });
     if (!b.titulo || !b.fechaInicio || !b.fechaFin || !b.tipo) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
-    const entidadId = req.session.user.entidadId || b.entidadId;
+    const errorFechas = errorRangoFechas(b.fechaInicio, b.fechaFin);
+    if (errorFechas) return res.status(400).json({ error: errorFechas });
+    const esAdmin = req.session.user.rol === "ADMIN";
+    const entidadId = req.session.user.entidadId || num(req.body.entidadId);
     if (!entidadId) return res.status(400).json({ error: "Sin entidad asociada" });
 
+    // T047: estado inicial derivado SIEMPRE del rol de sesion — nunca del
+    // cliente salvo la eleccion propia del admin — igual que ya hacia bien
+    // /bulk. Un aportante siempre entra como PROPUESTA (moderacion reactiva).
+    const estado = esAdmin ? (req.body.estado || "CONFIRMADA") : "PROPUESTA";
+
+    // El servidor calcula compatibilidad y alcance SIEMPRE (H-03/H-04): lo
+    // que el cliente haya enviado para estos campos ya fue descartado por
+    // camposActividadPermitidos y se ignora por completo.
+    const match = await evaluarMatchParaActividad(b);
+
     const created = await actividadDao.crear(
-      { ...b, entidadId, createdBy: req.session.user.id },
+      { ...b, entidadId, estado, ...match, createdBy: req.session.user.id },
       b.publico || []
     );
-    res.status(201).json(created);
+    res.status(201).json({ ...created, estado, ...match });
   } catch (e) {
     console.error("[actividades:create]", e);
     res.status(500).json({ error: "Error interno" });
@@ -268,22 +494,32 @@ app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
     }
     let creadas = 0;
     const errores = [];
+    // Contexto de Match compartido entre filas de la misma semana+publico
+    // (T038): una carga de cien filas no debe repetir esas consultas cien
+    // veces.
+    const contextoCache = new Map();
     for (let i = 0; i < lista.length; i++) {
-      const a = lista[i] || {};
+      const filaCruda = lista[i] || {};
       try {
+        const a = camposActividadPermitidos(filaCruda);
         // Aportante: no puede elegir entidad ni estado — se fuerzan.
-        const entidadId = esAdmin ? a.entidadId : req.session.user.entidadId;
-        const estado = esAdmin ? (a.estado || "CONFIRMADA") : "PROPUESTA";
+        const entidadId = esAdmin ? num(filaCruda.entidadId) : req.session.user.entidadId;
+        const estado = esAdmin ? (filaCruda.estado || "CONFIRMADA") : "PROPUESTA";
+        const errorIlegible = errorFechaIlegible(a);
+        if (errorIlegible) throw new Error(errorIlegible);
         if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !entidadId) {
           throw new Error("Faltan campos obligatorios");
         }
+        const errorFechas = errorRangoFechas(a.fechaInicio, a.fechaFin);
+        if (errorFechas) throw new Error(errorFechas);
+        const match = await evaluarMatchParaActividad(a, contextoCache);
         await actividadDao.crear(
-          { ...a, entidadId, estado, createdBy: req.session.user.id },
+          { ...a, entidadId, estado, ...match, createdBy: req.session.user.id },
           a.publico || []
         );
         creadas++;
       } catch (e) {
-        errores.push({ fila: a.fila || i + 1, error: e.message });
+        errores.push({ fila: filaCruda.fila || i + 1, error: traducirErrorBD(e) });
       }
     }
     res.json({ creadas, errores, estado: esAdmin ? "CONFIRMADA" : "PROPUESTA" });
@@ -295,6 +531,12 @@ app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
 // Pendientes de revision (importaciones de aportantes) — solo ADMIN.
 app.get("/api/admin/pendientes", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await actividadDao.listarPendientes()); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Actividades retiradas/archivadas (T029) — solo ADMIN.
+app.get("/api/admin/actividades/retiradas", requireRole("ADMIN"), async (req, res) => {
+  try { res.json(await actividadDao.listarRetiradas()); }
   catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
@@ -310,9 +552,28 @@ app.post("/api/admin/actividades/revisar", requireRole("ADMIN"), async (req, res
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
-// Conflictos entre actividades confirmadas (choques de horario+publico, §16.4).
+// Choques de horario+publico entre actividades vigentes (§16.4, H-02, H-14).
+// Requiere rango de fechas: acota la consulta a la ventana visible del
+// calendario en vez de recorrer todo el historial.
+// Tope de la ventana consultable: la ruta es publica y hace un self-join,
+// asi que un rango arbitrario (año 1000 al 9999) seria un coste gratuito
+// para cualquiera (revision QA, hallazgo S-3). Dos años cubre de sobra lo
+// que muestra el calendario.
+const CONFLICTOS_MAX_DIAS = 730;
+
 app.get("/api/actividades/conflictos", async (req, res) => {
-  try { res.json(await actividadDao.conflictos()); }
+  try {
+    const { desde, hasta } = req.query;
+    if (!desde || !hasta) return res.status(400).json({ error: "Se requiere 'desde' y 'hasta'" });
+    const d0 = new Date(desde), d1 = new Date(hasta);
+    if (isNaN(d0.getTime()) || isNaN(d1.getTime())) {
+      return res.status(400).json({ error: "Las fechas del rango no son válidas" });
+    }
+    if ((d1 - d0) / 86400000 > CONFLICTOS_MAX_DIAS) {
+      return res.status(400).json({ error: `El rango no puede superar ${CONFLICTOS_MAX_DIAS} días` });
+    }
+    res.json(await actividadDao.conflictos(desde, hasta));
+  }
   catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
@@ -335,12 +596,59 @@ async function puedeEditarActividad(req, id) {
   return act && act.entidad_id === req.session.user.entidadId;
 }
 
+// Transiciones que puede pedir un APORTANTE sobre lo suyo via PUT/PATCH
+// estado (data-model.md, T048): cancelar (SUSPENDIDA) o reprogramar
+// (REPROGRAMADA). Ratificar (CONFIRMADA), retirar y restituir son
+// exclusivos del administrador — ver /retirar y /restituir mas arriba.
+const ESTADOS_APORTANTE = ["SUSPENDIDA", "REPROGRAMADA"];
+
 app.put("/api/actividades/:id", requireAuth, async (req, res) => {
   try {
     const id = num(req.params.id);
     if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
-    res.json(await actividadDao.actualizar(id, req.body || {}, (req.body || {}).publico));
-  } catch (e) { res.status(400).json({ error: e.message }); }
+    const esAdmin = req.session.user.rol === "ADMIN";
+    // T046/H-04: JAMAS propagar req.body crudo hacia el DAO — solo los
+    // campos de camposActividadPermitidos() pueden llegar aqui.
+    const b = camposActividadPermitidos(req.body);
+    const errorIlegible = errorFechaIlegible(b);
+    if (errorIlegible) return res.status(400).json({ error: errorIlegible });
+
+    // Se carga una sola vez: hace falta tanto para validar el cambio de
+    // estado como para recalcular el Match.
+    const actual = await actividadDao.obtener(id);
+    if (!actual) return res.status(404).json({ error: "Actividad no encontrada" });
+
+    // C-2 (revision QA): la restriccion por rol solo aplica cuando el estado
+    // CAMBIA de verdad. Antes se rechazaba tambien el reenvio del estado
+    // ACTUAL — y como el formulario de "Mis eventos" siempre manda `estado`,
+    // un aportante no podia ni corregir la fecha de su propia actividad.
+    let estado;
+    const estadoPedido = req.body ? req.body.estado : undefined;
+    if (estadoPedido !== undefined && estadoPedido !== actual.estado) {
+      if (!esAdmin && !ESTADOS_APORTANTE.includes(estadoPedido)) {
+        return res.status(403).json({ error: "No puedes cambiar la actividad a ese estado" });
+      }
+      estado = estadoPedido;
+    }
+
+    // Recalcular compatibilidad/alcance SOLO si cambia lo que los determina
+    // (fecha o publico) — evita trabajo innecesario en ediciones de titulo o
+    // lugar (T039, H-03). Tambien es donde se valida el rango (T063), porque
+    // hasta aqui se conocen los valores EFECTIVOS (los nuevos combinados con
+    // los que ya tenia, si solo cambio uno de los dos extremos).
+    let match = {};
+    if (b.fechaInicio || b.fechaFin || Array.isArray(b.publico)) {
+      const fechaInicio = b.fechaInicio || actual.fecha_inicio;
+      const fechaFin = b.fechaFin || actual.fecha_fin || fechaInicio;
+      const errorFechas = errorRangoFechas(fechaInicio, fechaFin);
+      if (errorFechas) return res.status(400).json({ error: errorFechas });
+      const publico = Array.isArray(b.publico)
+        ? b.publico
+        : actual.publico.map((p) => ({ carreraId: p.carrera_id, nivel: p.nivel }));
+      match = await evaluarMatchParaActividad({ fechaInicio, fechaFin, publico });
+    }
+    res.json(await actividadDao.actualizar(id, { ...b, estado, ...match }, b.publico));
+  } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 
 app.patch("/api/actividades/:id/estado", requireAuth, async (req, res) => {
@@ -349,15 +657,51 @@ app.patch("/api/actividades/:id/estado", requireAuth, async (req, res) => {
     if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
     const { estado } = req.body || {};
     if (!estado) return res.status(400).json({ error: "Falta 'estado'" });
+
+    const act = await actividadDao.obtener(id);
+    if (!act) return res.status(404).json({ error: "Actividad no encontrada" });
+
+    const esAdmin = req.session.user.rol === "ADMIN";
+    // Igual que en el PUT: solo se restringe cuando el estado cambia de
+    // verdad; reenviar el que ya tiene no es un cambio (C-2).
+    if (estado !== act.estado && !esAdmin && !ESTADOS_APORTANTE.includes(estado)) {
+      return res.status(403).json({ error: "No puedes cambiar la actividad a ese estado" });
+    }
+    // T049: la reputacion se basa en REALIZADA — no puede ganarse marcando
+    // como cumplida una actividad que todavia no ocurre, sea quien sea.
+    if (estado === "REALIZADA" && new Date(act.fecha_inicio) > new Date()) {
+      return res.status(400).json({ error: "No puedes marcar como realizada una actividad que aún no ha ocurrido" });
+    }
     res.json(await actividadDao.cambiarEstado(id, estado));
-  } catch (e) { res.status(400).json({ error: e.message }); }
+  } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 
+// "Eliminar" ya no borra: archiva (E-07, reversible). El autor archiva lo
+// suyo sin necesidad de motivo; el retiro CON motivo por un administrador
+// sobre actividades ajenas usa la ruta /retirar de abajo.
 app.delete("/api/actividades/:id", requireAuth, async (req, res) => {
   try {
     const id = num(req.params.id);
     if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
-    res.json(await actividadDao.eliminar(id));
+    res.json(await actividadDao.archivar(id, req.session.user.id));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Retiro y restitucion administrativos (FR-004b, FR-009b/c) — solo ADMIN:
+// nadie mas puede hacer desaparecer del calendario publico una actividad
+// ajena, ni deshacer un archivado/retiro (autoridad del servidor, H-04).
+app.post("/api/admin/actividades/:id/retirar", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    const { motivo } = req.body || {};
+    res.json(await actividadDao.retirar(id, req.session.user.id, motivo || null));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+app.post("/api/admin/actividades/:id/restituir", requireRole("ADMIN"), async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    res.json(await actividadDao.restituir(id, req.session.user.id));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
@@ -376,7 +720,7 @@ app.post("/api/match/evaluar", requireAuth, async (req, res) => {
     );
     res.json(out);
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    res.status(400).json({ error: traducirErrorBD(e) });
   }
 });
 
@@ -464,7 +808,9 @@ app.get("/api/entidades/:id/resumen", requireAuth, async (req, res) => {
     if (!entidad) return res.status(404).json({ error: "Entidad no encontrada" });
     const acts = await actividadDao.listarCompleto(id);
     const periodo = await periodoDao.obtenerActivo();
-    res.json(reportService.construirResumen(entidad, acts, periodo));
+    const segmentos = await actividadDao.segmentosDe(id);
+    const matriculaReferencial = await kpiDao.usaMatriculaReferencial(segmentos);
+    res.json(reportService.construirResumen(entidad, acts, periodo, { matriculaReferencial }));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
@@ -477,7 +823,9 @@ app.get("/api/reports/:id/pdf", requireAuth, async (req, res) => {
     if (!entidad) return res.status(404).json({ error: "Entidad no encontrada" });
     const acts = await actividadDao.listarCompleto(id);
     const periodo = await periodoDao.obtenerActivo();
-    const resumen = reportService.construirResumen(entidad, acts, periodo);
+    const segmentos = await actividadDao.segmentosDe(id);
+    const matriculaReferencial = await kpiDao.usaMatriculaReferencial(segmentos);
+    const resumen = reportService.construirResumen(entidad, acts, periodo, { matriculaReferencial });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="reporte-mapfi-${id}.pdf"`);
     reportService.generarPDF(resumen, res);
@@ -495,7 +843,7 @@ app.get("/api/bloques", async (req, res) => {
 });
 app.post("/api/bloques", requireRole("ADMIN"), async (req, res) => {
   try { res.status(201).json(await bloqueHorarioDao.crear(req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 app.delete("/api/bloques/:id", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await bloqueHorarioDao.eliminar(num(req.params.id))); }
@@ -509,7 +857,7 @@ app.get("/api/periodos", requireAuth, async (req, res) => {
 });
 app.post("/api/admin/periodos", requireRole("ADMIN"), async (req, res) => {
   try { res.status(201).json(await periodoDao.crear(req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 app.post("/api/admin/periodos/:id/activar", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await periodoDao.activar(num(req.params.id))); }
@@ -519,19 +867,19 @@ app.post("/api/admin/periodos/:id/activar", requireRole("ADMIN"), async (req, re
 // ── Admin · catalogos (carreras / entidades) ────────────────────────────────
 app.post("/api/admin/carreras", requireRole("ADMIN"), async (req, res) => {
   try { res.status(201).json(await carreraDao.crear(req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 app.put("/api/admin/carreras/:id", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await carreraDao.actualizar(num(req.params.id), req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 app.post("/api/admin/entidades", requireRole("ADMIN"), async (req, res) => {
   try { res.status(201).json(await entidadDao.crear(req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 app.put("/api/admin/entidades/:id", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await entidadDao.actualizar(num(req.params.id), req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 
 // ── Admin · usuarios (alta de aportantes) ───────────────────────────────────
@@ -546,13 +894,13 @@ app.post("/api/admin/usuarios", requireRole("ADMIN"), async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const u = await userDao.crear({ email, passwordHash: hash, nombre, rol: rol || "APORTANTE", entidadId });
     res.status(201).json(u);
-  } catch (e) { res.status(400).json({ error: e.message }); }
+  } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 
 // Activar / desactivar / editar una cuenta (controla la apertura de cuentas).
 app.patch("/api/admin/usuarios/:id", requireRole("ADMIN"), async (req, res) => {
   try { res.json(await userDao.actualizar(num(req.params.id), req.body || {})); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
 
 // ── Cambio de contrasena propia ─────────────────────────────────────────────

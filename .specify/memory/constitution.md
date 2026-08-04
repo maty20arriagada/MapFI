@@ -1,34 +1,43 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (plantilla sin ratificar) → 1.0.0
-Rationale: Ratificación inicial. Se reemplazan todos los placeholders de la
-plantilla por los principios concretos derivados del proyecto MapFI (Fases
-F0–F8 completas). Al no existir una versión previa ratificada, se adopta 1.0.0.
+Version change: 1.0.0 → 1.0.1 (PATCH)
+Rationale (T081, Spec 002 - auditoría de robustez, 2026-08-03): corrección no
+semántica — el Principio III describía el rate limiting de login como "por
+IP"; la implementación real (y correcta, tras H-09) es por IP+cuenta, para
+que un proxy/NAT compartido no bloquee a toda la facultad. Se corrige el
+texto para reflejar el comportamiento ya implementado y probado
+(js/... server.js, __tests__/routes/api.test.js). No redefine ningún
+principio ni agrega una obligación nueva.
 
-Principios definidos (6):
+Además se añadió una sección "Propuestas pendientes de ratificación" con una
+propuesta ESCRITA (sin ratificar, sin efecto normativo) sobre reversibilidad
+de operaciones destructivas y moderación reactiva, derivada de la misma
+Spec 002 — pendiente de acuerdo del equipo (CEEIND + GIIA) antes de subir a
+1.1.0. Ver esa sección para el detalle completo.
+
+Principios definidos (6, sin cambios en esta versión):
   I.   Simplicidad sin build (Vanilla-First)
   II.  Arquitectura por capas (DAO + Servicios puros)
-  III. Seguridad por defecto (NO NEGOCIABLE)
+  III. Seguridad por defecto (NO NEGOCIABLE) — texto de rate limiting corregido
   IV.  Calidad verificada (Tests + verificación en navegador)
   V.   Migraciones aditivas versionadas
   VI.  Experiencia sin capacitación (UX cero-fricción)
 
-Secciones añadidas:
-  - Restricciones Técnicas y de Despliegue
-  - Flujo de Desarrollo y Puertas de Calidad
-  - Governance
+Secciones añadidas en 1.0.1:
+  - "Propuestas pendientes de ratificación" (antes de Version/Ratified)
 
-Secciones eliminadas: ninguna (plantilla → contenido concreto).
+Secciones eliminadas: ninguna.
 
 Templates revisados:
-  ✅ .specify/templates/plan-template.md — usa el placeholder dinámico
-     "[Gates determined based on constitution file]"; compatible, sin cambios.
-  ✅ .specify/templates/spec-template.md — no referencia la constitución; sin cambios.
-  ✅ .specify/templates/tasks-template.md — no referencia la constitución; sin cambios.
-  ✅ README.md / docs/ — coherentes con estos principios; sin cambios requeridos.
+  ✅ .specify/templates/plan-template.md — sin cambios.
+  ✅ .specify/templates/spec-template.md — sin cambios.
+  ✅ .specify/templates/tasks-template.md — sin cambios.
+  ✅ docs/ — actualizados por separado en la misma sesión (T077-T080).
 
-Follow-up TODOs: ninguno.
+Follow-up TODOs: revisar y decidir la Propuesta 1 (reversibilidad de
+operaciones destructivas) — ver sección "Propuestas pendientes de
+ratificación" al final de este archivo.
 -->
 
 # MapFI Constitution
@@ -78,7 +87,9 @@ Todo cambio DEBE preservar estas garantías:
 - **Sanitización XSS**: todo dato de usuario renderizado con `innerHTML` pasa por
   `escapeHtml` (`js/sanitize.js`).
 - **CSP**, cabeceras de seguridad, `SameSite=strict` + validación de `Origin`/
-  `Referer` en métodos que mutan, y **rate limiting** en login (5/15 min por IP).
+  `Referer` en métodos que mutan, y **rate limiting** en login (5/15 min por
+  **IP + cuenta** — nunca solo por IP: detrás de un proxy/NAT compartido, un
+  límite solo-IP bloquearía a toda la facultad por el error de una persona).
 - **La base de datos NUNCA se expone**: solo es alcanzable por el backend en la
   red interna de Docker; en producción solo se publica el puerto de la app.
 - El contenedor corre como **usuario no-root**. En `NODE_ENV=production` el seed
@@ -179,4 +190,43 @@ que hacen viable MapFI a largo plazo.
   (arquitectura, modelo de datos, despliegue, guía del aportante) complementan
   esta constitución con el detalle operativo.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-07-20
+## Propuestas pendientes de ratificación
+
+> Sección de trabajo: enmiendas **propuestas por escrito** (con su justificación,
+> según el procedimiento de Governance de arriba) pero **no ratificadas** —
+> requieren acuerdo del equipo (CEEIND + GIIA) antes de incorporarse a un
+> Core Principle y de subir la versión MINOR/MAJOR correspondiente. No tienen
+> efecto normativo mientras estén aquí.
+
+### Propuesta 1 — Reversibilidad de operaciones destructivas (T081, Spec 002)
+
+**Contexto:** la Spec 002 (auditoría de robustez) encontró que "eliminar" una
+actividad hacía un `DELETE` físico — sin retorno posible — y que la moderación
+pasó de "aprobación previa" a **reactiva** (todo se publica de inmediato; el
+administrador retira después) porque no existe un revisor diario. Ambas son
+decisiones **estructurales**, no de una sola pantalla: afectan el modelo de
+datos (`estado = ARCHIVADA` + trazabilidad de quién/cuándo retiró y restituyó,
+migraciones 008–009), el criterio de visibilidad usado por calendario/mapa de
+calor/choques, y la autoridad del servidor (H-04) como única barrera de
+control ante un modelo sin aprobación previa.
+
+**Propuesta concreta:**
+- Extender el Principio V (Migraciones aditivas) o el III (Seguridad por
+  defecto) — a decidir por el equipo — con una regla: *"Ninguna operación
+  iniciada por un usuario que destruya datos de producción (actividades,
+  cuentas, catálogos con historial) debe ser un `DELETE` físico sin retorno.
+  El patrón por defecto es archivar/soft-delete con trazabilidad de quién y
+  cuándo, y una vía de restitución explícita."*
+- Documentar el modelo de moderación reactiva (publicar de inmediato, retirar
+  después) como la política **por defecto** del proyecto mientras no exista un
+  revisor diario dedicado, para que futuras features no reintroduzcan un gate
+  de aprobación previa sin decidirlo explícitamente.
+
+**Estado:** propuesto 2026-08-03 tras completar la implementación de la Spec
+002. Pendiente de revisión y acuerdo del equipo para ratificar (subiría la
+versión a **1.1.0**, MINOR — nuevo contenido normativo, no redefine un
+principio existente).
+
+---
+
+**Version**: 1.0.1 | **Ratified**: 2026-07-20 | **Last Amended**: 2026-08-03

@@ -62,6 +62,26 @@
         document.querySelectorAll(".pend-check").forEach((c) => (c.checked = todos.checked));
     }
 
+    // ── Actividades retiradas/archivadas (T029, FR-004) ────────────────────────
+    const retiradas = await api.get("/api/admin/actividades/retiradas");
+    if (!retiradas.length) {
+      $("tablaRetiradas").innerHTML = '<p class="muted">No hay actividades retiradas.</p>';
+    } else {
+      const fmtF = (d) => new Date(d).toLocaleString("es-CL", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+      $("tablaRetiradas").innerHTML =
+        `<table><thead><tr>
+           <th>Título</th><th>Entidad</th><th>Fecha</th><th>Motivo</th><th>Retirada</th><th></th>
+         </tr></thead><tbody>` +
+        retiradas.map((r) =>
+          `<tr><td><strong>${esc(r.titulo)}</strong></td>
+             <td>${esc(r.entidad_sigla || r.entidad_nombre)}</td>
+             <td>${fmtF(r.fecha_inicio)}</td>
+             <td class="muted">${esc(r.motivo_retiro || "—")}</td>
+             <td class="muted">${r.retirada_en ? fmtF(r.retirada_en) : "—"}</td>
+             <td><button class="btn secondary" data-act="restituir-actividad" data-id="${r.id}">${Icon("refresh-cw", { size: 16 })} Restituir</button></td></tr>`
+        ).join("") + "</tbody></table>";
+    }
+
     const usuarios = await api.get("/api/admin/usuarios");
     tabla($("tablaUsuarios"), usuarios, [
       { label: "Cuenta", get: (r) => `<strong>${esc(r.entidad_sigla || "—")}</strong><div class="muted" style="font-size:.78rem">${esc(r.entidad_nombre || "Administración")}</div>` },
@@ -122,10 +142,10 @@
       const ids = [...document.querySelectorAll(".pend-check:checked")].map((c) => +c.value);
       if (!ids.length) return toast("Selecciona al menos una fila", "error");
       const accion = rev.dataset.rev;
-      if (accion === "RECHAZAR" && !confirm(`¿Rechazar ${ids.length} fecha(s)? Quedarán suspendidas.`)) return;
+      if (accion === "RECHAZAR" && !confirm(`¿Retirar ${ids.length} fecha(s) del calendario público? Quedan suspendidas y ya no se muestran (puedes restituirlas después).`)) return;
       try {
         const r = await api.post("/api/admin/actividades/revisar", { ids, accion });
-        toast(`${r.actualizadas} fecha(s) ${accion === "APROBAR" ? "aprobadas" : "rechazadas"}`, "success");
+        toast(`${r.actualizadas} fecha(s) ${accion === "APROBAR" ? "ratificadas" : "retiradas"}`, "success");
         cargar();
       } catch (err) { toast(err.message, "error"); }
     });
@@ -137,7 +157,23 @@
       const id = +btn.dataset.id;
       try {
         if (btn.dataset.act === "activar-periodo") await api.post(`/api/admin/periodos/${id}/activar`);
-        if (btn.dataset.act === "toggle-usuario") await api.patch(`/api/admin/usuarios/${id}`, { activo: btn.dataset.activo !== "true" });
+        if (btn.dataset.act === "toggle-usuario") {
+          const vaAActivar = btn.dataset.activo !== "true";
+          // T060 (H-06): desactivar corta el acceso DE INMEDIATO (incluida
+          // cualquier sesión ya abierta), no solo en el próximo login.
+          if (!vaAActivar) {
+            const ok = window.confirmDialog
+              ? await window.confirmDialog({
+                  titulo: "Desactivar cuenta",
+                  mensaje: "El acceso se corta de inmediato: si esa cuenta tiene una sesión abierta, su próxima acción quedará rechazada.",
+                  textoConfirmar: "Desactivar",
+                })
+              : confirm("¿Desactivar esta cuenta? El acceso se corta de inmediato, incluso si ya tiene una sesión abierta.");
+            if (!ok) return;
+          }
+          await api.patch(`/api/admin/usuarios/${id}`, { activo: vaAActivar });
+        }
+        if (btn.dataset.act === "restituir-actividad") await api.post(`/api/admin/actividades/${id}/restituir`);
         toast("Listo", "success"); cargar();
       } catch (err) { toast(err.message, "error"); }
     });

@@ -47,6 +47,7 @@
             <div style="flex:2; min-width:240px">
               <div class="muted" style="font-size:.8rem;margin-bottom:4px">Carreras · <button type="button" class="link-btn" id="carrTodas">todas / ninguna</button></div>
               <div id="aCarreras" class="checklist"></div>
+              <p id="avisoOtrasCarreras" class="muted" style="font-size:.8rem;margin-top:4px" hidden></p>
             </div>
             <div style="flex:1; min-width:150px">
               <div class="muted" style="font-size:.8rem;margin-bottom:4px">Años · <button type="button" class="link-btn" id="nivTodos">todos / ninguno</button></div>
@@ -69,10 +70,10 @@
         </form>
       </div>
 
-      <!-- Importar CSV (aportante → queda en PROPUESTA para revisión) -->
+      <!-- Importar CSV (aportante → se publica de inmediato como PROPUESTA; el admin puede retirarla despues) -->
       <div class="card" id="csvCard" hidden style="margin-top:16px">
         <h2><span class="icon title-icon" data-icon="file-text"></span> Importar mis fechas (CSV)</h2>
-        <p class="muted">Sube el semestre completo de una vez. Tus fechas quedarán como <strong>propuestas</strong> hasta que el administrador las apruebe.
+        <p class="muted">Sube el semestre completo de una vez. Tus fechas se publican <strong>de inmediato</strong> en el calendario; el administrador puede retirarlas después si algo no corresponde.
           <a class="link-btn" href="/api/plantilla-csv">Descargar plantilla</a>
         </p>
         <input type="file" id="csvFile" accept=".csv,text/csv" />
@@ -81,10 +82,11 @@
         <div id="importResult" style="margin-top:12px"></div>
       </div>
 
-      <div class="grid cols-3" style="margin:16px 0">
+      <div class="grid cols-4" style="margin:16px 0">
         <div class="card"><h2>Mis actividades</h2><p class="muted" id="kpiTotal">—</p></div>
         <div class="card"><h2>Confiabilidad</h2><p class="muted"><span id="kpiConf">—</span></p></div>
         <div class="card"><h2>Reputación / Sello</h2><p class="muted"><span id="kpiRep">—</span> <span id="kpiSello"></span></p></div>
+        <div class="card"><h2>Alcance estimado</h2><p class="muted" id="kpiAlcance">—</p></div>
       </div>
 
       <div class="row" style="margin-bottom:16px">
@@ -103,6 +105,7 @@
   <script src="js/sanitize.js"></script>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
+  <script src="js/ui-confirm.js"></script>
   <script src="js/theme-toggle.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>

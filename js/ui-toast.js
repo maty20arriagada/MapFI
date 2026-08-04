@@ -16,6 +16,10 @@
   global.toast = function toast(msg, type) {
     const el = document.createElement("div");
     el.className = "toast" + (type ? " " + type : "");
+    el.setAttribute("role", "status");
+    // Los errores interrumpen al lector de pantalla (assertive); el resto
+    // se anuncia sin interrumpir la tarea en curso (polite).
+    el.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
     el.textContent = msg;
     root().appendChild(el);
     setTimeout(() => el.remove(), 3500);

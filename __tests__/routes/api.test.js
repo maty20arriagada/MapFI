@@ -3,17 +3,65 @@
 const request = require("supertest");
 
 jest.mock("../../js/db", () => {
+  // Fixtures T020 (H-02): una actividad vigente y una archivada, ambas de la
+  // entidad 6 — para probar que la visibilidad depende del alcance de
+  // sesión. Deben vivir DENTRO del factory: jest.mock() no permite referenciar
+  // variables externas salvo que empiecen con "mock".
+  const ACTIVIDAD_VIGENTE = {
+    id: 501, titulo: "Evento visible", entidad_id: 6, entidad_nombre: "CEE Industrial",
+    fecha_inicio: "2026-04-01T10:00:00Z", fecha_fin: "2026-04-01T12:00:00Z",
+    tipo: "EVENTO", ramo: null, estado: "PROPUESTA", ubicacion: null,
+    alcance_estimado: null, compatibilidad_pct: null,
+  };
+  const ACTIVIDAD_ARCHIVADA = {
+    ...ACTIVIDAD_VIGENTE, id: 502, titulo: "Evento retirado", estado: "ARCHIVADA",
+  };
+
+  // T057 (H-06): flag mutable para simular que el admin desactiva la cuenta
+  // del aportante DESPUES de que ya inicio sesion.
+  let aportanteActivo = true;
+
   const mockPool = {
     query: jest.fn().mockImplementation(async (sql, params) => {
+      // userDao.obtener(id) — usado por la revalidacion de sesion (T058).
+      if (sql.includes("FROM usuario WHERE id")) {
+        if (params && params[0] === 1) {
+          return { rows: [{ id: 1, email: "admin@mapfi.cl", nombre: "Admin", rol: "ADMIN", entidad_id: null, activo: true }] };
+        }
+        if (params && params[0] === 2) {
+          return { rows: [{ id: 2, email: "aportante@mapfi.cl", nombre: "CEE Industrial", rol: "APORTANTE", entidad_id: 6, activo: aportanteActivo }] };
+        }
+        return { rows: [] };
+      }
       if (sql.includes("SELECT id, email, password_hash") && sql.includes("lower(email)")) {
         if ((params && params[0]) === "admin@mapfi.cl") {
           const bcrypt = require("bcryptjs");
           const hash = await bcrypt.hash("test1234", 10);
           return { rows: [{ id: 1, email: "admin@mapfi.cl", password_hash: hash, nombre: "Admin", rol: "ADMIN", entidad_id: null, activo: true }] };
         }
+        if ((params && params[0]) === "aportante@mapfi.cl") {
+          const bcrypt = require("bcryptjs");
+          const hash = await bcrypt.hash("test1234", 10);
+          return { rows: [{ id: 2, email: "aportante@mapfi.cl", password_hash: hash, nombre: "CEE Industrial", rol: "APORTANTE", entidad_id: 6, activo: true }] };
+        }
         return { rows: [] };
       }
       if (sql.includes("INSERT INTO schema_migrations")) return { rows: [] };
+      // T045 (H-04): actividad 501, de la entidad 6, con fecha en el futuro
+      // lejano — para probar que nadie puede marcarla REALIZADA antes de
+      // tiempo (T049).
+      if (/^SELECT \* FROM actividad WHERE id/.test(sql)) {
+        if (params && params[0] === 501) {
+          return { rows: [{ id: 501, entidad_id: 6, titulo: "Evento futuro", fecha_inicio: "2099-01-01T10:00:00Z", fecha_fin: "2099-01-01T12:00:00Z", estado: "CONFIRMADA" }] };
+        }
+        return { rows: [] };
+      }
+      if (sql.includes("FROM actividad a") && sql.includes("JOIN entidad e")) {
+        // Simula el filtro real: "propias" (sin `estado = ANY`) ve ambas;
+        // "publico" (con `estado = ANY`) solo ve la vigente.
+        const soloVigentes = /estado = ANY/.test(sql);
+        return { rows: soloVigentes ? [ACTIVIDAD_VIGENTE] : [ACTIVIDAD_VIGENTE, ACTIVIDAD_ARCHIVADA] };
+      }
       if (sql.includes("FROM actividad")) return { rows: [] };
       if (sql.includes("FROM carrera")) {
         return { rows: [{ id: 6, codigo: "ICI", nombre: "Industrial", color: "#2563EB", activa: true }] };
@@ -34,10 +82,16 @@ jest.mock("../../js/db", () => {
       return { rows: [] };
     }),
     connect: jest.fn().mockResolvedValue({
-      query: jest.fn().mockResolvedValue({ rows: [] }),
+      query: jest.fn().mockImplementation(async (sql, params) => {
+        // T045(a): expone los params del ultimo INSERT para verificar que
+        // entidad_id ($3) siempre es el de la SESION, nunca el del body.
+        if (/^INSERT INTO actividad\b/.test(sql)) { mockPool.__lastInsertParams = params; return { rows: [{ id: 999 }] }; }
+        return { rows: [] };
+      }),
       release: jest.fn(),
     }),
     on: jest.fn(),
+    __setAportanteActivo: (v) => { aportanteActivo = v; }, // T057
   };
   return { pool: mockPool, query: mockPool.query };
 });
@@ -108,6 +162,194 @@ describe("API endpoints públicos", () => {
       fechaInicio: "2026-04-15T10:00:00Z", fechaFin: "2026-04-15T12:00:00Z",
     });
     expect(res.status).toBe(401);
+  });
+
+  test("GET /api/actividades?entidadId=X sin sesión NO incluye actividades archivadas (H-02)", async () => {
+    const res = await request(app).get("/api/actividades?entidadId=6");
+    expect(res.status).toBe(200);
+    expect(res.body.some((a) => a.estado === "ARCHIVADA")).toBe(false);
+    expect(res.body.some((a) => a.id === 501)).toBe(true);
+  });
+
+  test("GET /api/actividades?entidadId=X con sesión ADMIN SI incluye las archivadas de esa entidad (FR-004b)", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+    const res = await agent.get("/api/actividades?entidadId=6");
+    expect(res.status).toBe(200);
+    expect(res.body.some((a) => a.estado === "ARCHIVADA")).toBe(true);
+  });
+
+  test("POST /api/actividades ignora compatibilidad/alcance del cliente y usa los del servidor (H-03, H-04, T035)", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+    const res = await agent.post("/api/actividades").send({
+      titulo: "Charla de prueba",
+      tipo: "CHARLA",
+      fechaInicio: "2026-04-20T10:00:00", // lunes
+      fechaFin: "2026-04-20T12:00:00",
+      entidadId: 6,
+      publico: [{ carreraId: 6, nivel: 1 }],
+      compatibilidadPct: 999,
+      alcanceEstimado: 999,
+    });
+    expect(res.status).toBe(201);
+    expect(typeof res.body.compatibilidadPct).toBe("number");
+    expect(res.body.compatibilidadPct).not.toBe(999);
+    expect(res.body.alcanceEstimado).not.toBe(999);
+  });
+
+  describe("Autoridad del servidor con sesión de APORTANTE (T045, H-04)", () => {
+    test("(a) no puede crear a nombre de otra entidad — el servidor fuerza la propia", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Intento ajeno", tipo: "EVENTO",
+        fechaInicio: "2026-04-20T10:00:00", fechaFin: "2026-04-20T12:00:00",
+        entidadId: 999, // intenta imponer OTRA entidad
+        publico: [{ carreraId: 6, nivel: 1 }],
+      });
+      expect(res.status).toBe(201);
+      const db = require("../../js/db");
+      expect(db.pool.__lastInsertParams[2]).toBe(6); // entidad_id ($3) = la de la sesion, no 999
+    });
+
+    test("(b) no puede restituir una actividad retirada — solo ADMIN", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/admin/actividades/501/restituir");
+      expect(res.status).toBe(403);
+    });
+
+    test("(c) no puede marcar una actividad como realizada (solo ADMIN ratifica/completa)", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.patch("/api/actividades/501/estado").send({ estado: "REALIZADA" });
+      expect(res.status).toBe(403);
+    });
+
+    test("(d) no puede imponer compatibilidad ni alcance al crear", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Otro intento", tipo: "EVENTO",
+        fechaInicio: "2026-04-20T10:00:00", fechaFin: "2026-04-20T12:00:00",
+        publico: [{ carreraId: 6, nivel: 1 }],
+        compatibilidadPct: 999, alcanceEstimado: 999,
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.compatibilidadPct).not.toBe(999);
+      expect(res.body.alcanceEstimado).not.toBe(999);
+    });
+  });
+
+  test("T063 (H-08) — rechaza crear una actividad con fecha de término anterior a la de inicio", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+    const res = await agent.post("/api/actividades").send({
+      titulo: "Fechas invertidas", tipo: "EVENTO", entidadId: 6,
+      fechaInicio: "2026-04-20T12:00:00", fechaFin: "2026-04-20T10:00:00", // fin antes que inicio
+      publico: [{ carreraId: 6, nivel: 1 }],
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/término/i);
+  });
+
+  describe("Regresiones de la revisión QA (2026-08-04)", () => {
+    test("C-2 — un aportante puede editar su actividad reenviando el estado ACTUAL sin cambiarlo", async () => {
+      // Antes del fix esto devolvía 403 ("No puedes cambiar la actividad a
+      // ese estado") porque el formulario siempre manda `estado`, y CONFIRMADA
+      // no está entre los permitidos a un aportante — aunque no lo cambie.
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.put("/api/actividades/501").send({
+        fechaInicio: "2026-05-13T10:00",
+        fechaFin: "2026-05-13T12:00",
+        estado: "CONFIRMADA", // el MISMO que ya tiene la 501
+      });
+      expect(res.status).toBe(200);
+    });
+
+    test("C-2 — pero cambiarlo de verdad a un estado no permitido sigue dando 403", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.put("/api/actividades/501").send({ estado: "REALIZADA" });
+      expect(res.status).toBe(403);
+    });
+
+    test("C-1 — la fecha naive del formulario llega al DAO como instante (Date), no como texto", async () => {
+      // Si viaja como texto, quien decide qué significan las 21:00 es la zona
+      // de sesión de Postgres (que estaba en UTC) y se guardaba 17:00.
+      const db = require("../../js/db");
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Naive", tipo: "EVENTO",
+        fechaInicio: "2026-04-17T21:00", fechaFin: "2026-04-17T23:00",
+        publico: [{ carreraId: 6, nivel: 1 }],
+      });
+      expect(res.status).toBe(201);
+      expect(db.pool.__lastInsertParams[4]).toBeInstanceOf(Date); // fecha_inicio
+      expect(db.pool.__lastInsertParams[5]).toBeInstanceOf(Date); // fecha_fin
+    });
+
+    test("C-1 — una fecha ilegible se rechaza con un mensaje claro", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Mala", tipo: "EVENTO", fechaInicio: "no-es-una-fecha", fechaFin: "2026-04-17T23:00",
+        publico: [{ carreraId: 6, nivel: 1 }],
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/formato válido/i);
+    });
+
+    test("S-3 — el rango de /conflictos está acotado", async () => {
+      const res = await request(app).get("/api/actividades/conflictos?desde=1000-01-01&hasta=9999-12-31");
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/rango/i);
+    });
+
+    test("A-2 — /api/health informa versión y última migración aplicada", async () => {
+      const res = await request(app).get("/api/health");
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.version).toBeTruthy();
+    });
+  });
+
+  test("T057 (H-06) — cuenta desactivada tras el login: la siguiente petición autenticada responde 401", async () => {
+    const db = require("../../js/db");
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+
+    // Mientras la cuenta sigue activa, la sesion funciona normalmente.
+    const antes = await agent.post("/api/actividades").send({
+      titulo: "Antes de desactivar", tipo: "EVENTO",
+      fechaInicio: "2026-04-20T10:00:00", fechaFin: "2026-04-20T12:00:00",
+    });
+    expect(antes.status).toBe(201);
+
+    db.pool.__setAportanteActivo(false); // el admin la desactiva en otra pestaña
+    try {
+      const despues = await agent.post("/api/actividades").send({
+        titulo: "Despues de desactivar", tipo: "EVENTO",
+        fechaInicio: "2026-04-20T10:00:00", fechaFin: "2026-04-20T12:00:00",
+      });
+      expect(despues.status).toBe(401);
+
+      // La sesion quedo destruida: ni siquiera queda un usuario en /me.
+      const me = await agent.get("/api/auth/me");
+      expect(me.body.user).toBeNull();
+    } finally {
+      db.pool.__setAportanteActivo(true); // no afectar otros tests
+    }
+  });
+
+  test("T049 — ni un ADMIN puede marcar como realizada una actividad cuya fecha aún no ocurre", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+    const res = await agent.patch("/api/actividades/501/estado").send({ estado: "REALIZADA" });
+    expect(res.status).toBe(400);
   });
 
   test("GET /api/feriados devuelve array", async () => {

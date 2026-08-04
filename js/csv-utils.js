@@ -123,9 +123,40 @@
     return { actividades, errores };
   }
 
-  global.CsvUtils = { parseCSV, normTipo, parseFecha, construirActividades };
+  /**
+   * Divide `actividades` en lotes cuyo tamaño serializado (JSON, tal como se
+   * envía en el body de POST /api/actividades/bulk) no supere `limiteBytes`
+   * — un margen de seguridad bajo el límite real del servidor (100 kB, ver
+   * `express.json({ limit: "100kb" })` en server.js). Una fila con público
+   * completo pesa cerca de 2 kB; una planilla de un semestre para toda la
+   * facultad (100+ filas) supera el límite de un solo envío y el servidor la
+   * rechazaba con un error críptico (H-05, E-06, T052).
+   * @param {Array} actividades
+   * @param {number} [limiteBytes=80000]
+   * @returns {Array<Array>} lotes (nunca vacíos, conservan el orden original)
+   */
+  function dividirEnLotes(actividades, limiteBytes) {
+    limiteBytes = limiteBytes || 80000;
+    const lotes = [];
+    let loteActual = [];
+    let bytesActual = 2; // "[" + "]"
+    for (const a of actividades) {
+      const bytesFila = JSON.stringify(a).length + 1; // +1 por la coma separadora
+      if (loteActual.length && bytesActual + bytesFila > limiteBytes) {
+        lotes.push(loteActual);
+        loteActual = [];
+        bytesActual = 2;
+      }
+      loteActual.push(a);
+      bytesActual += bytesFila;
+    }
+    if (loteActual.length) lotes.push(loteActual);
+    return lotes;
+  }
+
+  global.CsvUtils = { parseCSV, normTipo, parseFecha, construirActividades, dividirEnLotes };
 
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { parseCSV, normTipo, parseFecha, construirActividades };
+    module.exports = { parseCSV, normTipo, parseFecha, construirActividades, dividirEnLotes };
   }
 })(typeof window !== "undefined" ? window : globalThis);

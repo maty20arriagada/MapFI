@@ -140,6 +140,17 @@ server {
 
 Firewall: deja abiertos solo 80/443 (o el puerto de la app). **No abras 5432.**
 
+> **Importante (T065, Spec 002 / H-09):** la línea `proxy_set_header X-Forwarded-For
+> $proxy_add_x_forwarded_for;` de arriba **no es opcional**. El backend usa la IP
+> real del visitante (`req.ip`, vía `app.set("trust proxy", 1)`) para limitar los
+> intentos de login (máx. 5 por IP+cuenta cada 15 min). **Si el proxy no reenvía
+> esta cabecera**, todas las peticiones le llegan al backend con la misma IP —
+> la del propio proxy — y el límite de intentos pasa a ser compartido por
+> **todos los visitantes a la vez**: bastaría con que una sola persona agote
+> sus 5 intentos para bloquear el login de toda la facultad. Verifícalo tras
+> desplegar: los logs de acceso del backend deben mostrar IPs de clientes
+> reales, no `127.0.0.1` ni la IP interna del proxy para todo el tráfico.
+
 ---
 
 ## 7. Respaldos
