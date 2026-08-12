@@ -81,6 +81,62 @@ Antes de fijar una fecha, úsalo para no equivocarte:
 
 ---
 
+## 4.1 El filtro "Solo actividades para participar"
+
+En el **Calendario académico**, bajo los filtros, hay una casilla que separa lo que un
+estudiante **puede elegir** de lo que **tiene que cumplir**:
+
+| Se muestra | Se oculta |
+|---|---|
+| Charlas, talleres, eventos y extraprogramáticas | Evaluaciones |
+| **Todo** lo de Vinculación con el Medio y Gearbox | Hitos académicos |
+| | Entregas |
+
+Viene **desactivada**: al entrar se sigue viendo el calendario completo, porque las
+evaluaciones son la información más crítica. La casilla existe para cuando alguien quiere
+responder la otra pregunta: *"¿qué hay para participar esta semana?"*.
+
+Dos detalles de cómo funciona:
+
+- Las dos condiciones se combinan con **o**, no con **y**: entra todo lo de Vinculación con
+  el Medio y Gearbox *aunque* esté tipificado de otra forma, y entran las charlas y talleres
+  *aunque* los organice un centro de estudiantes.
+- **Para tu centro:** si publicas una charla o un taller, aparecerá aquí. Si la tipificas
+  como "hito académico", no. Elegir bien el tipo hace que tu actividad se encuentre.
+
+---
+
+## 4.2 Enlace de inscripción
+
+Al crear una actividad puedes añadir un **enlace de inscripción** (un formulario, una
+entrada, una sala virtual). Aparece como botón **"Inscribirse"** cuando alguien pincha la
+actividad en el calendario, y viaja dentro del evento si esa persona lo sincroniza con su
+propio calendario.
+
+Solo se aceptan direcciones que empiecen por `http://` o `https://`.
+
+## 4.3 Sincronizar el calendario (para contarle a tus estudiantes)
+
+Cualquiera —sin cuenta— puede llevarse las fechas a su Google o su Outlook. Hay **dos
+formas**, y conviene saber cuál recomendar:
+
+| | **Sincronizar** (botón en los filtros) | **Añadir una actividad** (al pincharla) |
+|---|---|---|
+| Qué hace | Su calendario se mantiene al día solo | Copia esa actividad, una vez |
+| Si cambias la fecha | Se actualiza | **No**: le queda la fecha vieja |
+| Si la eliminas | **Le llega como cancelada** | **No**: le queda un evento fantasma |
+| Cuándo se actualiza | Google tarda **12–24 h** | Al instante |
+
+Para sincronizar hay que elegir **carrera y año** primero: de lo contrario llegarían las
+fechas de las 14 carreras y los 5 años. Se sincroniza exactamente lo que esté filtrado,
+incluida la casilla "solo actividades para participar".
+
+> **Lo que esto significa para ti:** si cambias una fecha con poca antelación, no supongas
+> que la gente que sincronizó ya se enteró. Google puede tardar un día. Avisa igual por tus
+> canales.
+
+---
+
 ## 5. Leer el Mapa de Calor
 
 El mapa de calor muestra **qué tan saturada** está cada fecha para un público:

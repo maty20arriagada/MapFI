@@ -1,9 +1,0 @@
-{
-  "templates": {
-    "folder": "specs"
-  },
-  "daily-notes": {
-    "folder": "docs",
-    "format": "YYYY-MM-DD"
-  }
-}

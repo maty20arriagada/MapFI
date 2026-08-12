@@ -39,6 +39,7 @@ const matchService = require("./js/services/matchService");
 const heatmapService = require("./js/services/heatmapService");
 const reputationService = require("./js/services/reputationService");
 const reportService = require("./js/services/reportService");
+const icsService = require("./js/services/icsService");
 
 const bcrypt = require("bcryptjs");
 
@@ -76,7 +77,12 @@ app.use((req, res, next) => {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline'; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-    "font-src 'self' https://fonts.gstatic.com; " +
+    // `data:` es necesario: FullCalendar embebe su fuente de iconos como
+    // data URI, y sin esto el CSP la bloquea y los botones de anterior y
+    // siguiente del calendario quedan VACIOS (auditoria 2026-08-04).
+    // Permitir fuentes data: no abre una via de ejecucion, a diferencia de
+    // hacerlo en script-src.
+    "font-src 'self' data: https://fonts.gstatic.com; " +
     "img-src 'self' data:; " +
     "connect-src 'self'; " +
     "frame-ancestors 'self'; " +
@@ -257,8 +263,39 @@ function camposActividadPermitidos(b) {
     ubicacion: b.ubicacion,
     fechaInicio: aInstante(b.fechaInicio),
     fechaFin: aInstante(b.fechaFin),
+    urlInscripcion: normalizarUrl(b.urlInscripcion),
     publico: Array.isArray(b.publico) ? b.publico : undefined,
   };
+}
+
+// ── Enlace de inscripcion ───────────────────────────────────────────────────
+// Este valor termina renderizado como `<a href>` y dentro del feed iCalendar,
+// asi que solo se aceptan http y https. Un `javascript:` guardado aqui se
+// ejecutaria al pulsarlo; un `data:` puede servir contenido arbitrario.
+/**
+ * @returns {string|null|undefined} la URL si es valida · null si vino pero no
+ *   lo es · undefined si no vino (para no pisar el valor en un update).
+ */
+function normalizarUrl(valor) {
+  if (valor === undefined || valor === null) return undefined;
+  const txt = String(valor).trim();
+  if (!txt) return null; // vaciar el campo a proposito
+  try {
+    const u = new URL(txt);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    return txt.slice(0, 500);
+  } catch (_) {
+    return null;
+  }
+}
+
+/** Mensaje si el enlace vino pero no es una direccion web valida. */
+function errorUrlInscripcion(b, original) {
+  const vino = original && typeof original.urlInscripcion === "string" && original.urlInscripcion.trim();
+  if (vino && b.urlInscripcion === null) {
+    return "El enlace de inscripción debe empezar por http:// o https://";
+  }
+  return null;
 }
 
 // ── Normalizacion de fechas (C-1 / H-01, revision QA 2026-08-04) ────────────
@@ -471,6 +508,12 @@ app.get("/api/actividades", async (req, res) => {
       desde: req.query.desde,
       hasta: req.query.hasta,
       alcance: esPropia ? "propias" : "publico",
+      // Foco "para participar" del calendario publico: oportunidades en vez
+      // de obligaciones academicas. Se acepta cualquier forma afirmativa
+      // porque lo manda un checkbox del navegador.
+      soloParticipacion: ["1", "true", "si"].includes(
+        String(req.query.soloParticipacion || "").toLowerCase()
+      ),
     });
     res.json(acts);
   } catch (e) {
@@ -482,7 +525,7 @@ app.get("/api/actividades", async (req, res) => {
 app.post("/api/actividades", requireAuth, async (req, res) => {
   try {
     const b = camposActividadPermitidos(req.body);
-    const errorIlegible = errorFechaIlegible(b);
+    const errorIlegible = errorFechaIlegible(b) || errorUrlInscripcion(b, req.body);
     if (errorIlegible) return res.status(400).json({ error: errorIlegible });
     if (!b.titulo || !b.fechaInicio || !b.fechaFin || !b.tipo) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
@@ -541,7 +584,7 @@ app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
         // Aportante: no puede elegir entidad ni estado — se fuerzan.
         const entidadId = esAdmin ? num(filaCruda.entidadId) : req.session.user.entidadId;
         const estado = esAdmin ? (filaCruda.estado || "CONFIRMADA") : "PROPUESTA";
-        const errorIlegible = errorFechaIlegible(a);
+        const errorIlegible = errorFechaIlegible(a) || errorUrlInscripcion(a, filaCruda);
         if (errorIlegible) throw new Error(errorIlegible);
         if (!a.titulo || !a.fechaInicio || !a.fechaFin || !a.tipo || !entidadId) {
           throw new Error("Faltan campos obligatorios");
@@ -586,6 +629,69 @@ app.post("/api/admin/actividades/revisar", requireRole("ADMIN"), async (req, res
     const estado = accion === "APROBAR" ? "CONFIRMADA" : "SUSPENDIDA";
     res.json(await actividadDao.cambiarEstadoBulk(ids.map(Number).filter(Boolean), estado));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Feed iCalendar (suscripcion desde Google / Outlook / Apple) ─────────────
+// PUBLICO a proposito: quien se suscribe es un estudiante sin cuenta, y
+// ademas quien lo descarga no es su navegador sino los SERVIDORES de Google
+// u Outlook, que no tienen sesion. Por eso usa alcance "publico" y no puede
+// exponer nada oculto.
+//
+// Acepta los mismos filtros que el calendario, de modo que la direccion a la
+// que alguien se suscribe lleva su carrera y su año dentro. `ids` sirve para
+// llevarse actividades sueltas.
+const ICS_MAX_IDS = 100;
+
+// Identidad estable del calendario, independiente de como se alcance el
+// servidor. Solo se usa para construir los UID, asi que puede (y debe)
+// quedarse fija aunque cambie el dominio real de despliegue: cambiarla
+// duplicaria los eventos en los calendarios ya suscritos.
+const MAPFI_DOMINIO = process.env.MAPFI_DOMINIO || "mapfi.udec.cl";
+
+app.get("/api/calendario.ics", async (req, res) => {
+  try {
+    const ids = String(req.query.ids || "")
+      .split(",").map((s) => parseInt(s, 10)).filter(Number.isFinite);
+    if (ids.length > ICS_MAX_IDS) {
+      return res.status(400).json({ error: `No se pueden pedir más de ${ICS_MAX_IDS} actividades a la vez` });
+    }
+    const acts = await actividadDao.listar({
+      carreraId: num(req.query.carreraId),
+      nivel: num(req.query.nivel),
+      entidadId: num(req.query.entidadId),
+      tipo: req.query.tipo,
+      alcance: "publico",
+      soloParticipacion: ["1", "true", "si"].includes(
+        String(req.query.soloParticipacion || "").toLowerCase()
+      ),
+      ids,
+      // Al pedir actividades sueltas no tiene sentido arrastrar cancelaciones
+      // de otras; en la suscripcion si, porque es lo que mantiene la agenda
+      // del estudiante al dia.
+      incluirCanceladas: ids.length === 0,
+    });
+
+    res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+    res.setHeader("Content-Disposition", 'inline; filename="mapfi.ics"');
+    // Google reconsulta el feed muy seguido; una hora de cache evita golpear
+    // la base sin que el calendario quede desactualizado (su propio refresco
+    // es de 12-24 h de todos modos).
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.send(icsService.generar(acts, {
+      // OJO: el dominio NO puede salir de `req.headers.host`. Forma parte del
+      // UID, y el UID es lo que hace que editar una actividad ACTUALICE el
+      // evento en vez de duplicarlo. Si dependiera del host, la misma
+      // actividad tendria un UID distinto segun se entrara por IP, por
+      // localhost o por el dominio real, y al mover el servidor a produccion
+      // todos los calendarios ya suscritos duplicarian cada evento.
+      // Detectado en la auditoria del 2026-08-04.
+      dominio: MAPFI_DOMINIO,
+      nombre: ids.length ? "MapFI · selección" : "MapFI · Facultad de Ingeniería",
+    }));
+  } catch (e) {
+    console.error("[calendario.ics]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
 });
 
 // Aviso publico de cancelaciones: que se elimino del calendario en los
@@ -659,7 +765,7 @@ app.put("/api/actividades/:id", requireAuth, async (req, res) => {
     // T046/H-04: JAMAS propagar req.body crudo hacia el DAO — solo los
     // campos de camposActividadPermitidos() pueden llegar aqui.
     const b = camposActividadPermitidos(req.body);
-    const errorIlegible = errorFechaIlegible(b);
+    const errorIlegible = errorFechaIlegible(b) || errorUrlInscripcion(b, req.body);
     if (errorIlegible) return res.status(400).json({ error: errorIlegible });
 
     // Se carga una sola vez: hace falta tanto para validar el cambio de

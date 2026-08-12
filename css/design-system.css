@@ -269,6 +269,20 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 .page-head .subtitle { color: var(--text-soft); margin: -2px 0 0; max-width: 72ch; }
 .filters { padding: 16px 18px; }
 
+/* Foco "para participar": separa las oportunidades de las obligaciones. */
+.foco-participacion {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 14px 0 0; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-weight: 400; cursor: pointer;
+}
+.foco-participacion:hover { border-color: var(--brand-2); }
+.foco-participacion input { width: auto; margin: 2px 0 0; flex: none; }
+.foco-participacion > span { display: flex; flex-direction: column; gap: 2px; }
+.foco-participacion strong { font-size: .9rem; }
+.foco-participacion .muted { font-size: .8rem; line-height: 1.35; }
+
 /* ── Horario semanal (timetable) ──────────────────────────────────────── */
 .timetable {
   display: grid; grid-template-columns: 54px repeat(5, 1fr); gap: 4px;
@@ -522,6 +536,11 @@ main > .section:nth-child(3) { animation-delay: .12s; }
   max-width: 420px; width: calc(100% - 32px);
 }
 .confirm-dialog::backdrop { background: rgba(15, 32, 51, .45); }
+/* El de sincronizar lleva más contenido: enlaces, la dirección del feed y la
+   advertencia del retraso de Google. */
+.sync-dialog { max-width: 560px; }
+.sync-dialog input[readonly] { font-size: .82rem; background: var(--surface-2); }
+.sync-dialog hr { width: 100%; }
 .confirm-dialog h3 { margin: 0 0 4px; }
 .confirm-dialog p { margin: 0; }
 

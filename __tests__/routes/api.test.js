@@ -73,6 +73,7 @@ jest.mock("../../js/db", () => {
         return { rows: [{ id: params[0], estado: "ARCHIVADA" }] };
       }
       if (sql.includes("FROM actividad a") && sql.includes("JOIN entidad e")) {
+        mockPool.__ultimoListarSql = sql;
         // Simula el filtro real: "propias" (sin `estado = ANY`) ve ambas;
         // "publico" (con `estado = ANY`) solo ve la vigente.
         const soloVigentes = /estado = ANY/.test(sql);
@@ -268,6 +269,112 @@ describe("API endpoints públicos", () => {
     });
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/término/i);
+  });
+
+  describe("Feed iCalendar", () => {
+    test("es público: lo descargan los servidores de Google/Outlook, sin sesión", async () => {
+      const res = await request(app).get("/api/calendario.ics?carreraId=6&nivel=1");
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toMatch(/text\/calendar/);
+      expect(res.text.startsWith("BEGIN:VCALENDAR")).toBe(true);
+      expect(res.text.endsWith("END:VCALENDAR\r\n")).toBe(true);
+    });
+
+    test("nunca expone actividades ocultas: usa el alcance público", async () => {
+      const db = require("../../js/db");
+      await request(app).get("/api/calendario.ics?entidadId=6");
+      // El alcance "propias" (que ve lo oculto) exige entidadId y se activa
+      // solo con sesión; aquí no hay, así que debe filtrar por estado.
+      expect(db.pool.__ultimoListarSql).toMatch(/estado = ANY|ARCHIVADA/);
+    });
+
+    test("respeta el filtro 'para participar'", async () => {
+      const db = require("../../js/db");
+      await request(app).get("/api/calendario.ics?carreraId=6&nivel=1&soloParticipacion=1");
+      expect(db.pool.__ultimoListarSql).toMatch(/e\.tipo = ANY/);
+    });
+
+    test("rechaza una petición con demasiadas actividades", async () => {
+      const muchos = Array.from({ length: 101 }, (_, i) => i + 1).join(",");
+      const res = await request(app).get("/api/calendario.ics?ids=" + muchos);
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/más de 100/i);
+    });
+
+    test("con ids acota a esas actividades y no arrastra cancelaciones ajenas", async () => {
+      const db = require("../../js/db");
+      await request(app).get("/api/calendario.ics?ids=501");
+      expect(db.pool.__ultimoListarSql).toMatch(/a\.id = ANY/);
+      expect(db.pool.__ultimoListarSql).not.toMatch(/ARCHIVADA/);
+    });
+
+    test("el UID no depende de la cabecera Host (auditoría 2026-08-04)", async () => {
+      // El UID es lo que hace que editar una actividad ACTUALICE el evento en
+      // vez de duplicarlo. Si saliera de req.headers.host, la misma actividad
+      // tendría UID distinto según se entrara por IP, localhost o el dominio
+      // real — y al pasar a producción los calendarios ya suscritos
+      // duplicarían todos los eventos.
+      const uid = (t) => (t.split("\r\n").find((l) => l.startsWith("UID:")) || "");
+      const a = await request(app).get("/api/calendario.ics?carreraId=6&nivel=1");
+      const b = await request(app).get("/api/calendario.ics?carreraId=6&nivel=1").set("Host", "otro.dominio.cl");
+      expect(uid(a.text)).toBeTruthy();
+      expect(uid(a.text)).toBe(uid(b.text));
+    });
+
+    test("se puede cachear: Google reconsulta el feed muy seguido", async () => {
+      const res = await request(app).get("/api/calendario.ics");
+      expect(res.headers["cache-control"]).toMatch(/max-age=\d+/);
+    });
+  });
+
+  describe("Enlace de inscripción", () => {
+    test("rechaza un enlace que no sea http o https", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Con enlace malo", tipo: "CHARLA",
+        fechaInicio: "2026-05-20T10:00", fechaFin: "2026-05-20T12:00",
+        publico: [{ carreraId: 6, nivel: 1 }],
+        urlInscripcion: "javascript:alert(1)",
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/http/i);
+    });
+
+    test("acepta y guarda un enlace https", async () => {
+      const db = require("../../js/db");
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Con enlace bueno", tipo: "CHARLA",
+        fechaInicio: "2026-05-20T10:00", fechaFin: "2026-05-20T12:00",
+        publico: [{ carreraId: 6, nivel: 1 }],
+        urlInscripcion: "https://forms.gle/abc",
+      });
+      expect(res.status).toBe(201);
+      expect(db.pool.__lastInsertParams[13]).toBe("https://forms.gle/abc");
+    });
+  });
+
+  describe("Filtro público 'para participar'", () => {
+    test("sin sesión se puede aplicar: es para estudiantes sin cuenta", async () => {
+      const db = require("../../js/db");
+      const res = await request(app).get("/api/actividades?soloParticipacion=1");
+      expect(res.status).toBe(200);
+      expect(db.pool.__ultimoListarSql).toMatch(/e\.tipo = ANY/);
+    });
+
+    test("no se aplica si no se pide", async () => {
+      const db = require("../../js/db");
+      await request(app).get("/api/actividades");
+      expect(db.pool.__ultimoListarSql).not.toMatch(/e\.tipo = ANY/);
+    });
+
+    test("un valor cualquiera no lo activa por accidente", async () => {
+      const db = require("../../js/db");
+      await request(app).get("/api/actividades?soloParticipacion=0");
+      expect(db.pool.__ultimoListarSql).not.toMatch(/e\.tipo = ANY/);
+    });
   });
 
   describe("Eliminar con constancia pública", () => {

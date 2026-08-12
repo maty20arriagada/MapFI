@@ -152,6 +152,21 @@ server {
 
 Firewall: deja abiertos solo 80/443 (o el puerto de la app). **No abras 5432.**
 
+> ### La sincronización de calendarios exige este paso
+> MapFI publica un feed iCalendar (`/api/calendario.ics`) para que estudiantes y
+> funcionarios suscriban las fechas a su Google u Outlook. **Ese feed lo descargan los
+> servidores de Google y Microsoft, no el navegador de la persona.**
+>
+> Eso significa que, para que la suscripción funcione, MapFI debe quedar:
+> - **accesible desde internet** (no solo desde la red de la facultad), y
+> - **con HTTPS y certificado válido** — el enlace de suscripción directa de Google
+>   solo acepta HTTPS.
+>
+> Si el servidor queda en red interna, la suscripción **falla en silencio**: el
+> estudiante la agrega y su calendario simplemente aparece vacío. En ese escenario
+> siguen funcionando la descarga del archivo `.ics` y los botones de añadir una
+> actividad suelta, que no requieren que nadie alcance el servidor.
+
 > **Importante (T065, Spec 002 / H-09):** la línea `proxy_set_header X-Forwarded-For
 > $proxy_add_x_forwarded_for;` de arriba **no es opcional**. El backend usa la IP
 > real del visitante (`req.ip`, vía `app.set("trust proxy", 1)`) para limitar los

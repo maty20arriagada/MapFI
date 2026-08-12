@@ -51,6 +51,97 @@ describe("actividadDao.listar — visibilidad unificada (H-02, FR-003)", () => {
   });
 });
 
+describe("actividadDao.listar — foco 'para participar'", () => {
+  test("combina entidad y tipo con OR, no con AND", async () => {
+    // Debe entrar TODO lo de Vinculación con el Medio y Gearbox, y además
+    // los tipos de participación vengan de quien vengan. Si fuera un AND,
+    // una charla de un centro de estudiantes quedaría fuera.
+    await dao.listar({ soloParticipacion: true });
+    expect(lastCall.sql).toMatch(
+      /\(e\.tipo = ANY\(\$\d+::text\[\]\) OR a\.tipo = ANY\(\$\d+::text\[\]\)\)/
+    );
+  });
+
+  test("incluye las entidades de acompañamiento y los tipos no obligatorios", async () => {
+    await dao.listar({ soloParticipacion: true });
+    const arreglos = lastCall.params.filter((p) => Array.isArray(p));
+    expect(arreglos).toContainEqual(["VINCULACION", "GEARBOX"]);
+    expect(arreglos).toContainEqual(["EVENTO", "CHARLA", "TALLER", "EXTRAPROGRAMATICA"]);
+  });
+
+  test("deja fuera las obligaciones académicas", async () => {
+    await dao.listar({ soloParticipacion: true });
+    const tipos = lastCall.params.filter((p) => Array.isArray(p)).flat();
+    expect(tipos).not.toContain("EXAMEN");
+    expect(tipos).not.toContain("HITO_ACADEMICO");
+    expect(tipos).not.toContain("ENTREGA");
+  });
+
+  test("sin el foco activo no se añade ninguna condición de tipo/entidad", async () => {
+    await dao.listar({});
+    expect(lastCall.sql).not.toMatch(/e\.tipo = ANY/);
+  });
+
+  test("se puede combinar con los demás filtros sin descuadrar los parámetros", async () => {
+    // Riesgo real: las condiciones de arriba usan un contador `i` y esta usa
+    // `args.length`. Si se desincronizan, el SQL apunta al parámetro
+    // equivocado y el filtro devuelve cualquier cosa.
+    await dao.listar({ carreraId: 6, tipo: "CHARLA", soloParticipacion: true });
+    const usados = [...lastCall.sql.matchAll(/\$(\d+)/g)].map((m) => +m[1]);
+    expect(Math.max(...usados)).toBe(lastCall.params.length);
+    // cada marcador debe existir en el arreglo de parámetros
+    usados.forEach((n) => expect(n).toBeLessThanOrEqual(lastCall.params.length));
+  });
+});
+
+describe("actividadDao.listar — opciones del feed iCalendar", () => {
+  test("incluirCanceladas suma las eliminadas recientes a las vigentes", async () => {
+    await dao.listar({ incluirCanceladas: true });
+    // OR entre lo vigente y lo eliminado dentro de la ventana.
+    expect(lastCall.sql).toMatch(/a\.estado = ANY\(\$\d+::text\[\]\) OR \(/);
+    expect(lastCall.sql).toMatch(/a\.estado = 'ARCHIVADA'/);
+    // Reutiliza la ventana y el margen ya definidos, no otros valores.
+    expect(lastCall.params).toContain("30");
+    expect(lastCall.params).toContain("1");
+  });
+
+  test("sin incluirCanceladas solo entra lo vigente", async () => {
+    await dao.listar({});
+    expect(lastCall.sql).not.toMatch(/ARCHIVADA/);
+  });
+
+  test("ids acota a las actividades pedidas", async () => {
+    await dao.listar({ ids: [4, 8, 15] });
+    expect(lastCall.sql).toMatch(/a\.id = ANY\(\$\d+::int\[\]\)/);
+    expect(lastCall.params).toContainEqual([4, 8, 15]);
+  });
+
+  test("ids vacío no añade condición", async () => {
+    await dao.listar({ ids: [] });
+    expect(lastCall.sql).not.toMatch(/a\.id = ANY/);
+  });
+
+  test("todas las combinaciones dejan los parámetros alineados", async () => {
+    // Este es el fallo que pasaría inadvertido: si un marcador $N apunta a un
+    // parámetro que no existe, Postgres falla; si apunta al equivocado,
+    // devuelve datos incorrectos EN SILENCIO.
+    const casos = [
+      { incluirCanceladas: true },
+      { ids: [1, 2] },
+      { carreraId: 6, nivel: 5, incluirCanceladas: true, soloParticipacion: true },
+      { carreraId: 6, nivel: 5, tipo: "CHARLA", entidadId: 3, ids: [7], soloParticipacion: true, incluirCanceladas: true },
+    ];
+    for (const caso of casos) {
+      await dao.listar(caso);
+      const usados = [...lastCall.sql.matchAll(/\$(\d+)/g)].map((m) => +m[1]);
+      expect(Math.max(...usados, 0)).toBeLessThanOrEqual(lastCall.params.length);
+      // y no debe quedar ningún parámetro sin usar
+      const distintos = new Set(usados);
+      expect(distintos.size).toBe(lastCall.params.length);
+    }
+  });
+});
+
 describe("actividadDao.listarEliminadasRecientes — aviso público de cancelaciones", () => {
   test("acota a los últimos 30 días y respeta el margen de corrección de 1 hora", async () => {
     await dao.listarEliminadasRecientes();

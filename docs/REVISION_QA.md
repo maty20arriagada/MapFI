@@ -258,6 +258,73 @@ desde la misma IP entra sin problema**.
 
 ---
 
+---
+
+## Auditoría en vivo del 2026-08-04 (cierre)
+
+Con el stack finalmente operativo se verificó **todo lo que había quedado pendiente** de
+esta revisión, de la de seguridad y de las funciones posteriores. Resultado: **2 hallazgos
+nuevos, ambos corregidos**; el resto se comportó como se esperaba.
+
+### AUD-1 · El identificador del calendario dependía de la dirección de acceso
+
+**Severidad: alta** (habría roto la sincronización justo al pasar a producción).
+
+El `UID` de cada evento del feed iCalendar se construía con `req.headers.host`:
+
+```
+por 127.0.0.1        -> UID:mapfi-actividad-134@127.0.0.1:3000
+con Host: mapfi...cl -> UID:mapfi-actividad-134@mapfi.fi.udec.cl
+```
+
+El `UID` es justamente lo que permite que editar una actividad **actualice** el evento en
+vez de duplicarlo. Al depender del host, la misma actividad tenía identidad distinta según
+se entrara por IP, por localhost o por el dominio real — así que **al mover el servidor a
+producción, todos los calendarios ya suscritos habrían duplicado cada evento**.
+
+**Corrección:** el dominio pasa a ser una constante estable (`MAPFI_DOMINIO`), ajena a cómo
+se alcance el servidor. Con prueba de regresión que compara el `UID` cambiando la cabecera.
+
+### AUD-2 · El CSP bloqueaba los botones de navegación del calendario
+
+**Severidad: media** (defecto visible y de accesibilidad).
+
+`font-src` no permitía `data:`, y FullCalendar embebe su fuente de iconos como data URI.
+Consecuencia medida: los botones de **anterior** y **siguiente** del calendario quedaban
+**vacíos**, sin icono ni texto. Y además no tenían nombre accesible, así que un lector de
+pantalla los anunciaba solo como "botón".
+
+**Corrección:** se añade `data:` a `font-src` (no abre vía de ejecución, a diferencia de
+hacerlo en `script-src`) y se etiquetan los botones con `aria-label` y `title`.
+
+### Verificado y correcto
+
+- **Seguridad:** SEG-2 en sus dos caras (backend 404, frontend 200, `.env` 404); **SEG-1
+  comprobado con el ataque real** — falsificar `X-Forwarded-For` ya no estrena contador de
+  intentos (429 con cualquier IP); SEG-5 en las dos rutas de contraseña; sin fuga de texto
+  crudo de Postgres.
+- **Zona horaria de punta a punta:** una actividad creada a las 21:00 de Chile sale del feed
+  como `01:00Z` del día siguiente — correcto.
+- **Borrado con constancia:** el **margen de corrección de 1 hora funciona** — borrada a los
+  3 minutos de crearla no se publica; con un día de antigüedad aparece en el aviso público
+  y llega al feed como `CANCELADA` + `STATUS:CANCELLED`. Restituir la devuelve al calendario.
+- **Feed:** `text/calendar` con `Cache-Control`, respeta los filtros (incluido "para
+  participar"), `UID` estable al editar y `SEQUENCE` creciente.
+- **Interfaz:** pie con GIIA, grilla KPI en `cols-4`, desplegable de estados ofreciendo solo
+  lo que el servidor acepta, panel de detalle con "Inscribirse" (`rel="noopener
+  noreferrer"`), diálogo de sincronizar exigiendo carrera y año, diálogo de motivo
+  devolviendo el texto recortado y "Cancelar" resolviendo. Consola sin errores.
+
+### Un falso positivo que conviene registrar
+
+Durante la auditoría apareció un carácter corrupto (`EF BF BD`) en el título de una
+actividad. **No era un defecto del producto:** al comprobar los bytes en la base y volver a
+escribirlos correctamente sin pasar por la consola, el feed los devolvió intactos
+(`c3b3` = `ó`). La corrupción la introducía `curl` desde la consola de Windows, es decir,
+**el instrumento de medición**. Queda anotado para no volver a diagnosticarlo mal.
+
+---
+
 ## Cambios aplicados
 
 | Archivo | Qué se hizo |
