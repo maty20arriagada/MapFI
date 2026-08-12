@@ -259,6 +259,8 @@ Estas vistas se exponen vía `/api/analytics/*` y pueden conectarse directamente
 | `010_matricula_origen.sql` | Columna `origen` (`OFICIAL`/`REFERENCIAL`) en `matricula` |
 | `011_saturacion_multidia.sql` | `vw_saturacion_segmento` cuenta cada día que abarca una actividad que cruza medianoche (`generate_series`) |
 | `012_feriados_moviles_2026.sql` | Corrige la fecha del Día de los Pueblos Indígenas 2026 (20→21 jun), verificada contra fuente oficial |
+| `013_timezone_base_datos.sql` | `ALTER DATABASE … SET timezone` — corrige H-01 en despliegues ya existentes |
+| `014_url_inscripcion.sql` | Columna `url_inscripcion` con `CHECK` de `http`/`https` (alimenta el botón "Inscribirse" y la propiedad `URL` del feed iCalendar) |
 
 Reglas: las migraciones son **aditivas** (nunca se edita una aplicada), corren automáticamente al arrancar y el registro en `schema_migrations` lo hace **solo el runner** (`js/db/migrate.js`).
 

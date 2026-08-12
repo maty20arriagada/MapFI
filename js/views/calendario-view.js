@@ -99,18 +99,37 @@
         if (document.getElementById("formFecha")) document.getElementById("formFecha").titulo.focus();
       }
 
-      function render() {
+      /** Filtros tal como estan puestos ahora. Los usan el calendario y la
+       *  sincronizacion, que deben coincidir: lo que ves es lo que sincronizas. */
+      function filtrosActuales() {
         var filtros = {};
         var c = document.getElementById("fCarrera").value; if (c) filtros.carreraId = c;
         var n = document.getElementById("fNivel").value; if (n) filtros.nivel = n;
         var e = document.getElementById("fEntidad").value; if (e) filtros.entidadId = e;
         var t = document.getElementById("fTipo").value; if (t) filtros.tipo = t;
-        if (global.CalendarView) global.CalendarView.montar(cal, filtros, isAdmin ? { onPick: abrirFechaForm } : {});
+        // Checkbox, no <select>: se lee `checked` y solo se manda cuando esta
+        // activo, para no ensuciar la URL de la peticion con `=false`.
+        var p = document.getElementById("fParticipacion");
+        if (p && p.checked) filtros.soloParticipacion = "1";
+        return filtros;
+      }
+
+      function render() {
+        if (global.CalendarView) {
+          global.CalendarView.montar(cal, filtrosActuales(), isAdmin ? { onPick: abrirFechaForm } : {});
+        }
       }
 
       document.querySelectorAll(".filtro").forEach(function (s) { s.addEventListener("change", render); });
       render();
       renderCanceladas();
+
+      // Sincronizar: se pasa el filtro tal cual esta puesto, porque es lo que
+      // queda congelado en la direccion a la que la persona se suscribe.
+      var btnSync = document.getElementById("btnSincronizar");
+      if (btnSync && global.CalendarSync) {
+        btnSync.onclick = function () { global.CalendarSync.mostrarSuscripcion(filtrosActuales()); };
+      }
 
       if (!isAdmin) return;
 
@@ -185,6 +204,7 @@
 
           await api.post("/api/actividades", {
             titulo: d.titulo, tipo: d.tipo, ramo: d.ramo, ubicacion: d.ubicacion,
+            urlInscripcion: d.urlInscripcion || null,
             fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, entidadId: +d.entidadId, estado: "CONFIRMADA", publico: publico,
           });
           toast("Fecha agregada a " + publico.length + " segmento(s)", "success");

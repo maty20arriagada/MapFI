@@ -33,6 +33,21 @@
             </select>
           </div>
         </div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn secondary" type="button" id="btnSincronizar">
+            <span class="icon" data-icon="calendar"></span> Sincronizar con mi calendario
+          </button>
+          <span class="muted" style="font-size:.82rem;align-self:center">
+            Lleva estas fechas a tu Google u Outlook.
+          </span>
+        </div>
+        <label class="foco-participacion">
+          <input type="checkbox" id="fParticipacion" class="filtro" />
+          <span>
+            <strong>Solo actividades para participar</strong>
+            <span class="muted">Charlas, talleres, eventos y todo lo de Vinculación con el Medio y Gearbox. Oculta evaluaciones, hitos y entregas.</span>
+          </span>
+        </label>
       </div>
 
       <!-- Admin: agregar fecha académica (con público múltiple) -->
@@ -69,6 +84,8 @@
             </div>
           </div>
           <label style="margin-top:10px">Ubicación</label><input name="ubicacion" placeholder="Aula 301" />
+          <label style="margin-top:10px">Enlace de inscripción <span class="muted" style="font-weight:400">(opcional)</span></label>
+          <input name="urlInscripcion" type="url" placeholder="https://forms.gle/…" />
           <div style="margin-top:12px"><button class="btn" type="submit"><span class="icon" data-icon="save"></span> Agregar al calendario</button></div>
         </form>
       </div>
@@ -129,6 +146,7 @@ Certamen 2,Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
   <script src="js/api-client.js"></script>
   <script src="js/ui-toast.js"></script>
   <script src="js/ui-confirm.js"></script>
+  <script src="js/calendar-sync.js"></script>
   <script src="js/theme-toggle.js"></script>
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>

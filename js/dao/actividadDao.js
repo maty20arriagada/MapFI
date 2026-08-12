@@ -24,6 +24,19 @@ const ESTADOS_OCULTOS = Object.freeze(["SUSPENDIDA", "REPROGRAMADA", "ARCHIVADA"
 // evento que no existe. Por eso la constancia no es un registro de auditoria
 // escondido: es un aviso de cancelacion dirigido a los estudiantes, y por eso
 // la ruta que lo expone es publica.
+// ── Foco "para participar" (filtro publico del calendario) ──────────────────
+// Separa lo que el estudiante PUEDE elegir de lo que TIENE que cumplir. Una
+// evaluacion, un hito o una entrega son obligaciones; una charla, un taller o
+// un evento son oportunidades. Se incluyen ademas TODAS las actividades de
+// Vinculacion con el Medio y Gearbox, cuyo proposito es justamente acompanar
+// al estudiante, sin importar como esten tipificadas.
+//
+// FUENTE UNICA: si se agrega un tipo de actividad nuevo hay que decidir aqui
+// de que lado cae. Los obligatorios que quedan fuera hoy son EXAMEN,
+// HITO_ACADEMICO y ENTREGA.
+const TIPOS_PARTICIPACION = Object.freeze(["EVENTO", "CHARLA", "TALLER", "EXTRAPROGRAMATICA"]);
+const ENTIDADES_ACOMPANAMIENTO = Object.freeze(["VINCULACION", "GEARBOX"]);
+
 const DIAS_AVISO_ELIMINACION = 30;
 // Margen de correccion: si se elimina dentro de la hora siguiente a su
 // creacion se entiende que fue un error de tipeo, no una cancelacion (nadie
@@ -63,6 +76,10 @@ module.exports = {
    *   TODAS las actividades de `f.entidadId` (incluidas ocultas/archivadas) —
    *   es el calendario del propio autor (FR-004). "publico" (default) solo
    *   muestra ESTADOS_VIGENTES, sea o no que tambien se filtre por entidad.
+   * @param {boolean} [f.soloParticipacion] Deja solo lo que el estudiante
+   *   puede elegir: actividades de Vinculacion con el Medio y Gearbox, MAS
+   *   los tipos de participacion (evento, charla, taller, extraprogramatica),
+   *   vengan de quien vengan. Es un OR entre ambas cosas, no un AND.
    */
   async listar(f = {}) {
     if (f.alcance === "propias" && !f.entidadId) {
@@ -77,13 +94,43 @@ module.exports = {
     if (f.hasta)     { cond.push(`a.fecha_inicio <= $${i++}`); args.push(f.hasta); }
     if (f.carreraId) { cond.push(`EXISTS (SELECT 1 FROM actividad_publico ap WHERE ap.actividad_id = a.id AND ap.carrera_id = $${i++})`); args.push(f.carreraId); }
     if (f.nivel)     { cond.push(`EXISTS (SELECT 1 FROM actividad_publico ap WHERE ap.actividad_id = a.id AND ap.nivel = $${i++})`); args.push(f.nivel); }
-    if (f.alcance !== "propias") agregarFiltroVigente("a", cond, args);
+    // Para el feed iCalendar: ademas de lo vigente, se incluyen las
+    // eliminadas recientes, que el generador emite como CANCELLED. Asi la
+    // cancelacion llega al calendario de quien ya tenia la fecha, en vez de
+    // dejarle un evento fantasma. Se reutilizan la ventana y el margen de
+    // correccion ya definidos arriba, sin duplicar el criterio.
+    if (f.alcance !== "propias" && f.incluirCanceladas) {
+      args.push(ESTADOS_VIGENTES, String(DIAS_AVISO_ELIMINACION), String(HORAS_MARGEN_CORRECCION));
+      const iv = args.length - 2, id = args.length - 1, ih = args.length;
+      cond.push(
+        `(a.estado = ANY($${iv}::text[]) OR (` +
+        `a.estado = 'ARCHIVADA' AND a.retirada_en IS NOT NULL` +
+        ` AND a.retirada_en >= now() - ($${id} || ' days')::interval` +
+        ` AND a.retirada_en >= a.created_at + ($${ih} || ' hours')::interval))`
+      );
+    } else if (f.alcance !== "propias") {
+      agregarFiltroVigente("a", cond, args);
+    }
+    // Seleccion explicita de actividades (el estudiante marca las que quiere).
+    if (Array.isArray(f.ids) && f.ids.length) {
+      args.push(f.ids);
+      cond.push(`a.id = ANY($${args.length}::int[])`);
+    }
+    // Se agrega al final, con el patron `args.length`, para no interferir con
+    // el contador `i` que usan las condiciones de arriba.
+    if (f.soloParticipacion) {
+      args.push(ENTIDADES_ACOMPANAMIENTO, TIPOS_PARTICIPACION);
+      cond.push(
+        `(e.tipo = ANY($${args.length - 1}::text[]) OR a.tipo = ANY($${args.length}::text[]))`
+      );
+    }
 
     const where = cond.length ? `WHERE ${cond.join(" AND ")}` : "";
     const { rows } = await query(
       `SELECT a.id, a.titulo, a.descripcion, a.entidad_id, e.nombre AS entidad_nombre,
               a.fecha_inicio, a.fecha_fin, a.tipo, a.ramo, a.estado, a.ubicacion,
-              a.alcance_estimado, a.compatibilidad_pct
+              a.alcance_estimado, a.compatibilidad_pct, a.url_inscripcion,
+              a.updated_at
          FROM actividad a
          JOIN entidad e ON e.id = a.entidad_id
          ${where}
@@ -110,8 +157,9 @@ module.exports = {
       const { rows } = await client.query(
         `INSERT INTO actividad
            (titulo, descripcion, entidad_id, periodo_id, fecha_inicio, fecha_fin,
-            tipo, ramo, estado, ubicacion, alcance_estimado, compatibilidad_pct, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+            tipo, ramo, estado, ubicacion, alcance_estimado, compatibilidad_pct, created_by,
+            url_inscripcion)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
          RETURNING id`,
         // OJO con `||` en los campos NUMERICOS: un 0 legitimo es falsy y se
         // guardaba como NULL (revision QA, hallazgo A-1). Una actividad
@@ -121,7 +169,8 @@ module.exports = {
         [a.titulo, a.descripcion, a.entidadId, a.periodoId || null,
          a.fechaInicio, a.fechaFin, a.tipo, a.ramo || null, a.estado || "PROPUESTA",
          a.ubicacion || null, a.alcanceEstimado ?? null,
-         a.compatibilidadPct ?? null, a.createdBy || null]
+         a.compatibilidadPct ?? null, a.createdBy || null,
+         a.urlInscripcion || null]
       );
       const id = rows[0].id;
       for (const p of publico) {
@@ -157,10 +206,11 @@ module.exports = {
            ubicacion = COALESCE($9, ubicacion),
            compatibilidad_pct = COALESCE($10, compatibilidad_pct),
            alcance_estimado = COALESCE($11, alcance_estimado),
+           url_inscripcion = COALESCE($12, url_inscripcion),
            updated_at = now()
          WHERE id = $1`,
         [id, a.titulo, a.descripcion, a.fechaInicio, a.fechaFin, a.tipo, a.ramo, a.estado, a.ubicacion,
-         a.compatibilidadPct, a.alcanceEstimado]
+         a.compatibilidadPct, a.alcanceEstimado, a.urlInscripcion]
       );
       if (Array.isArray(publico)) {
         await client.query(`DELETE FROM actividad_publico WHERE actividad_id = $1`, [id]);

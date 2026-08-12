@@ -66,6 +66,7 @@
         extendedProps: {
           entidad: a.entidad_nombre, tipo: a.tipo, estado: a.estado,
           ubicacion: a.ubicacion, choque: choque || null,
+          actividad: a, // fila completa: la necesita el panel de detalle
         },
       };
     });
@@ -87,11 +88,16 @@
       },
       eventClick: (info) => {
         const p = info.event.extendedProps;
+        // Panel de detalle con la opcion de llevarse la actividad al
+        // calendario propio. Si el modulo no cargo, se degrada al aviso
+        // efimero de antes en vez de dejar el clic sin respuesta.
+        if (global.CalendarSync && p.actividad) {
+          global.CalendarSync.mostrarActividad(p.actividad);
+          return;
+        }
         let det = `${info.event.title} · ${p.entidad} · ${p.tipo} · ${p.estado}` +
           (p.ubicacion ? ` · ${p.ubicacion}` : "");
         if (p.choque) det += ` — CHOQUE con: ${p.choque}`;
-        // toast() escribe con textContent (seguro). Sin alert(): si el modulo
-        // de toasts no cargo, lo registramos en consola y seguimos.
         if (global.toast) toast(det, p.choque ? "error" : undefined); else console.warn("[calendar]", det);
       },
       dateClick: typeof opts.onPick === "function"
@@ -104,6 +110,19 @@
     });
     if (typeof opts.onPick === "function") el.classList.add("cal-pickable");
     cal.render();
+
+    // Los botones de anterior/siguiente de FullCalendar solo llevan un icono,
+    // sin texto ni nombre accesible: un lector de pantalla los anuncia como
+    // "botón" a secas (auditoria 2026-08-04). Se etiquetan tras el render.
+    [[".fc-prev-button", "Mes anterior"], [".fc-next-button", "Mes siguiente"]]
+      .forEach(function (par) {
+        var b = el.querySelector(par[0]);
+        if (b && !b.getAttribute("aria-label")) {
+          b.setAttribute("aria-label", par[1]);
+          b.setAttribute("title", par[1]);
+        }
+      });
+
     el._fc = cal;
   }
 

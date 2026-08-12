@@ -222,7 +222,8 @@
 
           await api.post("/api/actividades", {
             titulo: d.titulo, descripcion: d.descripcion, tipo: d.tipo, ramo: d.ramo,
-            ubicacion: d.ubicacion, fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, publico: publico,
+            ubicacion: d.ubicacion, urlInscripcion: d.urlInscripcion || null,
+            fechaInicio: d.fechaInicio, fechaFin: d.fechaFin, publico: publico,
           });
           localStorage.setItem(claveCtx(), JSON.stringify({
             carreras: Array.from(new Set(publico.map(function (p) { return p.carreraId; }))),
