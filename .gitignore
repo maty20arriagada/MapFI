@@ -3,6 +3,11 @@ node_modules/
 npm-debug.log*
 yarn-error.log
 
+# Respaldos de la base: contienen datos reales y hashes de contraseñas.
+# NUNCA deben subirse al repositorio.
+/respaldos/
+*.dump
+
 # Entorno y secretos
 .env
 .env.*

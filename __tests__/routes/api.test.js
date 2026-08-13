@@ -271,6 +271,36 @@ describe("API endpoints públicos", () => {
     expect(res.body.error).toMatch(/término/i);
   });
 
+  describe("Rol SUPERADMIN y borrado definitivo", () => {
+    test("un ADMIN normal no puede usar las rutas de borrado definitivo", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.get("/api/superadmin/borrados");
+      expect(res.status).toBe(403);
+    });
+
+    test("un aportante tampoco", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      expect((await agent.get("/api/superadmin/borrados")).status).toBe(403);
+      expect((await agent.delete("/api/superadmin/actividades/501")).status).toBe(403);
+    });
+
+    test("sin sesión responde 401, no 403", async () => {
+      expect((await request(app).get("/api/superadmin/borrados")).status).toBe(401);
+    });
+
+    test("el registro de borrados nunca se expone en una ruta pública", async () => {
+      // El borrado definitivo no se anuncia, pero tampoco debe filtrarse por
+      // el aviso público de cancelaciones, que sí es abierto.
+      const res = await request(app).get("/api/actividades/eliminadas");
+      expect(res.status).toBe(200);
+      const campos = res.body.length ? Object.keys(res.body[0]) : [];
+      expect(campos).not.toContain("borrado_por");
+      expect(campos).not.toContain("estado_previo");
+    });
+  });
+
   describe("Feed iCalendar", () => {
     test("es público: lo descargan los servidores de Google/Outlook, sin sesión", async () => {
       const res = await request(app).get("/api/calendario.ics?carreraId=6&nivel=1");

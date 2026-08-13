@@ -223,10 +223,29 @@ async function requireAuth(req, res, next) {
   if (await revalidarSesion(req)) return next();
   return noAutenticado(req, res);
 }
+// ── Jerarquia de roles ──────────────────────────────────────────────────────
+// SUPERADMIN es un superconjunto de ADMIN: puede todo lo que puede un
+// administrador, y ademas borrar de forma definitiva. Sin esta jerarquia, las
+// comprobaciones por igualdad estricta dejarian al SUPERADMIN fuera de las 21
+// rutas de administracion, que es justo lo contrario de lo que se busca.
+const ROLES_ADMIN = ["ADMIN", "SUPERADMIN"];
+
+/** ¿El usuario tiene atribuciones de administrador? */
+function esAdministrador(user) {
+  return !!user && ROLES_ADMIN.includes(user.rol);
+}
+
+/** ¿Cumple el rol pedido, contando la jerarquia? */
+function cumpleRol(user, requerido) {
+  if (!user) return false;
+  if (requerido === "ADMIN") return esAdministrador(user);
+  return user.rol === requerido; // SUPERADMIN se exige de forma exacta
+}
+
 function requireRole(rol) {
   return async (req, res, next) => {
     if (!(await revalidarSesion(req))) return noAutenticado(req, res);
-    if (req.session.user.rol !== rol) return res.status(403).json({ error: "No autorizado" });
+    if (!cumpleRol(req.session.user, rol)) return res.status(403).json({ error: "No autorizado" });
     return next();
   };
 }
@@ -499,7 +518,7 @@ app.get("/api/actividades", async (req, res) => {
     // ADMIN o la propia entidad consultada — nunca por el solo hecho de que
     // el cliente pida ese entidadId (H-04: la autoridad la decide el
     // servidor, no el parametro de la consulta).
-    const esPropia = !!u && !!entidadId && (u.rol === "ADMIN" || u.entidadId === entidadId);
+    const esPropia = !!u && !!entidadId && (esAdministrador(u) || u.entidadId === entidadId);
     const acts = await actividadDao.listar({
       carreraId: num(req.query.carreraId),
       nivel: num(req.query.nivel),
@@ -532,7 +551,7 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
     }
     const errorFechas = errorRangoFechas(b.fechaInicio, b.fechaFin);
     if (errorFechas) return res.status(400).json({ error: errorFechas });
-    const esAdmin = req.session.user.rol === "ADMIN";
+    const esAdmin = esAdministrador(req.session.user);
     const entidadId = req.session.user.entidadId || num(req.body.entidadId);
     if (!entidadId) return res.status(400).json({ error: "Sin entidad asociada" });
 
@@ -567,7 +586,7 @@ app.post("/api/actividades/bulk", requireAuth, async (req, res) => {
     if (!Array.isArray(lista) || !lista.length) {
       return res.status(400).json({ error: "No se recibieron actividades" });
     }
-    const esAdmin = req.session.user.rol === "ADMIN";
+    const esAdmin = esAdministrador(req.session.user);
     if (!esAdmin && !req.session.user.entidadId) {
       return res.status(403).json({ error: "Tu cuenta no tiene entidad asociada" });
     }
@@ -746,7 +765,7 @@ app.get("/api/plantilla-csv", (req, res) => {
 
 // Helper: el usuario es dueno (su entidad) de la actividad, o es ADMIN.
 async function puedeEditarActividad(req, id) {
-  if (req.session.user.rol === "ADMIN") return true;
+  if (esAdministrador(req.session.user)) return true;
   const act = await actividadDao.obtener(id);
   return act && act.entidad_id === req.session.user.entidadId;
 }
@@ -761,7 +780,7 @@ app.put("/api/actividades/:id", requireAuth, async (req, res) => {
   try {
     const id = num(req.params.id);
     if (!(await puedeEditarActividad(req, id))) return res.status(403).json({ error: "No autorizado" });
-    const esAdmin = req.session.user.rol === "ADMIN";
+    const esAdmin = esAdministrador(req.session.user);
     // T046/H-04: JAMAS propagar req.body crudo hacia el DAO — solo los
     // campos de camposActividadPermitidos() pueden llegar aqui.
     const b = camposActividadPermitidos(req.body);
@@ -816,7 +835,7 @@ app.patch("/api/actividades/:id/estado", requireAuth, async (req, res) => {
     const act = await actividadDao.obtener(id);
     if (!act) return res.status(404).json({ error: "Actividad no encontrada" });
 
-    const esAdmin = req.session.user.rol === "ADMIN";
+    const esAdmin = esAdministrador(req.session.user);
     // Igual que en el PUT: solo se restringe cuando el estado cambia de
     // verdad; reenviar el que ya tiene no es un cambio (C-2).
     if (estado !== act.estado && !esAdmin && !ESTADOS_APORTANTE.includes(estado)) {
@@ -856,6 +875,37 @@ app.post("/api/admin/actividades/:id/retirar", requireRole("ADMIN"), async (req,
     const { motivo } = req.body || {};
     res.json(await actividadDao.retirar(id, req.session.user.id, motivo || null));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// ── Borrado DEFINITIVO (solo SUPERADMIN) ────────────────────────────────────
+// Destruye la actividad de verdad y NO la publica en el aviso de
+// cancelaciones. Es una accion de operacion (limpiar pruebas, retirar algo
+// publicado por error), no el flujo normal de los centros.
+//
+// Deliberadamente en una ruta aparte y no como un parametro del DELETE
+// normal: asi es imposible destruir algo por accidente creyendo que se
+// archivaba. Queda registro interno en `borrado_definitivo`.
+app.delete("/api/superadmin/actividades/:id", requireRole("SUPERADMIN"), async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    const motivo = (req.body && typeof req.body.motivo === "string")
+      ? req.body.motivo.trim().slice(0, 300) || null
+      : null;
+    const r = await actividadDao.borrarDefinitivo(id, req.session.user.id, motivo);
+    if (!r) return res.status(404).json({ error: "Actividad no encontrada" });
+    console.warn(`[borrado-definitivo] usuario=${req.session.user.email} actividad=${id} "${r.titulo}"`);
+    res.json(r);
+  } catch (e) {
+    console.error("[borrado-definitivo]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// Registro interno de borrados definitivos. NO es publico: el borrado no se
+// anuncia, pero tiene que poder auditarse.
+app.get("/api/superadmin/borrados", requireRole("SUPERADMIN"), async (req, res) => {
+  try { res.json(await actividadDao.listarBorradosDefinitivos(num(req.query.limite))); }
+  catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
 app.post("/api/admin/actividades/:id/restituir", requireRole("ADMIN"), async (req, res) => {
@@ -956,7 +1006,7 @@ app.post("/api/admin/recalcular-reputacion", requireRole("ADMIN"), async (req, r
 
 // ── Reporte de impacto por entidad (§5) ─────────────────────────────────────
 function puedeVerEntidad(req, id) {
-  return req.session.user.rol === "ADMIN" || req.session.user.entidadId === id;
+  return esAdministrador(req.session.user) || req.session.user.entidadId === id;
 }
 
 // Resumen en JSON (dashboard / preview).

@@ -353,6 +353,66 @@ module.exports = {
     return rows[0] || { id, estado: null };
   },
 
+  /**
+   * Borrado DEFINITIVO: destruye la fila de verdad (el ON DELETE CASCADE se
+   * lleva su publico objetivo). Solo para el rol SUPERADMIN.
+   *
+   * A diferencia de `archivar`, esto NO aparece en el aviso publico de
+   * cancelaciones: es una accion de operacion —limpiar datos de prueba,
+   * retirar algo publicado por error— y no una cancelacion que los
+   * estudiantes deban conocer.
+   *
+   * Que no sea publico no significa que no quede registro: antes de borrar se
+   * copian los datos a `borrado_definitivo`. Si algo desaparece, tiene que
+   * poder averiguarse que paso. Todo en una transaccion, para que no exista
+   * el caso de "borrado sin registro".
+   */
+  async borrarDefinitivo(id, usuarioId, motivo = null) {
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const { rows } = await client.query(
+        `SELECT a.id, a.titulo, a.entidad_id, e.nombre AS entidad_nombre,
+                a.fecha_inicio, a.estado
+           FROM actividad a LEFT JOIN entidad e ON e.id = a.entidad_id
+          WHERE a.id = $1`,
+        [id]
+      );
+      if (!rows[0]) { await client.query("ROLLBACK"); return null; }
+      const a = rows[0];
+      await client.query(
+        `INSERT INTO borrado_definitivo
+           (actividad_id, titulo, entidad_id, entidad_nombre, fecha_inicio,
+            estado_previo, borrado_por, motivo)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [a.id, a.titulo, a.entidad_id, a.entidad_nombre, a.fecha_inicio,
+         a.estado, usuarioId, motivo]
+      );
+      await client.query(`DELETE FROM actividad WHERE id = $1`, [id]);
+      await client.query("COMMIT");
+      return { id: a.id, titulo: a.titulo, borrado: true };
+    } catch (e) {
+      await client.query("ROLLBACK");
+      throw e;
+    } finally {
+      client.release();
+    }
+  },
+
+  /** Registro interno de borrados definitivos (nunca se expone en publico). */
+  async listarBorradosDefinitivos(limite = 100) {
+    const { rows } = await query(
+      `SELECT b.id, b.actividad_id, b.titulo, b.entidad_nombre, b.fecha_inicio,
+              b.estado_previo, b.borrado_en, b.motivo, u.email AS borrado_por
+         FROM borrado_definitivo b
+         LEFT JOIN usuario u ON u.id = b.borrado_por
+        ORDER BY b.borrado_en DESC
+        LIMIT $1`,
+      [Math.min(Number(limite) || 100, 500)]
+    );
+    return rows;
+  },
+
   /** Alias semantico de `archivar` para la accion administrativa de retiro. */
   async retirar(id, usuarioId, motivo) {
     return module.exports.archivar(id, usuarioId, motivo);

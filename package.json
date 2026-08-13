@@ -13,6 +13,7 @@
     "admin:reset": "node js/db/reset-admin.js",
     "seed:cuentas": "node js/db/seed-cuentas.js",
     "seed:matricula": "node js/db/importar-matricula.js",
+    "crear:superadmin": "node js/db/crear-superadmin.js",
     "docker:up": "docker compose up --build",
     "docker:prod": "docker compose up -d --build",
     "docker:logs": "docker compose logs -f server",
