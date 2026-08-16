@@ -144,7 +144,9 @@ js/
 │   ├── heatmapService.js
 │   ├── holidayService.js
 │   ├── reputationService.js
-│   └── reportService.js
+│   ├── reportService.js
+│   ├── icsService.js
+│   └── horarioService.js     Geometría de la grilla de horarios (Spec 003)
 ├── views/                 ← Vistas de página (frontend)
 │   ├── dashboard-view.js
 │   ├── calendario-view.js
@@ -157,7 +159,8 @@ js/
 ├── api-client.js          ← (frontend) wrapper fetch único
 ├── app-boot.js            ← (frontend) inicialización de la app
 ├── calendar-view.js       ← (frontend) FullCalendar
-├── csv-utils.js           ← (frontend) import/export CSV
+├── csv-utils.js           ← (frontend) import/export CSV de actividades
+├── horario-csv.js         ← (frontend) import/export CSV/TXT de horarios (Spec 003)
 ├── filters.js             ← (frontend) filtros de búsqueda
 ├── heatmap-view.js        ← (frontend) render heatmap
 ├── horarios-view.js       ← (frontend) vista de horarios

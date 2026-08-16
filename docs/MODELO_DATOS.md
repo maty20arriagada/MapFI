@@ -175,7 +175,11 @@ Malla horaria recurrente por carrera/nivel — define ventanas ocupadas/protegid
 | `hora_inicio` | `time` | |
 | `hora_fin` | `time` | |
 | `tipo` | `text` CHECK | `CLASE` \| `PROTEGIDO` \| `LIBRE` |
-| `descripcion` | `text` | opcional |
+| `descripcion` | `text` | opcional — se presenta como "ramo" en la interfaz |
+| `codigo` | `text` | opcional — código de asignatura (migración 017, Spec 003) |
+| `seccion` | `text` | opcional — sección, si la carrera dicta paralelos (migración 017) |
+| `sala` | `text` | opcional — sala o laboratorio (migración 017) |
+| `docente` | `text` | opcional — nombre del profesor (migración 017) |
 
 ### 2.5 Cronología
 

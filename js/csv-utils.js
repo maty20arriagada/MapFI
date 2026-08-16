@@ -22,12 +22,15 @@
     return isNaN(d.getTime()) ? null : d;
   }
 
-  /** CSV → {header, rows}. Autodetecta separador (, o ;) y soporta comillas. */
+  /** CSV → {header, rows}. Autodetecta separador (; , o tabulación) y soporta comillas.
+   * La tabulación es lo que produce el portapapeles al copiar celdas desde una
+   * planilla: con esto, pegar una seleccion funciona igual que subir un archivo. */
   function parseCSV(text) {
     text = text.replace(/^﻿/, "");
     const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
     if (!lines.length) return { header: [], rows: [] };
-    const delim = lines[0].split(";").length > lines[0].split(",").length ? ";" : ",";
+    const conteos = { ";": lines[0].split(";").length, ",": lines[0].split(",").length, "\t": lines[0].split("\t").length };
+    const delim = Object.keys(conteos).reduce((a, b) => (conteos[b] > conteos[a] ? b : a));
     function parseLine(line) {
       const out = [];
       let cur = "", q = false;

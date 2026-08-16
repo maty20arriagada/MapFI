@@ -40,6 +40,7 @@ const heatmapService = require("./js/services/heatmapService");
 const reputationService = require("./js/services/reputationService");
 const reportService = require("./js/services/reportService");
 const icsService = require("./js/services/icsService");
+const horarioService = require("./js/services/horarioService");
 
 const bcrypt = require("bcryptjs");
 
@@ -486,7 +487,14 @@ app.get("/api/auth/me", async (req, res) => {
       }
       return res.json({ user: null });
     }
-    res.json({ user: req.session.user });
+    // carreraId: comodidad para que la interfaz sepa que controles mostrar
+    // sin adivinar (Spec 003, US4). La autorizacion real sigue verificandose
+    // en el servidor en cada escritura (puedeEditarHorario) — esto solo
+    // evita que la UI ofrezca botones que el backend igual rechazaria.
+    const carreraId = req.session.user.entidadId
+      ? await entidadDao.carreraDeEntidad(req.session.user.entidadId)
+      : null;
+    res.json({ user: { ...req.session.user, carreraId } });
   } catch (e) {
     console.error("[auth:me]", e);
     res.json({ user: null });
@@ -552,7 +560,15 @@ app.post("/api/actividades", requireAuth, async (req, res) => {
     const errorFechas = errorRangoFechas(b.fechaInicio, b.fechaFin);
     if (errorFechas) return res.status(400).json({ error: errorFechas });
     const esAdmin = esAdministrador(req.session.user);
-    const entidadId = req.session.user.entidadId || num(req.body.entidadId);
+    // Un aportante NUNCA elige su entidad (H-04): antes, si la sesion no
+    // tenia entidad, el `||` dejaba pasar la del cuerpo — una cuenta creada
+    // sin centro asignado podia publicar a nombre de cualquier otro centro.
+    // La ruta hermana (/bulk) ya cerraba este caso; se replica aqui
+    // (revision de seguridad 2026-08-15).
+    if (!esAdmin && !req.session.user.entidadId) {
+      return res.status(403).json({ error: "Tu cuenta no tiene entidad asociada" });
+    }
+    const entidadId = esAdmin ? num(req.body.entidadId) : req.session.user.entidadId;
     if (!entidadId) return res.status(400).json({ error: "Sin entidad asociada" });
 
     // T047: estado inicial derivado SIEMPRE del rol de sesion — nunca del
@@ -1042,7 +1058,18 @@ app.get("/api/reports/:id/pdf", requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
 
-// ── Bloques horarios (lectura publica · escritura ADMIN) ────────────────────
+// ── Bloques horarios (lectura publica · escritura ADMIN o centro de la carrera) ──
+// Spec 003, US4: un APORTANTE puede mantener el horario de la carrera de su
+// propia entidad (entidad.carrera_id), en cualquier generacion. ADMIN y
+// SUPERADMIN pueden cualquiera. Sin carrera asociada (Vinculacion, Gearbox,
+// Direccion de Docencia), ninguna escritura procede.
+async function puedeEditarHorario(req, carreraId) {
+  if (esAdministrador(req.session.user)) return true;
+  if (!carreraId) return false;
+  const propia = await entidadDao.carreraDeEntidad(req.session.user.entidadId);
+  return propia !== null && propia === carreraId;
+}
+
 app.get("/api/bloques", async (req, res) => {
   try {
     res.json(await bloqueHorarioDao.listar({
@@ -1051,13 +1078,107 @@ app.get("/api/bloques", async (req, res) => {
     }));
   } catch (e) { res.status(500).json({ error: "Error interno" }); }
 });
-app.post("/api/bloques", requireRole("ADMIN"), async (req, res) => {
-  try { res.status(201).json(await bloqueHorarioDao.crear(req.body || {})); }
-  catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
+app.post("/api/bloques", requireAuth, async (req, res) => {
+  try {
+    const carreraId = num((req.body || {}).carreraId);
+    if (!(await puedeEditarHorario(req, carreraId))) return res.status(403).json({ error: "No autorizado" });
+    res.status(201).json(await bloqueHorarioDao.crear(req.body || {}));
+  } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });
-app.delete("/api/bloques/:id", requireRole("ADMIN"), async (req, res) => {
-  try { res.json(await bloqueHorarioDao.eliminar(num(req.params.id))); }
-  catch (e) { res.status(500).json({ error: "Error interno" }); }
+app.delete("/api/bloques/:id", requireAuth, async (req, res) => {
+  try {
+    const id = num(req.params.id);
+    // La carrera se lee DE LA BASE, nunca del cliente: si no, un aportante
+    // borraria bloques ajenos declarando su propia carrera en la peticion.
+    const carreraId = await bloqueHorarioDao.carreraDelBloque(id);
+    if (!(await puedeEditarHorario(req, carreraId))) return res.status(403).json({ error: "No autorizado" });
+    res.json(await bloqueHorarioDao.eliminar(id));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+// Vacia un segmento completo (carrera+nivel). Ambos parametros son
+// obligatorios a proposito: sin ellos, la ruta vaciaria toda la tabla.
+app.delete("/api/bloques", requireAuth, async (req, res) => {
+  const carreraId = num(req.query.carreraId);
+  const nivel = num(req.query.nivel);
+  if (!carreraId || !nivel) return res.status(400).json({ error: "Se requieren carreraId y nivel" });
+  try {
+    if (!(await puedeEditarHorario(req, carreraId))) return res.status(403).json({ error: "No autorizado" });
+    res.json(await bloqueHorarioDao.eliminarPorSegmento(carreraId, nivel));
+  } catch (e) { res.status(500).json({ error: "Error interno" }); }
+});
+
+// Importacion masiva (Spec 003, US3). El archivo NUNCA llega aqui: el
+// navegador ya lo interpreto (js/horario-csv.js) y solo envia JSON. Aun asi
+// cada fila se revalida como entrada no confiable (H-04, autoridad del
+// servidor) — el parser vive en el cliente, bajo control de quien lo llama.
+const TIPOS_BLOQUE = ["CLASE", "PROTEGIDO", "LIBRE"];
+const IMPORTAR_MAX_BLOQUES = 200;
+const IMPORTAR_TEXTO_MAX = 200;
+function truncarTexto(v) {
+  if (v === null || v === undefined || v === "") return null;
+  return String(v).trim().slice(0, IMPORTAR_TEXTO_MAX) || null;
+}
+app.post("/api/bloques/importar", requireAuth, async (req, res) => {
+  try {
+    const carreraId = num(req.body.carreraId);
+    const nivel = num(req.body.nivel);
+    const modo = req.body.modo;
+    const bloques = Array.isArray(req.body.bloques) ? req.body.bloques : null;
+
+    if (modo !== "reemplazar" && modo !== "agregar") {
+      return res.status(400).json({ error: "Se requiere 'modo': 'reemplazar' o 'agregar'" });
+    }
+    if (!carreraId || !nivel) return res.status(400).json({ error: "Se requieren carreraId y nivel" });
+    if (!bloques || !bloques.length) return res.status(400).json({ error: "No hay bloques para importar" });
+    if (bloques.length > IMPORTAR_MAX_BLOQUES) {
+      return res.status(400).json({ error: `Máximo ${IMPORTAR_MAX_BLOQUES} bloques por importación` });
+    }
+    if (!(await puedeEditarHorario(req, carreraId))) return res.status(403).json({ error: "No autorizado" });
+
+    const limpios = [];
+    for (let i = 0; i < bloques.length; i++) {
+      const b = bloques[i] || {};
+      const fila = b.fila || i + 2;
+      const diaSemana = num(b.diaSemana);
+      if (!diaSemana || diaSemana < 1 || diaSemana > 5) {
+        return res.status(400).json({ error: `Fila ${fila}: día inválido` });
+      }
+      const horaInicio = horarioService.aMinutos(b.horaInicio);
+      const horaFin = horarioService.aMinutos(b.horaFin);
+      if (horaInicio === null || horaFin === null) {
+        return res.status(400).json({ error: `Fila ${fila}: hora de inicio o término inválida` });
+      }
+      if (horaFin <= horaInicio) {
+        return res.status(400).json({ error: `Fila ${fila}: la hora de término no puede ser anterior o igual a la de inicio` });
+      }
+      const tipo = (b.tipo ? String(b.tipo).toUpperCase() : "CLASE");
+      if (!TIPOS_BLOQUE.includes(tipo)) {
+        return res.status(400).json({ error: `Fila ${fila}: tipo inválido (usa CLASE, PROTEGIDO o LIBRE)` });
+      }
+      const descripcion = truncarTexto(b.descripcion);
+      if (!descripcion) return res.status(400).json({ error: `Fila ${fila}: falta el ramo` });
+
+      limpios.push({
+        diaSemana, horaInicio: b.horaInicio, horaFin: b.horaFin, tipo, descripcion,
+        codigo: truncarTexto(b.codigo), seccion: truncarTexto(b.seccion),
+        sala: truncarTexto(b.sala), docente: truncarTexto(b.docente),
+      });
+    }
+
+    res.json(await bloqueHorarioDao.importar(carreraId, nivel, modo, limpios));
+  } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
+});
+
+// Plantilla descargable del formato de horarios (FR-016) — publica.
+app.get("/api/plantilla-horario.csv", (req, res) => {
+  const csv =
+    "dia;inicio;fin;ramo;tipo;codigo;seccion;sala;docente\n" +
+    "LUN;08:00;09:30;Cálculo I;CLASE;525101;1;Aula 201;\n" +
+    "LUN;09:45;10:30;Física I;CLASE;;;Lab. Física;\n" +
+    "MIE;11:50;13:20;Bloque protegido FI;PROTEGIDO;;;;\n";
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="plantilla-horario.csv"');
+  res.send("﻿" + csv); // BOM para que Excel respete UTF-8
 });
 
 // ── Periodos academicos ─────────────────────────────────────────────────────

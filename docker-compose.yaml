@@ -48,6 +48,23 @@ services:
       #     por http://localhost (sin HTTPS), que es como se prueba en local.
       #   - production  → cookies `secure`+`sameSite=none` (requiere HTTPS).
       NODE_ENV: ${NODE_ENV:-development}
+      # ¿Hay un reverse proxy (nginx) delante? Debe declararse aqui o la
+      # variable del .env NO llega al contenedor: compose solo pasa lo que
+      # aparece en esta lista. Sin esto, con NODE_ENV=production detras de
+      # nginx la cookie `secure` no se emite y el login falla en silencio.
+      # Por defecto false (opcion segura): activarlo sin proxy permitiria
+      # falsificar X-Forwarded-For y saltarse el limite de intentos de login.
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      # Admin inicial. En produccion el seed se NIEGA a crear un admin por
+      # defecto y exige estas dos; si no se declaran aqui nunca llegan al
+      # contenedor y un despliegue limpio se queda SIN NINGUNA cuenta de
+      # administrador (hay que rescatarlo con reset-admin.js).
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      # Identidad estable del calendario, usada en los UID del feed .ics.
+      # Cambiarla duplica los eventos en los calendarios ya suscritos.
+      MAPFI_DOMINIO: ${MAPFI_DOMINIO:-mapfi.udec.cl}
+      PG_POOL_MAX: ${PG_POOL_MAX:-10}
       # Spec 002 / H-01: sin TZ fijada, un contenedor Docker arranca en UTC
       # por defecto y toda hora ingresada por el usuario se guarda corrida
       # (ver research.md H-01 y __tests__/services/fechas.test.js).
