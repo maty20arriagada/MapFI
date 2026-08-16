@@ -31,21 +31,72 @@ jest.mock("../../js/db", () => {
         if (params && params[0] === 2) {
           return { rows: [{ id: 2, email: "aportante@mapfi.cl", nombre: "CEE Industrial", rol: "APORTANTE", entidad_id: 6, activo: aportanteActivo }] };
         }
+        if (params && params[0] === 3) {
+          return { rows: [{ id: 3, email: "super@mapfi.cl", nombre: "Superadmin", rol: "SUPERADMIN", entidad_id: null, activo: true }] };
+        }
+        if (params && params[0] === 4) {
+          return { rows: [{ id: 4, email: "informatica@mapfi.cl", nombre: "CEE Informática", rol: "APORTANTE", entidad_id: 7, activo: true }] };
+        }
+        if (params && params[0] === 5) {
+          return { rows: [{ id: 5, email: "vinculacion@mapfi.cl", nombre: "Vinculación con el Medio", rol: "APORTANTE", entidad_id: 99, activo: true }] };
+        }
+        if (params && params[0] === 6) {
+          // Cuenta APORTANTE creada sin centro asignado (revision de
+          // seguridad 2026-08-15): entidad_id NULL, no 99 con carrera NULL.
+          return { rows: [{ id: 6, email: "sinentidad@mapfi.cl", nombre: "Sin entidad", rol: "APORTANTE", entidad_id: null, activo: true }] };
+        }
         return { rows: [] };
       }
       if (sql.includes("SELECT id, email, password_hash") && sql.includes("lower(email)")) {
+        const bcrypt = require("bcryptjs");
+        const hash = await bcrypt.hash("test1234", 10);
         if ((params && params[0]) === "admin@mapfi.cl") {
-          const bcrypt = require("bcryptjs");
-          const hash = await bcrypt.hash("test1234", 10);
           return { rows: [{ id: 1, email: "admin@mapfi.cl", password_hash: hash, nombre: "Admin", rol: "ADMIN", entidad_id: null, activo: true }] };
         }
         if ((params && params[0]) === "aportante@mapfi.cl") {
-          const bcrypt = require("bcryptjs");
-          const hash = await bcrypt.hash("test1234", 10);
           return { rows: [{ id: 2, email: "aportante@mapfi.cl", password_hash: hash, nombre: "CEE Industrial", rol: "APORTANTE", entidad_id: 6, activo: true }] };
+        }
+        if ((params && params[0]) === "super@mapfi.cl") {
+          return { rows: [{ id: 3, email: "super@mapfi.cl", password_hash: hash, nombre: "Superadmin", rol: "SUPERADMIN", entidad_id: null, activo: true }] };
+        }
+        if ((params && params[0]) === "informatica@mapfi.cl") {
+          return { rows: [{ id: 4, email: "informatica@mapfi.cl", password_hash: hash, nombre: "CEE Informática", rol: "APORTANTE", entidad_id: 7, activo: true }] };
+        }
+        if ((params && params[0]) === "vinculacion@mapfi.cl") {
+          return { rows: [{ id: 5, email: "vinculacion@mapfi.cl", password_hash: hash, nombre: "Vinculación con el Medio", rol: "APORTANTE", entidad_id: 99, activo: true }] };
+        }
+        if ((params && params[0]) === "sinentidad@mapfi.cl") {
+          return { rows: [{ id: 6, email: "sinentidad@mapfi.cl", password_hash: hash, nombre: "Sin entidad", rol: "APORTANTE", entidad_id: null, activo: true }] };
         }
         return { rows: [] };
       }
+      // js/dao/entidadDao.js#carreraDeEntidad — carrera propia de cada entidad
+      // aportante (US4). La 99 (Vinculación) no tiene carrera asociada.
+      if (/^SELECT carrera_id FROM entidad WHERE id/.test(sql)) {
+        if (params && params[0] === 6) return { rows: [{ carrera_id: 6 }] };
+        if (params && params[0] === 7) return { rows: [{ carrera_id: 7 }] };
+        if (params && params[0] === 99) return { rows: [{ carrera_id: null }] };
+        return { rows: [] };
+      }
+      // Bloques horarios (Spec 003). El bloque fijo 601 pertenece a la
+      // carrera 6, para probar que DELETE /api/bloques/:id lee la carrera
+      // DESDE LA BASE y no desde lo que declare el cliente (US4).
+      if (/^SELECT carrera_id FROM bloque_horario WHERE id/.test(sql)) {
+        if (params && params[0] === 601) return { rows: [{ carrera_id: 6 }] };
+        return { rows: [] };
+      }
+      if (/^INSERT INTO bloque_horario/.test(sql)) {
+        mockPool.__lastBloqueInsertParams = params;
+        return { rows: [{ id: 701 }] };
+      }
+      if (/^DELETE FROM bloque_horario WHERE carrera_id = \$1 AND nivel = \$2/.test(sql)) {
+        mockPool.__lastEliminarSegmentoParams = params;
+        return { rowCount: 3 };
+      }
+      if (/^DELETE FROM bloque_horario WHERE id/.test(sql)) {
+        return { rowCount: 1 };
+      }
+      if (sql.includes("FROM bloque_horario")) return { rows: [] };
       if (sql.includes("INSERT INTO schema_migrations")) return { rows: [] };
       // T045 (H-04): actividad 501, de la entidad 6, con fecha en el futuro
       // lejano — para probar que nadie puede marcarla REALIZADA antes de
@@ -151,6 +202,20 @@ describe("API /api/auth", () => {
     expect(res.status).toBe(400);
   });
 
+  test("GET /api/auth/me incluye carreraId — la carrera de la entidad propia (US4)", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+    const res = await agent.get("/api/auth/me");
+    expect(res.body.user.carreraId).toBe(6);
+  });
+
+  test("GET /api/auth/me: carreraId es null para una entidad sin carrera (Vinculación)", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({ email: "vinculacion@mapfi.cl", password: "test1234" });
+    const res = await agent.get("/api/auth/me");
+    expect(res.body.user.carreraId).toBeNull();
+  });
+
   test("GET /api/auth/me sin sesión devuelve null", async () => {
     const res = await request(app).get("/api/auth/me");
     expect(res.status).toBe(200);
@@ -230,6 +295,18 @@ describe("API endpoints públicos", () => {
       expect(db.pool.__lastInsertParams[2]).toBe(6); // entidad_id ($3) = la de la sesion, no 999
     });
 
+    test("(e) sin entidad asociada no puede publicar a nombre de otra (revisión de seguridad 2026-08-15)", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "sinentidad@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/actividades").send({
+        titulo: "Intento sin entidad", tipo: "EVENTO",
+        fechaInicio: "2026-04-20T10:00:00", fechaFin: "2026-04-20T12:00:00",
+        entidadId: 6, // intenta imponer una entidad ajena via el cuerpo
+        publico: [{ carreraId: 6, nivel: 1 }],
+      });
+      expect(res.status).toBe(403);
+    });
+
     test("(b) no puede restituir una actividad retirada — solo ADMIN", async () => {
       const agent = request.agent(app);
       await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
@@ -298,6 +375,206 @@ describe("API endpoints públicos", () => {
       const campos = res.body.length ? Object.keys(res.body[0]) : [];
       expect(campos).not.toContain("borrado_por");
       expect(campos).not.toContain("estado_previo");
+    });
+  });
+
+  describe("Horarios — borrado por segmento (US1, T013/T014)", () => {
+    test("DELETE /api/bloques sin carreraId responde 400", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?nivel=1");
+      expect(res.status).toBe(400);
+    });
+
+    test("DELETE /api/bloques sin nivel responde 400", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?carreraId=6");
+      expect(res.status).toBe(400);
+    });
+
+    test("DELETE /api/bloques sin sesión responde 401", async () => {
+      const res = await request(app).delete("/api/bloques?carreraId=6&nivel=1");
+      expect(res.status).toBe(401);
+    });
+
+    test("DELETE /api/bloques con ADMIN vacía el segmento y devuelve el conteo", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?carreraId=6&nivel=1");
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ eliminados: 3, carreraId: 6, nivel: 1 });
+    });
+
+    test("DELETE /api/bloques con SUPERADMIN también procede (regresión D-2)", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "super@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?carreraId=6&nivel=1");
+      expect(res.status).toBe(200);
+    });
+
+    test("POST /api/bloques con SUPERADMIN también procede (regresión D-2)", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "super@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques").send({
+        carreraId: 6, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      });
+      expect(res.status).toBe(201);
+    });
+
+  });
+
+  describe("Horarios — autorización por carrera propia (US4, T031/T032)", () => {
+    // aportante@mapfi.cl → entidad 6 → carrera 6 (CEEIND, Ing. Civil Industrial)
+    // informatica@mapfi.cl → entidad 7 → carrera 7 (CEEINF, Ing. Civil Informática)
+    // vinculacion@mapfi.cl → entidad 99 → sin carrera asociada (carrera_id NULL)
+    test("un aportante crea un bloque en la carrera de SU propia entidad", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques").send({
+        carreraId: 6, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      });
+      expect(res.status).toBe(201);
+    });
+
+    test("un aportante NO puede crear un bloque en la carrera de OTRA entidad", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "informatica@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques").send({
+        carreraId: 6, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      });
+      expect(res.status).toBe(403);
+    });
+
+    test("un aportante NO puede vaciar el segmento de otra carrera", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "informatica@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?carreraId=6&nivel=1");
+      expect(res.status).toBe(403);
+    });
+
+    test("un aportante SÍ puede vaciar el segmento de su propia carrera", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques?carreraId=6&nivel=1");
+      expect(res.status).toBe(200);
+    });
+
+    test("un aportante SIN carrera asociada (Vinculación) no puede escribir ningún horario", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "vinculacion@mapfi.cl", password: "test1234" });
+      const post = await agent.post("/api/bloques").send({
+        carreraId: 6, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      });
+      expect(post.status).toBe(403);
+      const del = await agent.delete("/api/bloques?carreraId=6&nivel=1");
+      expect(del.status).toBe(403);
+    });
+
+    test("sin sesión, cualquier escritura responde 401 (no 403)", async () => {
+      const res = await request(app).post("/api/bloques").send({
+        carreraId: 6, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      });
+      expect(res.status).toBe(401);
+    });
+
+    test("el atajo obvio no funciona: borrar un bloque ajeno declarando la carrera propia en el cuerpo no cambia nada — la carrera se lee del bloque en la BD", async () => {
+      // El bloque fijo 601 (mock) pertenece a la carrera 6. informatica@mapfi.cl
+      // es de la carrera 7: el servidor debe rechazarlo sin mirar el body.
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "informatica@mapfi.cl", password: "test1234" });
+      const res = await agent.delete("/api/bloques/601").send({ carreraId: 7 });
+      expect(res.status).toBe(403);
+    });
+
+    test("ADMIN y SUPERADMIN operan sobre cualquier carrera sin restricción", async () => {
+      const admin = request.agent(app);
+      await admin.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      expect((await admin.post("/api/bloques").send({
+        carreraId: 7, nivel: 1, diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+      })).status).toBe(201);
+
+      const superadmin = request.agent(app);
+      await superadmin.post("/api/auth/login").send({ email: "super@mapfi.cl", password: "test1234" });
+      expect((await superadmin.delete("/api/bloques/601")).status).toBe(200);
+    });
+  });
+
+  describe("Horarios — importación masiva (US3, T044)", () => {
+    const filaValida = { diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE", descripcion: "Cálculo I" };
+
+    test("sin 'modo' responde 400 — no hay valor por defecto (FR-014)", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques/importar").send({ carreraId: 6, nivel: 1, bloques: [filaValida] });
+      expect(res.status).toBe(400);
+    });
+
+    test("con más de 200 bloques responde 400", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const bloques = Array.from({ length: 201 }, () => filaValida);
+      const res = await agent.post("/api/bloques/importar").send({ carreraId: 6, nivel: 1, modo: "agregar", bloques });
+      expect(res.status).toBe(400);
+    });
+
+    test("una fila inválida responde 400 identificando el número de fila", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques/importar").send({
+        carreraId: 6, nivel: 1, modo: "agregar",
+        bloques: [filaValida, { fila: 9, diaSemana: 9, horaInicio: "08:00", horaFin: "09:00", descripcion: "malo" }],
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("9");
+    });
+
+    test("sin sesión responde 401", async () => {
+      const res = await request(app).post("/api/bloques/importar").send({ carreraId: 6, nivel: 1, modo: "agregar", bloques: [filaValida] });
+      expect(res.status).toBe(401);
+    });
+
+    test("un aportante no puede importar en la carrera de otra entidad", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "informatica@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques/importar").send({ carreraId: 6, nivel: 1, modo: "agregar", bloques: [filaValida] });
+      expect(res.status).toBe(403);
+    });
+
+    test("modo 'agregar' con filas válidas responde 200 con el resultado de la importación", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent.post("/api/bloques/importar").send({ carreraId: 6, nivel: 1, modo: "agregar", bloques: [filaValida] });
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ insertados: 1, eliminados: 0, modo: "agregar" });
+    });
+  });
+
+  describe("Horarios — sin subida de archivos (US3, T043, FR-018/019/020)", () => {
+    test("la importación exige JSON estructurado, nunca multipart/form-data", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "admin@mapfi.cl", password: "test1234" });
+      const res = await agent
+        .post("/api/bloques/importar")
+        .set("Content-Type", "multipart/form-data; boundary=----x")
+        .send('------x\r\nContent-Disposition: form-data; name="archivo"; filename="horario.csv"\r\n\r\ndia;inicio\r\n------x--');
+      // Express sin middleware multipart no interpreta el body: llega vacio o
+      // sin los campos esperados, y la validacion de campos lo rechaza.
+      expect(res.status).toBe(400);
+    });
+
+    test("no hay dependencia de subida de archivos en el proyecto", () => {
+      const pkg = require("../../package.json");
+      const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
+      ["multer", "busboy", "formidable", "express-fileupload"].forEach((paquete) => {
+        expect(deps[paquete]).toBeUndefined();
+      });
+    });
+
+    test("server.js no registra ningún middleware multipart", () => {
+      const fs = require("fs");
+      const src = fs.readFileSync(require.resolve("../../server.js"), "utf8");
+      expect(src).not.toMatch(/multer|busboy|formidable|multipart/i);
     });
   });
 

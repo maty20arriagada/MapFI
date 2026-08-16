@@ -34,7 +34,12 @@
     // 3) Estado de sesion → mostrar/ocultar zonas .auth-only / .guest-only.
     try {
       const { user } = await api.get("/api/auth/me");
-      const esAdmin = !!user && user.rol === "ADMIN";
+      // SUPERADMIN es superconjunto de ADMIN en el servidor (cumpleRol() en
+      // server.js): esta comprobacion debe reflejar lo mismo, o el
+      // SUPERADMIN pierde toda seccion .admin-only del sitio sin que el
+      // backend se lo impida (D-2, Spec 003 — hallado al probar horarios.html
+      // en vivo: el bug es global, no solo de esa pagina).
+      const esAdmin = !!user && (user.rol === "ADMIN" || user.rol === "SUPERADMIN");
       document.body.dataset.auth = user ? "si" : "no";
       document.body.dataset.rol = user ? user.rol : "";
       document.querySelectorAll(".auth-only").forEach((e) => (e.hidden = !user));

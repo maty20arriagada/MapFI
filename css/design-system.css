@@ -283,9 +283,17 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 .foco-participacion strong { font-size: .9rem; }
 .foco-participacion .muted { font-size: .8rem; line-height: 1.35; }
 
-/* ── Horario semanal (timetable) ──────────────────────────────────────── */
+/* ── Horario semanal (timetable) ──────────────────────────────────────────
+ * Grilla FIJA de 08:00 a 21:00 con resolucion de 15 minutos (52 filas), para
+ * que un bloque de 45 min y uno de 90 min queden en proporcion exacta —
+ * ver js/services/horarioService.js y specs/003-gestion-horarios/research.md
+ * (R-1). `row-gap: 0` es deliberado: con separacion entre 51 filas, un gap
+ * uniforme rompe esa proporcion; la separacion visual la da el borde de
+ * `.tt-block`, no el gap. */
 .timetable {
-  display: grid; grid-template-columns: 54px repeat(5, 1fr); gap: 4px;
+  display: grid; grid-template-columns: 54px repeat(5, 1fr);
+  grid-template-rows: 34px repeat(52, 13px);
+  column-gap: 4px; row-gap: 0;
   background: var(--surface-2); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 8px; overflow-x: auto;
 }
@@ -295,10 +303,14 @@ main > .section:nth-child(3) { animation-delay: .12s; }
   background: var(--brand-soft); border-radius: 6px; padding: 7px 4px;
   display: flex; align-items: center; justify-content: center;
 }
-.tt-hour { font-size: .7rem; color: var(--text-soft); text-align: right; padding-right: 6px; }
+.tt-hour {
+  font-size: .68rem; color: var(--text-soft); text-align: right; padding-right: 6px;
+  display: flex; align-items: flex-start; justify-content: flex-end;
+}
 .tt-block {
   border-radius: 6px; padding: 4px 6px; color: #fff; overflow: hidden; position: relative;
   display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow);
+  border: 1px solid var(--surface-2); box-sizing: border-box;
 }
 .tt-block strong { font-weight: 600; font-size: .76rem; line-height: 1.12; }
 .tt-block span { opacity: .9; font-size: .68rem; }
@@ -312,6 +324,41 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 .tt-del:hover { opacity: 1; }
 .tt-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 14px 0; font-size: .85rem; color: var(--text-soft); }
 .tt-legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+/* Aviso de bloques que no caben en 08:00-21:00 (FR-010): se listan aparte
+ * en vez de deformar la grilla o desaparecer en silencio. */
+.tt-aviso {
+  margin-top: 10px; padding: 10px 12px; border-radius: var(--radius);
+  background: var(--amarillo-bg); border: 1px solid var(--amarillo);
+  font-size: .85rem; color: var(--amarillo-text);
+}
+.tt-aviso strong { display: block; margin-bottom: 4px; }
+.tt-aviso ul { margin: 0; padding-left: 18px; }
+/* Un bloque filtrado se OCULTA, nunca se quita del flujo del grid: cada
+ * bloque tiene su grid-row/grid-column fijados en linea, asi que esconder
+ * uno no recoloca a los demas (FR-027). */
+.tt-block.tt-filtrado { display: none; }
+
+/* ── Impresion del horario (US5, R-8) ─────────────────────────────────────
+ * #printHeader va oculto en pantalla y visible solo al imprimir; el color es
+ * la propia informacion del horario (tipo de bloque), asi que se fuerza a
+ * conservarlo aunque el navegador recorte fondos por defecto al imprimir. */
+.print-only { display: none; }
+@media print {
+  body * { visibility: hidden; }
+  #timetable, #timetable *, #printHeader, #printHeader * { visibility: visible; }
+  #timetable { position: absolute; left: 0; top: 0; width: 100%; }
+  #printHeader {
+    display: block; position: absolute; top: 0; left: 0; width: 100%;
+    margin-bottom: 10px; font-family: var(--font-head);
+  }
+  #printHeader strong { font-size: 1.1rem; }
+  #printHeader span { display: block; font-size: .85rem; color: var(--text-soft); }
+  .tt-del { display: none !important; }
+  .timetable, .tt-block {
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  @page { size: landscape; margin: 12mm; }
+}
 
 /* Calendario con creación al hacer clic en un día */
 .cal-pickable .fc-daygrid-day, .cal-pickable .fc-timegrid-slot { cursor: pointer; }

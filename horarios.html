@@ -20,9 +20,34 @@
           <div><label>Carrera</label><select id="hCarrera"></select></div>
           <div><label>Generación / año</label><select id="hNivel"></select></div>
         </div>
+        <div class="grid cols-3" style="margin-top:10px">
+          <div><label>Día</label>
+            <select id="fDia">
+              <option value="">Todos</option>
+              <option value="1">Lunes</option><option value="2">Martes</option>
+              <option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option>
+            </select>
+          </div>
+          <div><label>Tipo</label>
+            <select id="fTipo">
+              <option value="">Todos</option>
+              <option value="CLASE">Clase</option><option value="PROTEGIDO">Protegido</option><option value="LIBRE">Libre</option>
+            </select>
+          </div>
+          <div><label>Buscar</label>
+            <input type="search" id="fBuscar" placeholder="Ramo, sala, docente o código" />
+          </div>
+        </div>
+        <div class="row" style="justify-content:flex-end;margin-top:10px">
+          <button class="btn secondary" type="button" id="btnImprimir"><span class="icon" data-icon="printer"></span> Imprimir</button>
+        </div>
       </div>
 
-      <div class="card admin-only" id="adminBloque" hidden style="margin-top:16px">
+      <!-- Visibilidad NO depende de .admin-only (esa clase solo distingue
+           ADMIN/SUPERADMIN a nivel de sitio): un APORTANTE tambien puede
+           editar el horario de la carrera de SU propia entidad (US4), asi
+           que se controla aqui mismo segun la carrera seleccionada. -->
+      <div class="card" id="adminBloque" hidden style="margin-top:16px">
         <h2><span class="icon title-icon" data-icon="pencil"></span> Agregar bloque</h2>
         <p class="muted">Se agrega a la carrera y generación seleccionadas arriba.</p>
         <form id="formBloque">
@@ -39,6 +64,30 @@
           </div>
           <button class="btn" type="submit"><span class="icon" data-icon="save"></span> Agregar bloque</button>
         </form>
+        <hr />
+        <button class="btn secondary" type="button" id="btnVaciarSegmento">
+          <span class="icon" data-icon="ban"></span> Vaciar horario de este segmento
+        </button>
+      </div>
+
+      <div class="card" id="importarBloque" hidden style="margin-top:16px">
+        <h2><span class="icon title-icon" data-icon="file-text"></span> Importar horario</h2>
+        <p class="muted">Sube un archivo CSV o TXT, o pega las celdas copiadas desde una planilla. Ningún archivo se guarda en el servidor.
+          <a class="link-btn" href="/api/plantilla-horario.csv">Descargar plantilla</a>
+        </p>
+        <input type="file" id="horarioFile" accept=".csv,.txt,text/csv,text/plain" />
+        <textarea id="horarioTexto" rows="4" placeholder="…o pega aquí el contenido"></textarea>
+        <button class="btn secondary" type="button" id="btnVistaPrevia"><span class="icon" data-icon="search"></span> Vista previa</button>
+
+        <div id="horarioPreview" hidden style="margin-top:14px">
+          <div id="horarioResumen"></div>
+          <fieldset id="horarioModo" style="margin:12px 0">
+            <legend>¿Qué hacer con el horario existente de este segmento?</legend>
+            <label><input type="radio" name="modoImportar" value="agregar" /> Agregar a lo existente</label>
+            <label><input type="radio" name="modoImportar" value="reemplazar" /> Reemplazar el horario del segmento</label>
+          </fieldset>
+          <button class="btn" type="button" id="btnConfirmarImportar"><span class="icon" data-icon="save"></span> Confirmar importación</button>
+        </div>
       </div>
 
       <div class="tt-legend">
@@ -46,6 +95,10 @@
         <span><i style="background:var(--gold-dark)"></i> Bloque protegido</span>
         <span><i style="background:var(--verde)"></i> Ventana libre</span>
       </div>
+
+      <!-- Oculto en pantalla; visible solo al imprimir (US5, R-8) — da
+           contexto que en pantalla aportan los selectores de arriba. -->
+      <div id="printHeader" class="print-only"></div>
 
       <div id="timetable"><div class="placeholder">Selecciona carrera y generación para ver el horario.</div></div>
     </section>
@@ -59,25 +112,85 @@
   <script src="js/layout.js"></script>
   <script src="js/app-boot.js"></script>
   <script src="js/filters.js"></script>
+  <script src="js/ui-confirm.js"></script>
+  <script src="js/horario-csv.js"></script>
+  <script src="js/services/horarioService.js"></script>
   <script src="js/horarios-view.js"></script>
   <script>
     (async function () {
-      let isAdmin = false;
-      try { const r = await api.get("/api/auth/me"); isAdmin = !!r.user && r.user.rol === "ADMIN"; } catch (_) {}
+      let user = null;
+      try { const r = await api.get("/api/auth/me"); user = r.user; } catch (_) {}
+
+      // ADMIN/SUPERADMIN editan cualquier carrera; un APORTANTE solo la de
+      // su propia entidad (carreraId, ya resuelto por el servidor en
+      // /api/auth/me). Es cortesia de interfaz: el servidor vuelve a
+      // verificarlo en cada escritura (puedeEditarHorario en server.js) — U4.
+      function puedeEditar(carreraId) {
+        if (!user || !carreraId) return false;
+        if (user.rol === "ADMIN" || user.rol === "SUPERADMIN") return true;
+        return user.rol === "APORTANTE" && user.carreraId != null && +user.carreraId === +carreraId;
+      }
 
       const cat = await Filters.cargar();
       Filters.poblarSelect(document.getElementById("hCarrera"), cat.carreras, "id", "nombre", "— Carrera —");
       Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "— Generación —");
 
       const cont = document.getElementById("timetable");
+      const adminBloque = document.getElementById("adminBloque");
+      const importarBloque = document.getElementById("importarBloque");
       const filtros = () => ({
         carreraId: document.getElementById("hCarrera").value || null,
         nivel: document.getElementById("hNivel").value || null,
       });
-      const render = () => HorariosView.montar(cont, filtros(), { isAdmin });
+      const render = async () => {
+        const f = filtros();
+        const editable = puedeEditar(f.carreraId);
+        adminBloque.hidden = !editable;
+        importarBloque.hidden = !editable;
+        if (!editable) ocultarVistaPrevia();
+        await HorariosView.montar(cont, f, { isAdmin: editable });
+        aplicarFiltroRapido();
+        actualizarCabeceraImpresion();
+      };
+
+      // ── Filtro rápido (US5): opera sobre lo YA dibujado, sin recolocar
+      // nada (FR-027) — ver HorariosView.aplicarFiltro. ───────────────────
+      function filtroRapido() {
+        return {
+          dia: document.getElementById("fDia").value,
+          tipo: document.getElementById("fTipo").value,
+          texto: document.getElementById("fBuscar").value,
+        };
+      }
+      function aplicarFiltroRapido() { HorariosView.aplicarFiltro(cont, filtroRapido()); }
+
+      function actualizarCabeceraImpresion() {
+        const f = filtros();
+        const carrera = cat.carreras.find((c) => String(c.id) === String(f.carreraId));
+        const nivel = cat.generaciones.find((g) => String(g.nivel) === String(f.nivel));
+        const fr = filtroRapido();
+        const partesFiltro = [];
+        if (fr.dia) partesFiltro.push(document.getElementById("fDia").selectedOptions[0].text);
+        if (fr.tipo) partesFiltro.push(document.getElementById("fTipo").selectedOptions[0].text);
+        if (fr.texto) partesFiltro.push('"' + fr.texto + '"');
+        const fecha = new Date().toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" });
+        document.getElementById("printHeader").innerHTML =
+          "<strong>" + escapeHtml((carrera ? carrera.nombre : "Todas las carreras") + " · " + (nivel ? nivel.etiqueta : "")) + "</strong>" +
+          "<span>Impreso el " + escapeHtml(fecha) + (partesFiltro.length ? " · Filtro: " + escapeHtml(partesFiltro.join(", ")) : "") + "</span>";
+      }
 
       document.getElementById("hCarrera").addEventListener("change", render);
       document.getElementById("hNivel").addEventListener("change", render);
+
+      ["fDia", "fTipo"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
+      });
+      document.getElementById("fBuscar").addEventListener("input", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
+
+      document.getElementById("btnImprimir").addEventListener("click", () => {
+        actualizarCabeceraImpresion();
+        window.print();
+      });
 
       const formBloque = document.getElementById("formBloque");
       formBloque.addEventListener("submit", async (e) => {
@@ -97,8 +210,132 @@
       cont.addEventListener("click", async (e) => {
         const btn = e.target.closest('[data-act="del-bloque"]');
         if (!btn) return;
+        const ok = await confirmDialog({
+          titulo: "Eliminar bloque",
+          mensaje: `¿Eliminar "${btn.dataset.ramo}" (${btn.dataset.horario})? Esta acción no se puede deshacer.`,
+          textoConfirmar: "Eliminar",
+        });
+        if (!ok) return;
         try { await api.del("/api/bloques/" + btn.dataset.id); toast("Bloque eliminado", "success"); render(); }
         catch (err) { toast(err.message, "error"); }
+      });
+
+      function descargarCsv(texto, nombre) {
+        const blob = new Blob([texto], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = nombre;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      document.getElementById("btnVaciarSegmento").addEventListener("click", async () => {
+        const f = filtros();
+        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        let bloques;
+        try { bloques = await api.get("/api/bloques?carreraId=" + f.carreraId + "&nivel=" + f.nivel); }
+        catch (err) { return toast(err.message, "error"); }
+        if (!bloques.length) return toast("Este horario ya está vacío", "error");
+
+        descargarCsv(HorarioCsv.aCsv(bloques), "horario-carrera" + f.carreraId + "-nivel" + f.nivel + ".csv");
+
+        const ok = await confirmDialog({
+          titulo: "Vaciar horario de este segmento",
+          mensaje: `Se eliminarán los ${bloques.length} bloque(s) de este segmento. Se descargó una copia de respaldo antes de continuar — puedes reimportarla si te arrepientes.`,
+          textoConfirmar: "Vaciar horario",
+        });
+        if (!ok) return;
+
+        try {
+          await api.del("/api/bloques?carreraId=" + f.carreraId + "&nivel=" + f.nivel);
+          toast("Horario vaciado", "success");
+          render();
+        } catch (err) { toast(err.message, "error"); }
+      });
+
+      // ── Importación (US3): el archivo se interpreta ENTERO en el
+      // navegador (js/horario-csv.js). Al servidor solo llega el JSON ya
+      // validado — nunca el archivo (FR-018/019). ─────────────────────────
+      const horarioPreview = document.getElementById("horarioPreview");
+      const horarioResumen = document.getElementById("horarioResumen");
+      let bloquesParaImportar = [];
+
+      function ocultarVistaPrevia() {
+        horarioPreview.hidden = true;
+        horarioResumen.innerHTML = "";
+        bloquesParaImportar = [];
+        document.querySelectorAll('input[name="modoImportar"]').forEach((r) => { r.checked = false; });
+      }
+
+      const MENSAJE_BINARIO = {
+        xlsx: "Esto es un archivo de Excel (.xlsx). Ábrelo y usa Archivo → Guardar como → CSV (delimitado por comas), o copia las celdas y pégalas en el cuadro de abajo.",
+        xls: "Esto parece un archivo de Excel antiguo (.xls). Ábrelo y usa Archivo → Guardar como → CSV, o copia las celdas y pégalas en el cuadro de abajo.",
+        pdf: "Esto es un PDF, no texto: no se puede interpretar como horario. Exporta un CSV o copia las celdas de tu planilla.",
+        binario: "Este archivo no parece texto plano. Exporta un CSV/TXT o copia las celdas de tu planilla y pégalas en el cuadro de abajo.",
+      };
+
+      function renderErroresImportacion(errores) {
+        if (!errores.length) return "";
+        return '<div class="help-box"><strong>' + errores.length + ' fila(s) con error (no se importan):</strong><ul style="margin:6px 0 0 18px">' +
+          errores.map((e) => "<li>Fila " + e.fila + ": " + escapeHtml(e.error) + "</li>").join("") + "</ul></div>";
+      }
+
+      document.getElementById("horarioFile").addEventListener("change", (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => { document.getElementById("horarioTexto").value = reader.result; };
+        reader.readAsText(f, "utf-8");
+      });
+
+      document.getElementById("btnVistaPrevia").addEventListener("click", () => {
+        const texto = document.getElementById("horarioTexto").value;
+        if (!texto.trim()) return toast("Sube un archivo o pega el contenido primero", "error");
+
+        const binario = HorarioCsv.detectarBinario(texto);
+        if (binario) {
+          horarioResumen.innerHTML = '<div class="help-box">' + escapeHtml(MENSAJE_BINARIO[binario] || MENSAJE_BINARIO.binario) + "</div>";
+          horarioPreview.hidden = false;
+          document.getElementById("horarioModo").hidden = true;
+          document.getElementById("btnConfirmarImportar").hidden = true;
+          bloquesParaImportar = [];
+          return;
+        }
+
+        const { bloques, errores } = HorarioCsv.parsear(texto);
+        bloquesParaImportar = bloques;
+
+        const hayValidas = bloques.length > 0;
+        document.getElementById("horarioModo").hidden = !hayValidas;
+        document.getElementById("btnConfirmarImportar").hidden = !hayValidas;
+        document.querySelectorAll('input[name="modoImportar"]').forEach((r) => { r.checked = false; });
+
+        horarioResumen.innerHTML =
+          (hayValidas ? "<p><strong>" + bloques.length + "</strong> fila(s) válida(s), listas para importar.</p>" : "<p>No hay ninguna fila válida en este archivo.</p>") +
+          renderErroresImportacion(errores);
+        horarioPreview.hidden = false;
+      });
+
+      document.getElementById("btnConfirmarImportar").addEventListener("click", async () => {
+        const f = filtros();
+        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        if (!bloquesParaImportar.length) return toast("No hay filas válidas para importar", "error");
+        const modoEl = document.querySelector('input[name="modoImportar"]:checked');
+        if (!modoEl) return toast("Elige si quieres reemplazar o agregar", "error");
+
+        const btn = document.getElementById("btnConfirmarImportar");
+        btn.disabled = true;
+        try {
+          const res = await api.post("/api/bloques/importar", {
+            carreraId: +f.carreraId, nivel: +f.nivel, modo: modoEl.value, bloques: bloquesParaImportar,
+          });
+          toast(res.insertados + " bloque(s) importado(s)" + (res.eliminados ? " (se reemplazaron " + res.eliminados + ")" : ""), "success");
+          document.getElementById("horarioTexto").value = "";
+          document.getElementById("horarioFile").value = "";
+          ocultarVistaPrevia();
+          render();
+        } catch (err) { toast(err.message, "error"); }
+        finally { btn.disabled = false; }
       });
 
       render();

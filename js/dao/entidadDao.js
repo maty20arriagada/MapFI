@@ -16,6 +16,13 @@ module.exports = {
     return rows[0] || null;
   },
 
+  /** carrera_id de la entidad (NULL si no esta ligada a una carrera: VcM, Gearbox, DOCFI). */
+  async carreraDeEntidad(entidadId) {
+    if (!entidadId) return null;
+    const { rows } = await query(`SELECT carrera_id FROM entidad WHERE id = $1`, [entidadId]);
+    return rows[0] ? rows[0].carrera_id : null;
+  },
+
   async crear(e) {
     const { rows } = await query(
       `INSERT INTO entidad (tipo, sigla, nombre, carrera_id) VALUES ($1,$2,$3,$4) RETURNING *`,
