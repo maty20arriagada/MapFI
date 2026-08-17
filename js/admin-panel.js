@@ -117,7 +117,7 @@
   document.addEventListener("DOMContentLoaded", async () => {
     let user = null;
     try { ({ user } = await api.get("/api/auth/me")); } catch (_) {}
-    if (user && user.rol !== "ADMIN") { $("noAdmin").hidden = false; return; }
+    if (user && !esAdminOSuper(user)) { $("noAdmin").hidden = false; return; }
     if (!user) return; // app-boot ya muestra el mensaje de invitado
 
     await cargar();

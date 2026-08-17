@@ -58,7 +58,7 @@
 
   async function cargarLista() {
     if (user.entidadId) {
-      if (global.EventTable) global.EventTable.montar(document.getElementById("tablaEventos"), user.entidadId, actualizarKpis, { esAdmin: user.rol === "ADMIN" });
+      if (global.EventTable) global.EventTable.montar(document.getElementById("tablaEventos"), user.entidadId, actualizarKpis, { esAdmin: esAdminOSuper(user) });
       if (global.CalendarView) global.CalendarView.montar(document.getElementById("misActividades"), { entidadId: user.entidadId }, { onPick: abrirForm });
       actualizarKpis();
     } else {

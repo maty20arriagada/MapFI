@@ -759,6 +759,9 @@ app.get("/api/actividades/conflictos", async (req, res) => {
     if (isNaN(d0.getTime()) || isNaN(d1.getTime())) {
       return res.status(400).json({ error: "Las fechas del rango no son válidas" });
     }
+    if (d1 < d0) {
+      return res.status(400).json({ error: "'hasta' no puede ser anterior a 'desde'" });
+    }
     if ((d1 - d0) / 86400000 > CONFLICTOS_MAX_DIAS) {
       return res.status(400).json({ error: `El rango no puede superar ${CONFLICTOS_MAX_DIAS} días` });
     }

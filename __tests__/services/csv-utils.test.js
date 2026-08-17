@@ -80,6 +80,22 @@ describe("CsvUtils.construirActividades", () => {
     expect(lotes.flat()).toEqual(actividades);
   });
 
+  test("dividirEnLotes cuenta bytes UTF-8, no caracteres (revisión de código 2026-08-17)", () => {
+    // Texto puramente acentuado: en UTF-16 (.length) cada tilde pesa 1
+    // unidad, pero en UTF-8 (lo que de verdad viaja en el body HTTP) pesa 2
+    // bytes. Con el conteo antiguo (.length), un lote podia quedar bajo el
+    // umbral y aun asi superar el limite real de 100kb de express.json() —
+    // el 413 que dividirEnLotes existe para evitar.
+    const filas = Array.from({ length: 200 }, (_, i) => ({ titulo: "áéíóúñÁÉÍÓÚÑ".repeat(50) + i }));
+    const limite = 5000;
+    const lotes = CsvUtils.dividirEnLotes(filas, limite);
+    for (const lote of lotes) {
+      const bytesReales = Buffer.byteLength(JSON.stringify(lote), "utf8");
+      expect(bytesReales).toBeLessThanOrEqual(limite);
+    }
+    expect(lotes.flat()).toEqual(filas);
+  });
+
   test("normTipo mapea sinónimos y tags nuevos", () => {
     expect(CsvUtils.normTipo("certamen")).toBe("EXAMEN");
     expect(CsvUtils.normTipo("Charla")).toBe("CHARLA");
