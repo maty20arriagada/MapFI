@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Colores Institucionales UdeC (según imagen proporcionada) */
+        :root {
+            --color-udec-azul: #223c6a; /* Pantone 541C / RGB 34 G 60 B106 */
+            --color-udec-gris: #a0a0a0; /* Gris para acentos */
+            --color-udec-fondo-malla: #f5f7fa; /* Fondo claro para las columnas de año */
+        }
+
+        body {
+            /* Fondo con degradado del color institucional para un toque moderno */
+            background: linear-gradient(135deg, var(--color-udec-azul), #344f80, #5c7cb3);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--color-udec-azul);
+        }
+
+        h1 {
+            color: var(--color-udec-azul);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700; /* Poppins Bold */
+        }
+
+        h2 {
+            color: var(--color-udec-azul);
+            font-size: 1.8rem;
+            font-weight: 500; /* Poppins Regular */
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: var(--color-udec-azul);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 700; /* Poppins Bold */
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: var(--color-udec-gris); /* Usamos el gris institucional */
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid var(--color-udec-gris); /* Borde gris para acento */
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #ffffff; /* Blanco limpio */
+        }
+
+        .ramo-header:hover {
+            background: #f0f4f8; 
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 500px;
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+            font-weight: 400; /* Poppins Regular */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: var(--color-udec-azul);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #344f80;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .practicas-section {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid var(--color-udec-gris);
+        }
+
+        .practicas-title {
+            color: var(--color-udec-azul);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .practicas-section h3 {
+             font-weight: 600;
+        }
+
+        .practicas-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .practica-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sección de Ponderaciones de Admisión */
+        .ponderaciones-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f4f8; 
+            border-radius: 10px;
+            border-top: 3px solid var(--color-udec-azul);
+        }
+        
+        .ponderaciones-title {
+            color: var(--color-udec-azul);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .ponderaciones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .ponderacion-item {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 120px;
+            flex: 1 1 auto; 
+            max-width: 150px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .ponderacion-porcentaje {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .ponderacion-prueba {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Colores específicos para cada ponderación según la imagen */
+        .ponderacion-item:nth-child(1) {
+            background: #223c6a; /* Azul UdeC */
+        }
+        
+        .ponderacion-item:nth-child(2) {
+            background: #4caf50; /* Verde */
+        }
+        
+        .ponderacion-item:nth-child(3) {
+            background: #ff9800; /* Naranja */
+        }
+        
+        .ponderacion-item:nth-child(4) {
+            background: #f44336; /* Rojo */
+        }
+        
+        .ponderacion-item:nth-child(5) {
+            background: #9c27b0; /* Morado */
+        }
+        
+        .ponderacion-item:nth-child(6) {
+            background: #607d8b; /* Gris azulado */
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .ponderaciones-grid {
+                gap: 15px;
+            }
+            
+            .ponderacion-item {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos del cálculo diferencial e integral con aplicaciones en problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos del álgebra lineal y sus aplicaciones en problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de los principios fundamentales de la física y su aplicación en problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales de la química.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Ingeniería Civil I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Conceptos básicos y campos de aplicación de la ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del estudio del cálculo con aplicaciones avanzadas en ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del álgebra lineal con aplicaciones en problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del estudio de la física.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de programación y algoritmos aplicados a la solución de problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Ingeniería Civil II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Profundización en los campos de especialización de la ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dibujo en Ingeniería Civil</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios básicos de diseño y dibujo aplicados a proyectos de ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales Ordinarias</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de ecuaciones diferenciales y sus aplicaciones en modelamiento de sistemas físicos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo III</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Cálculo vectorial y multivariable con aplicaciones en ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estadística y Probabilidades</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de estadística descriptiva e inferencial y teoría de probabilidades.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estática</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del equilibrio de cuerpos rígidos y sistemas de fuerzas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dinámica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del movimiento de partículas y cuerpos rígidos bajo la acción de fuerzas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Geomática</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de medición y representación del terreno para proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Complemento de Cálculo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Temas avanzados de cálculo aplicados a problemas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo Numérico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Métodos numéricos para la resolución de problemas matemáticos en ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Economía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios económicos aplicados a la evaluación de proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Sólidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Comportamiento de materiales sólidos bajo diferentes tipos de esfuerzos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Fluidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del comportamiento de fluidos en reposo y movimiento.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Hidráulica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Aplicaciones de la mecánica de fluidos en sistemas hidráulicos.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Construcción Sustentable</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de sostenibilidad aplicados a proyectos de construcción.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Optimización en Ingeniería Civil</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de optimización aplicadas a problemas de ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Materiales de Construcción</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de propiedades y aplicaciones de materiales en construcción.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Análisis Estructural</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Métodos para el análisis de estructuras sometidas a diferentes cargas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Geotecnia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de la composición y propiedades de los suelos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería Conceptual</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de conceptos y alternativas para proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas de Transporte</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Planificación y diseño de sistemas de transporte.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería de Suelos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de propiedades del suelo y su comportamiento ante cargas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería Antisísmica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de diseño sismorresistente para estructuras.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Hidrología</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del ciclo hidrológico y su aplicación en proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería del Hormigón</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Tecnología y diseño de estructuras de hormigón.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería Básica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales de la ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Fundaciones</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y cálculo de cimentaciones para estructuras.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Infraestructura de Transporte</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y construcción de infraestructura para sistemas de transporte.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Hormigón Armado</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño de estructuras de hormigón armado.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería Ambiental</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Aplicaciones de ingeniería para la protección y mejora del medio ambiente.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería de la Construcción</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Gestión y técnicas avanzadas de construcción.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión de Empresas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de gestión empresarial aplicados a empresas de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería de Detalle</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de detalles constructivos para proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 5</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 6</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 7</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Formulación y Evaluación de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Metodologías para la formulación y evaluación económica de proyectos de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto de Ingeniería Civil</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo integral de un proyecto de ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Habilitación Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Requisitos legales y profesionales para el ejercicio de la ingeniería civil.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Complementaria 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura complementaria según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>(Espacio reservado para titulación / proyecto final)</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Este semestre a menudo incluye la finalización del Proyecto de Ingeniería Civil o la práctica profesional.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="practicas-section">
+            <div class="practicas-title">Actividades Complementarias</div>
+            <div class="practicas-container">
+                <div class="practica-item">
+                    <h3>Práctica Laboral</h3>
+                    <p>Experiencia profesional en el ámbito de la ingeniería civil.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Complementaria 1</h3>
+                    <p>Asignatura complementaria según intereses del estudiante.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Práctica Profesional</h3>
+                    <p>Experiencia profesional avanzada en el ámbito de la ingeniería civil.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ponderaciones-section">
+            <div class="ponderaciones-title">Ponderaciones de Admisión</div>
+            <div class="ponderaciones-grid">
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">20%</div>
+                    <div class="ponderacion-prueba">NEM</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">RANKING</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">COMPRENSIÓN LECTORA</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">25%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">10%</div>
+                    <div class="ponderacion-prueba">HISTORIA Y CS. SOCIALES</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">CIENCIAS</div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Universidad de Concepción - Facultad de Ingeniería - Ingeniería Civil</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>Fuente: admision.udec.cl - Hecho por GIIA UdeC</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

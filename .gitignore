@@ -8,6 +8,14 @@ yarn-error.log
 /respaldos/
 *.dump
 
+# Salida generada por `npm run seed:horarios` (CSV por segmento + informe).
+# Son datos derivados del .txt de la Facultad: se regeneran cuando haga falta.
+/Extras/salida/
+
+# Basura de "Guardar página como" del navegador junto a las mallas (CSS de
+# FontAwesome y Google Fonts). El HTML de la malla sí se versiona; esto no.
+/Extras/Mallas/*_files/
+
 # Entorno y secretos
 .env
 .env.*

@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil Electrónica</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2a4a7c, #3a6a9c);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #1a2a6c;
+        }
+
+        h1 {
+            color: #1a2a6c;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #2a4a7c;
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: #f5f7fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: #1a2a6c;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: #2a4a7c;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid #3a6a9c;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #f0f4f8;
+        }
+
+        .ramo-header:hover {
+            background: #e1e8f0;
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 500px;
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .profesores {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+
+        .profesores-titulo {
+            font-weight: 600;
+            color: #1a2a6c;
+            margin-bottom: 5px;
+        }
+
+        .profesores-lista {
+            list-style-type: none;
+            font-size: 0.85rem;
+        }
+
+        .profesores-lista li {
+            padding: 3px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: #1a2a6c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #2a4a7c;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil Electrónica</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <!-- Año 1 -->
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos del álgebra lineal y sus aplicaciones en problemas de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Carlos Méndez</li>
+                                    <li>Dra. Ana López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del cálculo diferencial e integral con aplicaciones en problemas de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                    <li>Mg. Patricia González</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de los principios fundamentales de la física y su aplicación en problemas de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales de la química y su aplicación en procesos de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Fernando Castro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del álgebra lineal con aplicaciones avanzadas en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Carlos Méndez</li>
+                                    <li>Dra. Ana López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de cálculo multivariable y sus aplicaciones en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                    <li>Mg. Patricia González</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del estudio de la física con énfasis en electricidad, magnetismo y termodinámica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Ingeniería Electrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales y aplicaciones de la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Innovación en Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Conceptos básicos de innovación y creatividad aplicados al campo de la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 2 -->
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo III</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de ecuaciones diferenciales y cálculo vectorial con aplicaciones en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de programación y algoritmos aplicados a la solución de problemas de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Español Académico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades de comunicación académica en español.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Laura Torres</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo Numérico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Métodos numéricos para la resolución de problemas matemáticos en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Modelación de Procesos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de modelación matemática aplicadas a procesos de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales Ordinarias</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de ecuaciones diferenciales y sus aplicaciones en modelamiento de sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estadística y Probabilidades</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de estadística descriptiva e inferencial y teoría de probabilidades aplicadas.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Natalia Vargas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Taller de Habilidades Comunicacionales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades de comunicación oral y escrita para ingenieros electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Laura Torres</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electromagnetismo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios del electromagnetismo y sus aplicaciones en sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas Lineales Dinámicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de sistemas lineales dinámicos y sus aplicaciones en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 3 -->
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Teoría de Circuitos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos teóricos de circuitos eléctricos y su aplicación en sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Circuitos Eléctricos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Prácticas de laboratorio en el diseño y análisis de circuitos eléctricos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales de la electrónica y sus aplicaciones en sistemas.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Redes de Corriente Alterna</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de redes eléctricas en corriente alterna y sus aplicaciones.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Redes de Corriente Alterna</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Prácticas de laboratorio en el análisis de redes eléctricas en corriente alterna.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Diseño de Sistemas Digitales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de sistemas digitales aplicados a la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas de Control</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de sistemas de control automático para aplicaciones electrónicas.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesamiento Digital de Señales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de procesamiento digital de señales aplicadas a sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Arquitectura de Computadores</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de la arquitectura de computadores y su aplicación en sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas Electrónicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de sistemas electrónicos complejos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 4 -->
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación en C</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Programación en lenguaje C aplicada a sistemas electrónicos y embebidos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electrónica de Potencia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de la electrónica de potencia y sus aplicaciones en sistemas de energía.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Práctica Laboral</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Práctica laboral en el ámbito de la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Electrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Prácticas de laboratorio en el diseño y desarrollo de sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Complemento de Cálculo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Temas avanzados de cálculo aplicados a problemas de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades básicas de comunicación en inglés técnico electrónico.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Economía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios económicos aplicados a la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Andrés López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del desarrollo de habilidades básicas de comunicación en inglés técnico.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Intermedio I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades de comunicación en inglés a nivel intermedio.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Intermedio II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del desarrollo de habilidades de comunicación en inglés a nivel intermedio.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Redes de Datos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de redes de datos y su aplicación en sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Taller de Sistemas Digitales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Taller práctico en el diseño e implementación de sistemas digitales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Taller de Sistemas Electrónicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Taller práctico en el diseño e implementación de sistemas electrónicos.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 5 -->
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo 5</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Sistemas de Control</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Prácticas de laboratorio en el diseño e implementación de sistemas de control.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Comunicaciones Industriales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de sistemas de comunicaciones industriales y sus aplicaciones.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Formulación y Evaluación de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Metodologías para la formulación y evaluación de proyectos de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Andrés López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Habilitación Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Preparación para el ejercicio profesional de la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Práctica Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Práctica profesional en el ámbito de la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión de Empresas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de gestión empresarial aplicados a la ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Andrés López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Conversión Electromecánica de la Energía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de conversión electromecánica de energía y sus aplicaciones.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sustentabilidad y Responsabilidad Social en Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Enfoques de sustentabilidad y responsabilidad social aplicados a proyectos de ingeniería electrónica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Facultad de Ingeniería - Ingeniería Civil Electrónica</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>admision.udec.cl</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -112,6 +112,86 @@ reimportar ese mismo archivo.
 
 ---
 
+## Carga masiva desde la planilla de la Facultad (2.º semestre 2026)
+
+El horario que ves cargado en la plataforma **no se subió a mano**: se importó desde el
+volcado de la planilla oficial de la Facultad (`Extras/Horarios_FI_UDEC.txt`) con un
+script. Esta sección documenta de dónde salió cada dato y **qué no se puede dar por
+seguro**, porque el archivo de origen tiene límites reales.
+
+### Cómo se ejecuta
+
+```bash
+npm run seed:horarios -- Extras/Horarios_FI_UDEC.txt --dry-run
+```
+
+`--dry-run` genera los CSV por segmento y el informe `Extras/salida/REVISION.md`
+**sin tocar la base**. Revisa ese informe antes de cargar de verdad:
+
+```bash
+npm run seed:horarios -- Extras/Horarios_FI_UDEC.txt
+```
+
+Es idempotente: cada segmento (carrera + año) se carga en modo *reemplazar*, así que
+volver a correrlo deja el horario igual, no duplicado. Los segmentos que el archivo no
+menciona quedan intactos.
+
+### De dónde sale cada dato
+
+| Dato | Origen | Confianza |
+|------|--------|-----------|
+| Día, hora, sala, docente, sección | Directo del archivo de la Facultad | Alta |
+| Hora de inicio y término | Bloque `N` → `(N+7):00`. Bloque 1 = 08:00, bloque 13 = 20:00–21:00 | Alta |
+| **Carrera** | Prefijo de 3 dígitos del código (`547`→Electrónica, `550`→Biomédica, `551`→Minas…) | Alta |
+| **Año (1.º a 5.º)** | **Deducido** — ver abajo | **Variable** |
+
+### El año es una estimación
+
+El archivo de horarios **no dice a qué año pertenece cada ramo**, y las mallas
+curriculares en HTML **no traen códigos de asignatura**. No existe una fuente que cruce
+ambas cosas, así que el año se deduce en cascada:
+
+1. **Confianza alta** — el nombre del ramo aparece en la malla de su carrera; el año
+   sale del semestre (`SEM IV` → 2.º año).
+2. **Confianza media** — el ramo no está en la malla, así que el año sale del **4.º
+   dígito del código** (`541408` → 4.º año). Acierta la mayoría de las veces.
+3. **Confianza baja** — no hubo ninguna señal: se asume **1.er año** y queda listado en
+   el informe para corregirlo a mano.
+
+`Extras/salida/REVISION.md` lista exactamente qué ramos cayeron en cada nivel. En la
+carga del 2.º semestre 2026 fueron **7 ramos de confianza baja** (todos de servicio:
+Inglés Comunicativo, ACOMAT, Habilidades Comunicativas), de 440 asignaturas.
+
+### Dos mallas del repositorio están mal etiquetadas
+
+Verificado ramo a ramo, y **el script las descarta**:
+
+- `Malla Curricular - Ingeniería Civil.html` → su contenido es **Industrial**
+  (difiere en 1 de 52 ramos del archivo de industrial).
+- `Malla ingenieria civil informatica.html` → su contenido es **Metalúrgica**
+  (50 de 52 ramos idénticos; su propio `<title>` lo delata).
+
+Como consecuencia, **Informática no tiene malla** y el año de sus ramos sale del código.
+Si consigues la malla real de Informática, vuelve a correr el script y mejorará sola.
+
+### Lo que NO se carga
+
+- **Las fechas de evaluación.** El archivo trae una fecha por asignatura, pero
+  `bloque_horario` no la guarda: las evaluaciones las publican los centros de
+  estudiantes a mano desde el calendario, que es el flujo que MapFI ya tiene.
+- **El tipo de sesión como tipo de bloque.** Teoría, práctica y laboratorio entran
+  todos como `CLASE`; la distinción se conserva en el nombre visible
+  (`Cálculo I (Práctica G2)`) porque `bloque_horario.tipo` solo admite
+  `CLASE`, `PROTEGIDO` y `LIBRE`.
+
+### Advertencia que ve el estudiante
+
+La página de Horarios muestra un aviso permanente indicando que el horario es de
+referencia, que puede contener errores y que hay que confirmarlo con el Departamento.
+**No lo quites** sin reemplazar el origen del dato por uno verificado.
+
+---
+
 ## Quién puede importar
 
 - **ADMIN** y **SUPERADMIN**: cualquier carrera y generación.

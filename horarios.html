@@ -15,29 +15,62 @@
         <p class="subtitle">Malla semanal recurrente de cada carrera y generación. Es independiente del calendario académico (evaluaciones y eventos).</p>
       </div>
 
+      <!-- Aviso permanente de calidad del dato: el horario se cargó desde la
+           planilla de la Facultad y el año de algunos ramos es una estimación.
+           Va antes de los filtros, para que se lea sin hacer scroll. -->
+      <div class="tt-aviso" id="avisoCalidad">
+        <strong>Horario de referencia — puede contener errores.</strong>
+        Cargado automáticamente desde la planilla de la Facultad. El año asignado a
+        algunos ramos es una estimación y las salas o docentes pueden haber cambiado.
+        Confírmalo con tu Departamento antes de tomar una decisión. ¿Ves algo mal?
+        Avisa a tu centro de estudiantes.
+      </div>
+
       <div class="card filters">
         <div class="grid cols-2">
-          <div><label>Carrera</label><select id="hCarrera"></select></div>
-          <div><label>Generación / año</label><select id="hNivel"></select></div>
+          <div>
+            <label for="hCarrera">Carrera</label>
+            <select id="hCarrera" multiple size="6" aria-describedby="ayudaCarrera"></select>
+            <p class="muted" id="ayudaCarrera" style="font-size:.8rem;margin-top:4px">
+              Mantén Ctrl (o ⌘) para ver varias carreras a la vez y detectar choques entre ellas.
+            </p>
+          </div>
+          <div><label for="hNivel">Generación / año</label><select id="hNivel"></select></div>
         </div>
-        <div class="grid cols-3" style="margin-top:10px">
-          <div><label>Día</label>
+        <div class="grid cols-4" style="margin-top:10px">
+          <div><label for="fDia">Día</label>
             <select id="fDia">
               <option value="">Todos</option>
               <option value="1">Lunes</option><option value="2">Martes</option>
               <option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option>
             </select>
           </div>
-          <div><label>Tipo</label>
+          <div><label for="fTipo">Tipo</label>
             <select id="fTipo">
               <option value="">Todos</option>
               <option value="CLASE">Clase</option><option value="PROTEGIDO">Protegido</option><option value="LIBRE">Libre</option>
             </select>
           </div>
-          <div><label>Buscar</label>
+          <div><label for="fSeccion">Sección</label>
+            <select id="fSeccion"><option value="">Todas</option></select>
+          </div>
+          <div><label for="fBuscar">Buscar</label>
             <input type="search" id="fBuscar" placeholder="Ramo, sala, docente o código" />
           </div>
         </div>
+
+        <details class="tt-secciones" id="panelSecciones" hidden>
+          <summary>Armar mi horario — elegir sección por ramo</summary>
+          <p class="muted" style="font-size:.85rem;margin-top:8px">
+            Solo aparecen los ramos que tienen más de una sección. Tu elección se guarda en
+            este navegador.
+          </p>
+          <div class="grid cols-3" id="listaSecciones"></div>
+          <button class="btn secondary" type="button" id="btnLimpiarSecciones" style="margin-top:10px">
+            Limpiar selección
+          </button>
+        </details>
+
         <div class="row" style="justify-content:flex-end;margin-top:10px">
           <button class="btn secondary" type="button" id="btnImprimir"><span class="icon" data-icon="printer"></span> Imprimir</button>
         </div>
@@ -132,26 +165,94 @@
       }
 
       const cat = await Filters.cargar();
-      Filters.poblarSelect(document.getElementById("hCarrera"), cat.carreras, "id", "nombre", "— Carrera —");
+      const selCarrera = document.getElementById("hCarrera");
+      // Multi-selección: sin opción "— Carrera —", porque en un <select
+      // multiple> un placeholder es una opción más que se puede seleccionar.
+      selCarrera.innerHTML = cat.carreras
+        .map((c) => '<option value="' + c.id + '">' + escapeHtml(c.nombre) + "</option>").join("");
       Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "— Generación —");
 
       const cont = document.getElementById("timetable");
       const adminBloque = document.getElementById("adminBloque");
       const importarBloque = document.getElementById("importarBloque");
+      const selSeccion = document.getElementById("fSeccion");
+      const panelSecciones = document.getElementById("panelSecciones");
+      const listaSecciones = document.getElementById("listaSecciones");
+
+      /** Carreras seleccionadas, siempre como lista de ids. */
+      const carrerasSeleccionadas = () =>
+        Array.from(selCarrera.selectedOptions).map((o) => o.value).filter(Boolean);
+
       const filtros = () => ({
-        carreraId: document.getElementById("hCarrera").value || null,
+        carreraId: carrerasSeleccionadas(),
         nivel: document.getElementById("hNivel").value || null,
       });
+
+      /**
+       * Segmento sobre el que se puede ESCRIBIR: exige exactamente una carrera
+       * y un nivel. Devuelve null si no. Toda ruta de edición pasa por aquí en
+       * vez de coercionar el array, que con un solo elemento "funciona" por
+       * accidente (+["6"] === 6) y con cero o dos falla en silencio.
+       */
+      function segmentoEditable() {
+        const f = filtros();
+        if (f.carreraId.length !== 1 || !f.nivel) return null;
+        return { carreraId: +f.carreraId[0], nivel: +f.nivel };
+      }
+
+      // ── "Mi horario": sección elegida por ramo, recordada por segmento ──
+      // Mismo patrón de clave por contexto que usa js/views/dashboard-view.js.
+      const claveSecciones = () => {
+        const f = filtros();
+        return "mapfi:horario:secciones:" + f.carreraId.join(",") + ":" + f.nivel;
+      };
+      function leerSecciones() {
+        try { return JSON.parse(localStorage.getItem(claveSecciones()) || "{}"); }
+        catch (_) { return {}; }
+      }
+      function guardarSecciones(mapa) {
+        try { localStorage.setItem(claveSecciones(), JSON.stringify(mapa)); } catch (_) {}
+      }
+
+      let seccionesPorRamo = {};
+
       const render = async () => {
         const f = filtros();
-        const editable = puedeEditar(f.carreraId);
+        // Solo se puede editar cuando hay UNA carrera elegida: con varias la
+        // página es de consulta y no habría a cuál atribuir el bloque nuevo.
+        const unica = f.carreraId.length === 1 ? f.carreraId[0] : null;
+        const editable = puedeEditar(unica);
         adminBloque.hidden = !editable;
         importarBloque.hidden = !editable;
         if (!editable) ocultarVistaPrevia();
-        await HorariosView.montar(cont, f, { isAdmin: editable });
+
+        seccionesPorRamo = leerSecciones();
+        const meta = await HorariosView.montar(cont, f, { isAdmin: editable, carreras: cat.carreras });
+        poblarSecciones(meta);
         aplicarFiltroRapido();
         actualizarCabeceraImpresion();
       };
+
+      /** Rellena el selector global de sección y el panel "mi horario". */
+      function poblarSecciones(meta) {
+        const previa = selSeccion.value;
+        selSeccion.innerHTML = '<option value="">Todas</option>' +
+          meta.secciones.map((s) => '<option value="' + escapeHtml(s) + '">' + escapeHtml(s) + "</option>").join("");
+        if (meta.secciones.indexOf(previa) >= 0) selSeccion.value = previa;
+
+        const conVarias = meta.ramos.filter((r) => r.secciones.length > 1);
+        panelSecciones.hidden = conVarias.length === 0;
+        listaSecciones.innerHTML = conVarias.map((r) =>
+          '<label>' + escapeHtml(r.nombre) +
+          '<select data-ramo-clave="' + escapeHtml(r.clave) + '">' +
+          '<option value="">Todas</option>' +
+          r.secciones.map((s) =>
+            '<option value="' + escapeHtml(s) + '"' +
+            (String(seccionesPorRamo[r.clave]) === String(s) ? " selected" : "") + ">" +
+            "Sección " + escapeHtml(s) + "</option>").join("") +
+          "</select></label>"
+        ).join("");
+      }
 
       // ── Filtro rápido (US5): opera sobre lo YA dibujado, sin recolocar
       // nada (FR-027) — ver HorariosView.aplicarFiltro. ───────────────────
@@ -159,33 +260,59 @@
         return {
           dia: document.getElementById("fDia").value,
           tipo: document.getElementById("fTipo").value,
+          seccion: selSeccion.value,
           texto: document.getElementById("fBuscar").value,
+          porRamo: seccionesPorRamo,
         };
       }
       function aplicarFiltroRapido() { HorariosView.aplicarFiltro(cont, filtroRapido()); }
 
       function actualizarCabeceraImpresion() {
         const f = filtros();
-        const carrera = cat.carreras.find((c) => String(c.id) === String(f.carreraId));
+        const nombres = f.carreraId
+          .map((id) => (cat.carreras.find((c) => String(c.id) === String(id)) || {}).nombre)
+          .filter(Boolean);
         const nivel = cat.generaciones.find((g) => String(g.nivel) === String(f.nivel));
         const fr = filtroRapido();
         const partesFiltro = [];
         if (fr.dia) partesFiltro.push(document.getElementById("fDia").selectedOptions[0].text);
         if (fr.tipo) partesFiltro.push(document.getElementById("fTipo").selectedOptions[0].text);
+        if (fr.seccion) partesFiltro.push("Sección " + fr.seccion);
         if (fr.texto) partesFiltro.push('"' + fr.texto + '"');
+        const elegidas = Object.keys(fr.porRamo).filter((k) => fr.porRamo[k]).length;
+        if (elegidas) partesFiltro.push(elegidas + " ramo(s) con sección elegida");
         const fecha = new Date().toLocaleDateString("es-CL", { year: "numeric", month: "long", day: "numeric" });
         document.getElementById("printHeader").innerHTML =
-          "<strong>" + escapeHtml((carrera ? carrera.nombre : "Todas las carreras") + " · " + (nivel ? nivel.etiqueta : "")) + "</strong>" +
+          "<strong>" + escapeHtml((nombres.length ? nombres.join(" · ") : "Sin carrera") + " · " + (nivel ? nivel.etiqueta : "")) + "</strong>" +
           "<span>Impreso el " + escapeHtml(fecha) + (partesFiltro.length ? " · Filtro: " + escapeHtml(partesFiltro.join(", ")) : "") + "</span>";
       }
 
-      document.getElementById("hCarrera").addEventListener("change", render);
+      selCarrera.addEventListener("change", render);
       document.getElementById("hNivel").addEventListener("change", render);
 
-      ["fDia", "fTipo"].forEach((id) => {
+      ["fDia", "fTipo", "fSeccion"].forEach((id) => {
         document.getElementById(id).addEventListener("change", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
       });
       document.getElementById("fBuscar").addEventListener("input", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
+
+      listaSecciones.addEventListener("change", (e) => {
+        const sel = e.target.closest("select[data-ramo-clave]");
+        if (!sel) return;
+        const clave = sel.dataset.ramoClave;
+        if (sel.value) seccionesPorRamo[clave] = sel.value;
+        else delete seccionesPorRamo[clave];
+        guardarSecciones(seccionesPorRamo);
+        aplicarFiltroRapido();
+        actualizarCabeceraImpresion();
+      });
+
+      document.getElementById("btnLimpiarSecciones").addEventListener("click", () => {
+        seccionesPorRamo = {};
+        guardarSecciones(seccionesPorRamo);
+        listaSecciones.querySelectorAll("select[data-ramo-clave]").forEach((s) => { s.value = ""; });
+        aplicarFiltroRapido();
+        actualizarCabeceraImpresion();
+      });
 
       document.getElementById("btnImprimir").addEventListener("click", () => {
         actualizarCabeceraImpresion();
@@ -195,12 +322,12 @@
       const formBloque = document.getElementById("formBloque");
       formBloque.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const f = filtros();
-        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        const seg = segmentoEditable();
+        if (!seg) return toast("Selecciona una sola carrera y una generación primero", "error");
         const d = Object.fromEntries(new FormData(e.target).entries());
         try {
           await api.post("/api/bloques", {
-            carreraId: +f.carreraId, nivel: +f.nivel, diaSemana: +d.diaSemana,
+            carreraId: seg.carreraId, nivel: seg.nivel, diaSemana: +d.diaSemana,
             horaInicio: d.horaInicio, horaFin: d.horaFin, tipo: d.tipo, descripcion: d.descripcion,
           });
           toast("Bloque agregado", "success"); e.target.reset(); render();
@@ -230,14 +357,14 @@
       }
 
       document.getElementById("btnVaciarSegmento").addEventListener("click", async () => {
-        const f = filtros();
-        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        const seg = segmentoEditable();
+        if (!seg) return toast("Selecciona una sola carrera y una generación primero", "error");
         let bloques;
-        try { bloques = await api.get("/api/bloques?carreraId=" + f.carreraId + "&nivel=" + f.nivel); }
+        try { bloques = await api.get("/api/bloques?carreraId=" + seg.carreraId + "&nivel=" + seg.nivel); }
         catch (err) { return toast(err.message, "error"); }
         if (!bloques.length) return toast("Este horario ya está vacío", "error");
 
-        descargarCsv(HorarioCsv.aCsv(bloques), "horario-carrera" + f.carreraId + "-nivel" + f.nivel + ".csv");
+        descargarCsv(HorarioCsv.aCsv(bloques), "horario-carrera" + seg.carreraId + "-nivel" + seg.nivel + ".csv");
 
         const ok = await confirmDialog({
           titulo: "Vaciar horario de este segmento",
@@ -247,7 +374,7 @@
         if (!ok) return;
 
         try {
-          await api.del("/api/bloques?carreraId=" + f.carreraId + "&nivel=" + f.nivel);
+          await api.del("/api/bloques?carreraId=" + seg.carreraId + "&nivel=" + seg.nivel);
           toast("Horario vaciado", "success");
           render();
         } catch (err) { toast(err.message, "error"); }
@@ -317,8 +444,8 @@
       });
 
       document.getElementById("btnConfirmarImportar").addEventListener("click", async () => {
-        const f = filtros();
-        if (!f.carreraId || !f.nivel) return toast("Selecciona carrera y generación primero", "error");
+        const seg = segmentoEditable();
+        if (!seg) return toast("Selecciona una sola carrera y una generación primero", "error");
         if (!bloquesParaImportar.length) return toast("No hay filas válidas para importar", "error");
         const modoEl = document.querySelector('input[name="modoImportar"]:checked');
         if (!modoEl) return toast("Elige si quieres reemplazar o agregar", "error");
@@ -327,7 +454,7 @@
         btn.disabled = true;
         try {
           const res = await api.post("/api/bloques/importar", {
-            carreraId: +f.carreraId, nivel: +f.nivel, modo: modoEl.value, bloques: bloquesParaImportar,
+            carreraId: seg.carreraId, nivel: seg.nivel, modo: modoEl.value, bloques: bloquesParaImportar,
           });
           toast(res.insertados + " bloque(s) importado(s)" + (res.eliminados ? " (se reemplazaron " + res.eliminados + ")" : ""), "success");
           document.getElementById("horarioTexto").value = "";

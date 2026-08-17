@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil Metalúrgica</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Colores Institucionales UdeC (según imagen proporcionada) */
+        :root {
+            --color-udec-azul: #223c6a; /* Pantone 541C / RGB 34 G 60 B106 */
+            --color-udec-gris: #a0a0a0; /* Gris para acentos */
+            --color-udec-fondo-malla: #f5f7fa; /* Fondo claro para las columnas de año */
+        }
+
+        body {
+            /* Fondo con degradado del color institucional para un toque moderno */
+            background: linear-gradient(135deg, var(--color-udec-azul), #344f80, #5c7cb3);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--color-udec-azul);
+        }
+
+        h1 {
+            color: var(--color-udec-azul);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700; /* Poppins Bold */
+        }
+
+        h2 {
+            color: var(--color-udec-azul);
+            font-size: 1.8rem;
+            font-weight: 500; /* Poppins Regular */
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: var(--color-udec-azul);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 700; /* Poppins Bold */
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: var(--color-udec-gris); /* Usamos el gris institucional */
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid var(--color-udec-gris); /* Borde gris para acento */
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #ffffff; /* Blanco limpio */
+        }
+
+        .ramo-header:hover {
+            background: #f0f4f8; 
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 300px; /* Altura máxima para el contenido expandido */
+            overflow-y: auto; /* Permite desplazamiento vertical cuando el contenido es más largo */
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+            font-weight: 400; /* Poppins Regular */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: var(--color-udec-azul);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #344f80;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .practicas-section {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid var(--color-udec-gris);
+        }
+
+        .practicas-title {
+            color: var(--color-udec-azul);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .practicas-section h3 {
+             font-weight: 600;
+        }
+
+        .practicas-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .practica-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sección de Ponderaciones de Admisión */
+        .ponderaciones-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f4f8; 
+            border-radius: 10px;
+            border-top: 3px solid var(--color-udec-azul);
+        }
+        
+        .ponderaciones-title {
+            color: var(--color-udec-azul);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .ponderaciones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .ponderacion-item {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 120px;
+            flex: 1 1 auto; 
+            max-width: 150px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .ponderacion-porcentaje {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .ponderacion-prueba {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Colores específicos para cada ponderación según la imagen */
+        .ponderacion-item:nth-child(1) {
+            background: #223c6a; /* Azul UdeC */
+        }
+        
+        .ponderacion-item:nth-child(2) {
+            background: #4caf50; /* Verde */
+        }
+        
+        .ponderacion-item:nth-child(3) {
+            background: #ff9800; /* Naranja */
+        }
+        
+        .ponderacion-item:nth-child(4) {
+            background: #f44336; /* Rojo */
+        }
+        
+        .ponderacion-item:nth-child(5) {
+            background: #9c27b0; /* Morado */
+        }
+        
+        .ponderacion-item:nth-child(6) {
+            background: #8b6076; /* Gris azulado */
+        }
+
+        .ponderacion-item:nth-child(7) {
+            background: #8b608a; /* Rosa */
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .ponderaciones-grid {
+                gap: 15px;
+            }
+            
+            .ponderacion-item {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .ramo.open .ramo-content {
+                max-height: 250px; /* Altura reducida en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil Metalúrgica</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que proporciona a los y las estudiantes conocimientos y
+habilidades necesarias para la resolución de problemas de cálculo diferencial aplicados a la ingeniería, contribuyendo a desarrollar la abstracción y análisis, esenciales para toda
+especialidad de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega los conceptos fundamentales de la matemática,
+proporcionando la base de la operatoria y del razonamiento formal necesario para el estudio
+del Cálculo |, Cálculo II y Álgebra II aplicadas a la ingeniería, contribuyendo a desarrollar las
+capacidades de abstracción, análisis y síntesis, esenciales para toda especialidad de la
+Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla la cinemática y la dinámica de traslación, así como los métodos y herramientas que
+ésta utiliza, contribuyendo a desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega conceptos químicos básicos, tales
+como, las propiedades y reacciones de los elementos y compuestos químicos y de sus
+disoluciones y conceptos específicos, tales como, los enfoques modernos de la descripción
+atómica y molecular de la materia, sus manifestaciones energéticas y los conceptos básicos
+de equilibrio físico y químico, contribuyendo a desarrollar la capacidad de abstracción, análisis
+y síntesis, como esquemas de razonamientos lógicos, formales y heurísticos, esenciales para
+toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la ingeniería Metalúrgica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Esta asignatura es el primer acercamiento formal de las y los futuros Ingenieros/as Civiles
+Metalúrgicos con la ingeniería y su especialidad. El propósito es establecer las bases
+generales del proceso de ingeniería, para luego abordar un proyecto con un enfoque de
+ingeniería en el contexto de la especialidad, relevando la autogestión del aprendizaje como
+factor importante del perfil profesional y facilitador de la integración a la educación superior.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos del cálculo
+integral de una variable aplicado a ingeniería, series numéricas y de potencias, y a curvas en
+el espacio, contribuyendo a desarrollar las capacidades de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos de los
+espacios vectoriales, matrices y sistemas de ecuaciones lineales, contribuyendo, además de
+una base matemática necesaria para Ecuaciones diferenciales y cursos de especialidad
+ingenieriles, que les permite desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla los Sistemas de Partículas y la Mecánica de Cuerpos Rígidos, Mecánica de Fluidos
+y Oscilaciones, así como los métodos y herramientas que ésta utiliza, contribuyendo a
+desarrollar la capacidad de abstracción, análisis y síntesis, esenciales para toda especialidad
+de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-experimental que entrega al estudiantado conceptos químicos relacionados
+con los equilibrios en disolución acuosa, la electroquímica y la cinética química, contribuyendo
+a desarrollar la capacidad de abstracción, análisis y síntesis, como esquemas de
+razonamientos lógicos, formales y heurísticos, esenciales para toda especialidad de la
+Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Innovación en Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura es un acercamiento formal de las y los futuros profesionales de Ingeniería Civil
+UdeC a la innovación en ingeniería, donde abordarán problemáticas de impacto global acorde
+a las especialidades impartidas en la Facultad, a través de métodos de innovación modernos
+con el objetivo de proponer productos, procesos o servicios que deberán gestionar, concebir, resolver, evaluar, diseñar, e implementar como profesionales de la ingeniería. A través de los
+desafíos de la asignatura, sus estudiantes se harán cargo de su condición de ingenieras e a
+ingenieros civiles en formación, mediante el trabajo en equipo realizado duranté el semestre.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales Ordinarias</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura desarrolla algunos métodos de resolución analítica de ecuaciones ordinarias
+diferenciales lineales. Introduce al estudiantado en el conocimiento de los conceptos básicos
+y aplicaciones del análisis de Fourier y las ecuaciones diferenciales parciales de segundo
+orden.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo III</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que desarrolla los conceptos, propiedades, métodos y aplicaciones
+relativas al cálculo diferencial e integral de funciones vectoriales de varias variables reales, los
+cuales permiten modelar y resolver problemas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Asignatura teórico-práctica que entrega las bases sobre las cuales se fundamenta el uso de
+los computadores como herramientas de solución de problemas complejos.
+
+Su objetivo es habilitar al estudiantado, al nivel requerido en la especialidad, en el uso de los
+lenguajes de programación, como medio de expresión de la resolución de problemas
+complejos y herramienta indispensable para la generación de productos de software.
+
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura el estudiantado aprende a construir diagramas de cuerpo libre de sistemas
+de partículas y de cuerpos rígidos sometidos a fuerzas y momentos, para aplicar las ecuaciones
+de equilibrio y obtener la distribución total de fuerzas y momentos que afectan el cuerpo
+analizado. Además, el estudiantado aprende a calcular desplazamientos, velocidades,
+aceleraciones junto con aplicar las leyes de la dinámica a sistemas de partículas y cuerpos
+rígidos y desarrollar ecuaciones del movimiento.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estadística y Probabilidades</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso teórico-práctico de nivel básico del núcleo de la Facultad de Ingeniería, que entrega
+conocimientos de principios fundamentales de la teoría de probabilidades y estadística, que
+son aplicados en la ingeniería moderna para comprender fenómenos y procesos de naturaleza
+no determinística.
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo Numérico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                resolver problemas de la matemática aplicada mediante el computador.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electromagnetismo aplicado para Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Asignatura teórica de ciencias básicas de la ingeniería orientada a no especialistas, en la que
+se desarrollan modelos y analizan las leyes que rigen los fenómenos electromagnéticos. En
+ella el estudiantado se familiariza con los conceptos y aprende a calcular voltaje, corriente,
+impedancias, capacitancias, inductancias y potencias en circuitos de corriente continua,
+alterna monofásicos y trifásicos para analizar máquinas eléctricas. Tras finalizar la asignatura,
+el estudiantado podrá calcular el factor de potencia en circuitos trifásicos, seleccionar motores
+eléctricos, variadores de frecuencia y grupos electrógenos para aplicaciones industriales. De
+esta manera, podrán comprender los aspectos eléctricos de los proyectos industriales en los
+que se involucren.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Termodinámica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura orientada a presentar y aplicar las relaciones de la termodinámica clásica que
+permiten evaluar diversas manifestaciones energéticas (v.g. calor, trabajo y energía)
+involucradas en diferentes procesos de interés ingenieril. Permitirá la evaluación de procesos
+y aplicaciones prácticas como ciclos de potencia, refrigeración y sistemas reactivos, con
+especial atención a la combustión.
+
+Además, entrega principios de la Fisicoquímica que permitirán abordar problemas relacionados
+con los cambios físicos y químicos, especialmente en casos de equilibrio químico. Se abordan
+conceptos básicos sobre la fisicoquimica de equilibrio entre fases condensadas y disoluciones
+de no-electrólitos y electrolitos, así como también los conocimientos fundamentales de
+fenómenos de superficie.
+
+Relacionando conceptos entregados en clases con casos prácticos y demostrando algunas
+técnicas de trabajo experimental en el laboratorio de Termodinámica.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dibujo Asistido por Computador</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura Dibujo Asistido por Computador introduce al estudiantado en el uso de
+herramientas para la modelación geométrica y representación gráfica, enfocándose en la
+confección de planos técnicos en 2D mediante software CAD. A lo largo del curso, aprenderán
+a interpretar normas internacionales, aplicar acotaciones, simbología y restricciones
+geométricas en diversos sistemas. Al finalizar, estarán preparados para elaborar
+documentación técnica y planos, integrando las normativas requeridas en proyectos de
+ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Fluidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura obligatoria diseñada para proporcionar al estudiantado una comprensión profunda
+de los conceptos, principios y leyes fundamentales que rigen el comportamiento de los fluidos.
+A través de un enfoque teórico el curso introduce las bases de la estática y dinámica de fluidos,
+permitiendo al estudiantado analizar y resolver problemas relacionados con el flujo, presión,
+viscosidad y fuerzas ejercidas por los fluidos en distintos entornos de aplicación en la
+Ingeniería.
+
+Establece las bases necesarias para el diseño y análisis de sistemas hidráulicos, neumáticos
+y térmicos presentes en diversas disciplinas de la ingeniería.
+
+Además, el curso incorpora herramientas que aportan a un efectivo análisis de flujo de fluidos,
+facilitando la aplicación de conocimientos en la resolución de problemas prácticos y en el
+desarrollo de soluciones en el ámbito profesional desde un enfoque clásico
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Química Orgánica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La ingeniería metalúrgica utiliza reactivos orgánicos en sus procesos de separación y
+purificación de minerales y soluciones, tales como: colectores y espumantes en flotación,
+polímeros floculantes en sedimentación y espesamiento, complejantes en extracción por
+solventes, etc. El objetivo de esta asignatura es familiarizar al estudiantado con la
+nomenclatura orgánica; y con algunos aspectos estructurales y de funcionalidad química de
+las diferentes familias de compuestos que se emplean en el procesamiento de minerales y en
+metalurgia extractiva.
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Termodinámica Metalúrgica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura que proporciona herramientas analíticas para la evaluación termodinámica de los
+procesos involucrados en la extracción, purificación y transformación de metales. Se abordan
+de manera detallada las aplicaciones de la termodinámica en los procesos hidrometalúrgicos,
+pirometalúrgicos y electrometalúrgicos. En este curso el estudiantado tiene el primer
+acercamiento al uso de software termodinámico para el cálculo y análisis de propiedades de
+un sistema en equilibrio a alta temperatura y en medio acuoso.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Reducción de Tamaño y Clasificación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                El objetivo de esta asignatura es presentar de forma cuantitativa las Operaciones unitarias de
+reducción de tamaño y el comportamiento de una planta de molienda-clasificación en la
+industria minera. Se pretende que las y los estudiantes comprendan y utilicen el proceso de
+reducción del tamaño de partículas en la industria minera y que conozcan el diseño, operación
+y control de circuitos de molienda-clasificación.
+
+La asignatura está orientada a la resolución de problemas y la realización de laboratorios que
+permitan el manejo experimental de los procesos de reducción de tamaño-clasificación. Se
+estimulará el trabajo en grupo, tanto en el laboratorio como en la resolución de problemas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Balance de Materia y Energía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura integradora el estudiantado desplegará una serie de conocimientos y
+habilidades que ha adquirido en las asignaturas previas, para la elaboración de balances de
+materia y energía aplicados a procesos metalúrgicos, aspecto clave en el control y
+optimización de procesos. Aplicando conocimientos fundamentales de ciencias básicas para
+la resolución de problemas relacionados con el flujo y transformación de materia y energía en
+diversos sistemas. Utilizando un enfoque analítico y aplicado, el estudiantado desarrolla
+habilidades esenciales para el planteamignto y solución de balances de masa y energía,
+permitiéndoles abordar con precisión el análisis de procesos industriales y operaciones
+unitarias. Abarcando principios fundamentales como la conservación de la masa y la energía,
+la formulación de ecuaciones de balance en sistemas abiertos y cerrados, y la aplicación de
+estos conceptos en la evaluación de procesos físicos y químicos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Minerología a la Metalurgia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura de carácter teórico-práctico que trata los elementos básicos que definen a los
+minerales, sus propiedades físicas, su composición, el impacto en los procesos metalúrgicos,
+y sus principales mecanismos de formación. Asimismo, se abordan los procesos formadores
+de rocas y depósitos de minerales metálicos y no metálicos, tanto por procesos endógenos
+como exógenos. Se dan los criterios necesarios para el reconocimiento macroscópico y
+microscópico de minerales y rocas comunes, además de las principales características
+fisicoquímicas que definirán los procesos metalúrgicos que deberán ser aplicados.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Economía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura de carácter teórico del ciclo licenciatura que proporciona al estudiantado una visión
+de los problemas de escasez que enfrenta cualquier sociedad y cómo ésta se organiza para
+resolverlos, tanto a nivel de agente individual (microeconómico) como en forma agregada
+(macroeconómico). Contribuye al perfil de egreso al introducir la comprensión del
+funcionamiento de los mercados, las relaciones entre agentes económicos y los efectos de las
+políticas públicas en contextos productivos y sociales. Al finalizar la asignatura, el estudiantado
+podrá interpretar fenómenos económicos relevantes y argumentar decisiones estratégicas con
+base en principios fundamentales de la economía.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo 1 Nivel Principiante</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso de inglés comunicativo dirigido a lograr un nivel de competencia A1 (1) (hablante/usuario
+básico) de acuerdo a la definición de niveles de competencia estándar de la Comunidad
+Europea “Common European Framework for Modern Languages” (CEP).
+
+Al mismo tiempo, el curso contribuye al desarrollo de competencias genéricas, tales como: la
+autonomía de aprendizaje, mediante estrategias para aprender a aprender en forma
+independiente en un proceso de capacitación continua a lo largo de la vida; la responsabilidad
+y control en el avance hacia el logro de las metas de aprendizaje propuestas; participación en
+actividades grupales y redes de interacción propiciadas por la comunidad Canvas UdeC.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Práctica Laboral</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura busca proporcionar al estudiantado una experiencia directa en un entorno
+laboral real, que permita desarrollar habilidades y competencias esenciales para su
+desempeño profesional. Teniendo la oportunidad de integrarse a un espacio de trabajo, no
+necesariamente vinculado a su especialidad, en el que pueden aplicar conocimientos
+adquiridos, adaptarse a dinámicas organizacionales y fortalecer su capacidad de resolución
+de problemas en un contexto laboral real. Relevando tres dimensiones clave para la inserción
+laboral: responsabilidad, trabajo en equipo y comunicación efectiva. Se espera que el
+estudiantado asuma tareas con autonomía y compromiso, participen activamente en equipos
+multidisciplinarios y desarrollen habilidades de interacción que les permitan comunicarse de
+manera clara y asertiva en distintos escenarios.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Prevención de Riesgos y Seguridad Minera</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La industria minera extractiva aporta cerca del 9% del PIB y lo hace empleando
+aproximadamente el 1,8%, de la fuerza laboral disponible. Esta fuerza laboral que trabaja
+directa e indirectamente en el rubro es catalogada a su vez, como una de las más
+calificadas y eficientes en el contexto nacional e internacional. Un dato importante para saber
+es que, uno de los criterios a favor para inversionistas externos que deciden instalar importantes
+operaciones mineras en nuestro territorio, se refiere a nuestra curva de experiencia y alta
+valoración de nuestros directivos, profesionales y trabajadores del sector. Resulta entonces
+pertinente, que todo profesional que estudie alguna carrera relacionada con la actividad minera
+sea capaz de entender y compartir los principios y valores básicos que hacen sustentable el
+negocio. En la actualidad no se puede concebir, ni permitir, que se vinculen trabajadores
+incapaces de practicar activamente el auto cuidado, ya que sería imposible pedir entonces
+que pudiesen estar a cargo responsablemente de equipos de trabajos, instalaciones, etc., o
+entender a jefaturas responsables sobre temas como prevención de accidentes laborales,
+prevención de enfermedades profesionales, cuidado del medio ambiente, excelencia y calidad
+en los procesos, y respeto por las comunidades; todos tópicos considerados hoy como
+factores críticos del negocio minero.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cinética, Transferencia de Masa y Elementos de Diseño de Reactores</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Proporcionar al estudiantado los fundamentos de los fenómenos cinéticos y de transferencia
+de masa necesarios para la comprensión de procesos reactivos metalúrgicos, con énfasis en
+sistemas heterogéneos no catalíticos. Además, proporciona los conceptos básicos de diseño
+y análisis de reactores metalúrgicos, con énfasis en sistemas de reacciones heterogéneas
+que tienen lugar en reactores batch, flujo pistón y mezcla perfecta.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Transferencia de Calor</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura trata sobre principios y leyes fundamentales de la transferencia de calor,
+métodos de cálculo y aplicaciones a problemas de ingeniería, como también análisis de sus
+resultados y conclusiones. Se aborda además la elaboración de modelos para analizar y
+diseñar sistemas de transferencia de calor mediante la aplicación de dichos principios. De
+esta forma se busca desarrollar habilidades de resolución de problemas esenciales de
+transferencia de calor en aplicaciones prácticas diversas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Concentración Gravitacional y Magnética</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Chile es un país cuya minería es predominantemente relativa al cobre, sin embargo, también
+existen en el país importantes recursos polimetálicos, minerales de hierro, metales preciosos,
+minerales no-metálicos, minerales energéticos y minerales industriales entre otros, todos de
+relevancia en la minería actual.
+
+En esta asignatura se presentan los fundamentos teóricos y prácticos de los procesos de
+concentración gravitacional, magnética y electrostática los cuales son relevantes desde el
+punto de vista de la optimización de los procesos. Se ahonda en los fundamentos y como éstos
+inciden directamente en los parámetros de eficiencia de los procesos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería de Materiales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura profesional que profundiza conceptos fundamentales que rigen el comportamiento
+de los materiales, con énfasis en materiales metálicos y sus aleaciones, así como en
+materiales cerámicos. Abordando desde su estructura a sus propiedades con especial foco en
+las mecánicas.
+
+El estudiantado en ingeniería metalúrgica continuamente debe seleccionar materiales ya sea
+para fabricar estructuras, máquinas, etc. como para manipularlos. Esta asignatura permite
+contar con conocimientos básicos para determinar las características o propiedades de un
+material para una aplicación o uso específico, a su vez posibilita conocer suficientemente los
+diversos tipos de materiales para elegir el o los adecuados en base a requerimientos técnicos
+especificados.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Hidrometalurgia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura profesional que proporciona al estudiantado los fundamentos teóricos y prácticos
+de los procesos de recuperación de metales puros desde minerales o materiales secundarios
+mediante soluciones acuosas. En esta asignatura se le entrega al estudiantado la información
+relacionada con los principios, parámetros operacionales, diseño y aplicaciones de los
+procesos utilizados en la hidrometalurgia para la purificación y/o concentración de soluciones.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electrometalurgia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura que combina aspectos termodinámicos y cinéticos de la electroquímica con
+procesos industriales que involucran transformaciones de especies minerales a metales de
+elevada pureza. Esta asignatura profundiza en los fundamentos de la electroquímica,
+abordando aspectos termodinámicos y cinéticos además de la aplicación de estos a procesos
+industriales para la obtención de metales.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Flotación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La flotación es una de las tecnologías de concentración de minerales más ampliamente
+utilizadas en Chile y el mundo. La aplicación de esta operación unitaria y su eficiencia son
+cruciales para el negocio minero, ya que esta etapa determina la recuperación de metal valioso
+incidiendo directamente en la producción.
+
+En esta asignatura se profundiza en los fundamentos teóricos y prácticos del proceso de
+flotación y su relevancia en la optimización del proceso.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Espesamiento y Filtración</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                El objetivo de este curso es presentar de forma cuantitativa las operaciones unitarias
+asociadas al transporte hidráulico de pulpas y la recuperación de agua en plantas
+concentradoras de minerales. Se pretende que, a lo largo de la asignatura, las y los estudiantes
+se manejen con soltura en la problemática de la recuperación de agua en la industria minera
+y que conozcan el diseño, operación y control de espesadores y filtros.
+
+La asignatura está orientada a la resolución de problemas y la realización de laboratorios que
+permitan el manejo experimental de los procesos de transporte de pulpa y separación sólido-
+líquido. Se estimulará el trabajo en grupo, tanto en el laboratorio como en la resolución de
+problemas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Control Automático de Procesos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura profesional orientada al estudio y aplicación de los principios fundamentales del
+control de procesos metalúrgicos. A lo largo del curso, el estudiantado adquiere conocimientos
+sobre sistemas de control, modelado y optimización de procesos, con un enfoque específico
+en el ámbito de la metalurgia extractiva. Esta asignatura capacita al estudiantado para
+formular, diseñar y resolver problemas de control, aplicando herramientas matemáticas y
+computacionales para el análisis de sistemas dinámicos en el contexto de la metalurgia
+extractiva.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Extracción y Refinación de Metales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura que aborda los principios teóricos y prácticos asociados a la obtención y refinación
+de metales no ferrosos. A lo largo del curso, se analizan en detalle las tecnologías y
+metodologías empleadas en los distintos procesos metalúrgicos, considerando aspectos
+operacionales clave, eficiencia productiva y los desafíos técnicos de cada método de
+extracción y refinación.
+
+El enfoque de la asignatura también integra una visión crítica sobre la sustentabilidad de los
+procesos metalúrgicos, enfatizando el consumo responsable de recursos, la optimización
+energética y las estrategias de mitigación de impacto ambiental. Se discuten soluciones
+innovadoras orientadas a la reducción de emisiones, el tratamiento de residuos y la
+implementación de procesos más eficientes y ecológicos dentro de la industria. Aportando en
+el fortalecimiento de la capacidad de análisis, toma de decisiones y aplicación de tecnologías
+avanzadas en el campo de la metalurgia extractiva.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Pirometalurgia del Cobre</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura que aborda la ruta tecnológica para la producción primaria de cobre a partir de
+concentrados, centrándose en el proceso pirometalúrgico tradicional de oxidación selectiva de
+azufre (S) y hierro (Fe). A lo largo del curso, se estudian los fundamentos termodinámicos y
+cinéticos que explican el comportamiento de los componentes involucrados en las distintas
+etapas del proceso productivo, proporcionando una visión integral de los fenómenos físicos y
+químicos involucrados. Además, se enfatiza la optimización operativa y la sustentabilidad del
+proceso, considerando el impacto ambiental de las emisiones y generación de residuos, así
+como estrategias para mejorar la eficiencia energética y metalúrgica.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión de Empresas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega los fundamentos de la administración como ciencia
+social y permite al estudiantado el análisis de los elementos y fenómenos presentes en
+organizaciones, de manera que puedan proponer mejoras viables que sean socialmente
+responsables. Contribuye al perfil de egreso al fortalecer competencias asociadas a la gestión
+organizacional, el liderazgo, la comunicación efectiva y la toma de decisiones con criterios
+éticos y estratégicos. Al finalizar la asignatura, las y los estudiantes podrán analizar modelos
+de gestión, identificar oportunidades de mejora en organizaciones y comunicar sus propuestas
+en distintos contextos profesionales.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Formulación y evaluación de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura integradora para todas las carreras de la Facultad de Ingeniería, orientada a que
+estudiantes de distintas especialidades de la ingeniería trabajen en equipo la formulación y
+evaluación de un proyecto para la resolución de una necesidad de inversión que sea de
+relevancia para una comunidad de usuarios. El propósito de esta asignatura es la detección
+de una necesidad real y la formulación de un plan de trabajo para responder a esta necesidad,
+considerando factores económicos, sociales y ambientales. Se utilizará una metodología
+activo-participativa y se espera que el estudiantado formule y evalúe un proyecto desde los
+distintos puntos de vista a abordar en la asignatura, en concordancia a los requerimientos
+esperables en el mundo laboral.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Metalurgia Ferrosa</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura que profundiza en los fundamentos fisicoquímicos y cinéticos, así como en los
+fenómenos involucrados en los procesos para la obtención de materiales ferrosos. A lo largo
+del curso, se analizan las principales tecnologías empleadas en la industria ferrosa y sus
+aleaciones, desde los métodos tradicionales hasta las innovaciones. Se examina el
+funcionamiento de altos hornos, convertidores y hornos eléctricos, así como las técnicas
+avanzadas para mejorar la eficiencia energética y minimizar el impacto ambiental de la
+producción siderúrgica.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Práctica profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura tiene como propósito el desarrollo de competencias requeridas en un entorno
+laboral de especialidad, permitiendo desarrollar los aprendizajes requeridos en el ejercicio
+profesional. Se promueve que, a través de esta experiencia, el estudiantado ponga en contexto
+sus aprendizajes previos y consolide sus competencias a partir del abordaje de problemáticas
+de ingeniería reales, en ambientes complejos.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesos Metalúrgicos Sustentables</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura busca familiarizar al estudiantado con los problemas ambientales de la industria
+minero-metalúrgica y su manejo para asegurar mínimo impacto en el presente y futuro. Se
+revisan; la legislación ambiental chilena, en particular el marco regulatorio para el sector
+minero- metalúrgico; las tecnologías existentes para el manejo de los residuos sólidos, líquidos
+y gaseosos; y el consumo de energía. Incentivando la búsqueda nuevas tecnologías en
+desarrollo que apunten a optimizar ambientalmente al sector minero-metalúrgico. Se
+incorporan conceptos de ecoeficiencia, producción limpia y economía circular.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Geometalurgia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura aborda la importancia de integrar los conocimientos geológicos y metalúrgicos
+en los procesos de extracción de metales y la interacción de la variable mineralógica en sus
+diversas etapas. Mediante clases teóricas y prácticas se analizarán las principales técnicas
+instrumentales utilizadas para caracterizar la mineralogía presente y sus propiedades, estos
+resultados permitirán comprender la variable mineralógica y aplicar los métodos adecuados
+de concentración mineral, así como las técnicas hidrometalúrgicas y pirometalúrgicas
+necesarias, vistos como una secuencia de etapas bajo una óptica Geometalúrgica.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto de Ingeniería Metalúrgica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Durante el desarrollo de esta asignatura integradora el estudiantado evalúa técnica y
+económicamente un determinado proceso metalúrgico con el fin de dimensionar una nueva
+planta industrial o ampliar y/o modificar una ya existente. Para ello se le entregarán
+herramientas que, en conjunto con sus conocimientos previos, les permitirán efectuar análisis
+de mercado, selección de alternativas, balances de masa y energía, dimensionamiento de
+equipos principales, selección de materiales y realizar evaluación económica del proyecto.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Memoria de Titulo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura integradora que forma parte del plan de estudio de las carreras de Ingeniería Civil
+de la Facultad de Ingeniería de la Universidad de Concepción. Tiene como objetivo que el
+estudiantado aplique capacidades y conocimientos adquiridos, dando cuenta de las
+competencias del perfil de egreso para abordar problemáticas relevantes y usuales de su
+especialidad.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="practicas-section">
+            <div class="practicas-title">Actividades Complementarias</div>
+            <div class="practicas-container">
+                <div class="practica-item">
+                    <h3>Práctica Laboral</h3>
+                    <p>Experiencia profesional en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Complementaria 1</h3>
+                    <p>Asignatura complementaria según intereses del estudiante.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Práctica Profesional</h3>
+                    <p>Experiencia profesional avanzada en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ponderaciones-section">
+            <div class="ponderaciones-title">Ponderaciones de Admisión</div>
+            <div class="ponderaciones-grid">
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">20%</div>
+                    <div class="ponderacion-prueba">NEM</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">RANKING</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">COMPRENSIÓN LECTORA</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">25%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">-</div>
+                    <div class="ponderacion-prueba">HISTORIA Y CS. SOCIALES</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">10%</div>
+                    <div class="ponderacion-prueba">CIENCIAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS II</div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Universidad de Concepción - Facultad de Ingeniería - Ingeniería Civil Metalúrgica</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>Fuente: admision.udec.cl - Hecho por GIIA UdeC</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

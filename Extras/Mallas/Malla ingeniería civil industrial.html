@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Colores Institucionales UdeC (según imagen proporcionada) */
+        :root {
+            --color-udec-azul: #223c6a; /* Pantone 541C / RGB 34 G 60 B106 */
+            --color-udec-gris: #a0a0a0; /* Gris para acentos */
+            --color-udec-fondo-malla: #f5f7fa; /* Fondo claro para las columnas de año */
+        }
+
+        body {
+            /* Fondo con degradado del color institucional para un toque moderno */
+            background: linear-gradient(135deg, var(--color-udec-azul), #344f80, #5c7cb3);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--color-udec-azul);
+        }
+
+        h1 {
+            color: var(--color-udec-azul);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700; /* Poppins Bold */
+        }
+
+        h2 {
+            color: var(--color-udec-azul);
+            font-size: 1.8rem;
+            font-weight: 500; /* Poppins Regular */
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: var(--color-udec-azul);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 700; /* Poppins Bold */
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: var(--color-udec-gris); /* Usamos el gris institucional */
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid var(--color-udec-gris); /* Borde gris para acento */
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #ffffff; /* Blanco limpio */
+        }
+
+        .ramo-header:hover {
+            background: #f0f4f8; 
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 300px; /* Altura máxima para el contenido expandido */
+            overflow-y: auto; /* Permite desplazamiento vertical cuando el contenido es más largo */
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+            font-weight: 400; /* Poppins Regular */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: var(--color-udec-azul);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #344f80;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .practicas-section {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid var(--color-udec-gris);
+        }
+
+        .practicas-title {
+            color: var(--color-udec-azul);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .practicas-section h3 {
+             font-weight: 600;
+        }
+
+        .practicas-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .practica-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sección de Ponderaciones de Admisión */
+        .ponderaciones-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f4f8; 
+            border-radius: 10px;
+            border-top: 3px solid var(--color-udec-azul);
+        }
+        
+        .ponderaciones-title {
+            color: var(--color-udec-azul);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .ponderaciones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .ponderacion-item {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 120px;
+            flex: 1 1 auto; 
+            max-width: 150px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .ponderacion-porcentaje {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .ponderacion-prueba {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Colores específicos para cada ponderación según la imagen */
+        .ponderacion-item:nth-child(1) {
+            background: #223c6a; /* Azul UdeC */
+        }
+        
+        .ponderacion-item:nth-child(2) {
+            background: #4caf50; /* Verde */
+        }
+        
+        .ponderacion-item:nth-child(3) {
+            background: #ff9800; /* Naranja */
+        }
+        
+        .ponderacion-item:nth-child(4) {
+            background: #f44336; /* Rojo */
+        }
+        
+        .ponderacion-item:nth-child(5) {
+            background: #9c27b0; /* Morado */
+        }
+        
+        .ponderacion-item:nth-child(6) {
+            background: #8b6076; /* Gris azulado */
+        }
+
+        .ponderacion-item:nth-child(7) {
+            background: #8b608a; /* Rosa */
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .ponderaciones-grid {
+                gap: 15px;
+            }
+            
+            .ponderacion-item {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .ramo.open .ramo-content {
+                max-height: 250px; /* Altura reducida en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil Industrial</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que proporciona a los y las estudiantes conocimientos y
+habilidades necesarias para la resolución de problemas de cálculo diferencial aplicados a la ingeniería, contribuyendo a desarrollar la abstracción y análisis, esenciales para toda
+especialidad de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega los conceptos fundamentales de la matemática,
+proporcionando la base de la operatoria y del razonamiento formal necesario para el estudio
+del Cálculo |, Cálculo II y Álgebra II aplicadas a la ingeniería, contribuyendo a desarrollar las
+capacidades de abstracción, análisis y síntesis, esenciales para toda especialidad de la
+Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla la cinemática y la dinámica de traslación, así como los métodos y herramientas que
+ésta utiliza, contribuyendo a desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega conceptos químicos básicos, tales
+como, las propiedades y reacciones de los elementos y compuestos químicos y de sus
+disoluciones y conceptos específicos, tales como, los enfoques modernos de la descripción
+atómica y molecular de la materia, sus manifestaciones energéticas y los conceptos básicos
+de equilibrio físico y químico, contribuyendo a desarrollar la capacidad de abstracción, análisis
+y síntesis, como esquemas de razonamientos lógicos, formales y heurísticos, esenciales para
+toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Desarrollo de Habilidades de Gestión</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura introduce al estudiantado en el significado, funciones, rol y responsabilidad de
+Ingeniero/a Civil Industrial en la sociedad, enfatizando aspectos técnicos, legales y
+ambientales, sociales y éticos. Además, presenta la importancia de competencias y
+capacidades de gestión, en particular en comunicación, liderazgo y trabajo en equipo para el
+ejercicio profesional. Esta asignatura tributa al perfil de egreso al fortalecer tempranamente
+habilidades transversales fundamentales, y al finalizar, se espera que el estudiantado
+reconozca su rol profesional, se comunique de manera efectiva y valore el trabajo en equipo
+como eje del desempeño en ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos del cálculo
+integral de una variable aplicado a ingeniería, series numéricas y de potencias, y a curvas en
+el espacio, contribuyendo a desarrollar las capacidades de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos de los
+espacios vectoriales, matrices y sistemas de ecuaciones lineales, contribuyendo, además de
+una base matemática necesaria para Ecuaciones diferenciales y cursos de especialidad
+ingenieriles, que les permite desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla los Sistemas de Partículas y la Mecánica de Cuerpos Rígidos, Mecánica de Fluidos
+y Oscilaciones, así como los métodos y herramientas que ésta utiliza, contribuyendo a
+desarrollar la capacidad de abstracción, análisis y síntesis, esenciales para toda especialidad
+de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega las bases sobre las cuales se fundamenta el uso de
+los computadores como herramientas de solución de problemas complejos. Su objetivo es habilitar al estudiantado, al nivel requerido en la especialidad, en el uso de los
+lenguajes de programación, como medio de expresión de la resolución de problemas
+complejos y herramienta indispensable para la generación de productos de software.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la innovación a la ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura es un acercamiento formal de las y los futuros profesionales de Ingeniería Civil
+UdeC a la innovación en ingeniería, donde abordarán problemáticas de impacto global acorde
+a las especialidades impartidas en la Facultad, a través de métodos de innovación modernos
+con el objetivo de proponer productos, procesos o servicios que deberán gestionar, concebir,
+resolver, evaluar, diseñar, e implementar como profesionales de la ingeniería. A través de los
+desafíos de la asignatura, sus estudiantes se harán cargo de su condición de ingenieras e
+ingenieros civiles en formación, mediante el trabajo en equipo realizado durante el semestre.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura desarrolla algunos métodos de resolución analítica de ecuaciones ordinarias
+diferenciales lineales. Introduce al estudiantado en el conocimiento de los conceptos básicos
+y aplicaciones del análisis de Fourier y las ecuaciones diferenciales parciales de segundo
+orden.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo III</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que desarrolla los conceptos, propiedades, métodos y aplicaciones
+relativas al cálculo diferencial e integral de funciones vectoriales de varias variables reales, los
+cuales permiten modelar y resolver problemas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estadística y Probabilidades</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso teórico-práctico de nivel básico del núcleo de la Facultad de Ingeniería, que entrega
+conocimientos de principios fundamentales de la teoría de probabilidades y estadística, que
+son aplicados en la ingeniería moderna para comprender fenómenos y procesos de naturaleza
+no determinística.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ingeniería de Datos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura aborda fundamentos de la ingeniería de datos, como un proceso
+interdisciplinario que abarca todo el ciclo de vida de los datos, desde su recolección hasta su
+análisis y modelado. En un contexto empresarial cada vez más orientado a la toma de
+decisiones basadas en evidencia, resulta fundamental que las y los estudiantes adquieran
+tanto los conocimientos metodológicos como las habilidades técnicas necesarias para abordar
+desafíos en este ámbito. La asignatura de Ingeniería de Datos brindará a las y los estudiantes
+herramientas esenciales para estructurar y modelar datos de manera efectiva, con un enfoque
+en el uso de lenguaje SQL y la introducción a procesos de Extract, Transform, Load (ETL).
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso de inglés comunicativo dirigido a lograr un nivel de competencia A1 (hablante/usuario
+básico) de acuerdo a la definición de niveles de competencia estándar de la Comunidad
+Europea "Common European Framework for Modern Languages".
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inferencia Estadística y Muestreo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura se entregan los conceptos básicos de inferencia estadística necesarios
+para algunas aplicaciones en ingeniería industrial y para el adecuado entendimiento de otras
+técnicas de análisis estadístico de datos contenidas en semestres posteriores de la carrera.
+También se revisan los principales métodos de muestreo.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo Numérico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Asignatura teórico-práctica que contiene los fundamentos de los algoritmos numéricos para
+resolver problemas de la matemática aplicada mediante el computador.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura el estudiantado aprende a construir diagramas de cuerpo libre de sistemas
+de partículas y de cuerpos rígidos sometidos a fuerzas y momentos, para aplicar las
+ecuaciones de equilibrio y obtener la distribución total de fuerzas momentos que afectan el
+cuerpo analizado. Además, el estudiantado aprende a calcular desplazamientos, velocidades,
+aceleraciones junto con aplicar las leyes de la dinámica a sistemas de partículas y cuerpos
+rígidos y desarrollar ecuaciones del movimiento.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Termodinamica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura corresponde al ciclo de ciencias de la ingeniería, en ella el estudiantado
+desarrolla la capacidad de comprender y aplicar los principios fundamentales de la
+termodinámica, analizando el comportamiento de sistemas termodinámicos en equilibrio y sus
+transformaciones. Al finalizar la asignatura, el estudiantado estará preparado para evaluar
+propiedades de la materia, flujos de energía y eficiencia en sistemas térmicos, utilizando
+ecuaciones de estado, diagramas termodinámicos y análisis exergéticos. Esta asignatura
+contribuye significativamente a la formación integral del ingeniero en áreas relacionadas con
+la conversión y transferencia de energía.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Modelación de Sistemas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                sistemas, en particular en referencia a su concepción, diseño, y representación, de forma de
+facilitar el estudio de su comportamiento, además de posibles mejoras futuras. Se establecen
+las bases que podrán ser aplicadas a lo largo de la carrera a las diversas situaciones que
+enfrenta una Ingeniera o un Ingeniero Civil Industrial.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso de inglés comunicativo dirigido a lograr un nivel de competencia "de usuario básico" A2,
+
+de acuerdo a la definición de niveles de competencia estándar de la Comunidad Europea
+"Common European Framework for Modern Languages". Al mismo tiempo, el curso contribuye al desarrollo de competencias transversales, tales como:
+la autonomía de aprendizaje, mediante estrategias para aprender a aprender, de forma
+independiente, en un proceso de formación continua a lo largo de la vida; la responsabilidad y
+control en el avance hacia el logro de las metas de aprendizaje propuestas; la capacidad para
+el trabajo colaborativo, mediante la participación activa en actividades grupales y redes de
+interacción propiciadas por la comunidad UdeC English Online.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Fluidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura el estudiantado comprende y aplica los principios fundamentales que
+gobiernan el comportamiento de un fluido en reposo y en movimiento y su interacción con
+elementos sólidos estáticos o en movimiento. Al finalizar la asignatura, el estudiantado debería
+haber adquirido los conocimientos y habilidades para resolver problemas de estática y
+dinámica de fluidos, aplicando métodos teóricos. Este aprendizaje contribuirá a su perfil de
+egreso en la habilidad para resolver problemas en las temáticas relacionados con fluidos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Máquinas Eléctricas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso teórico aplicado a Ingeniería en el cual se desarrolla la teoría básica y principios
+fundamentales del electromagnetismo, circuitos eléctricos y los conceptos que llevan al
+entendimiento de la operación de las máquinas eléctricas estáticas y rotatorias en circuitos en
+corriente continua, y circuitos monofásicos y trifásicos en corriente alterna existentes en los
+entornos industriales. Se abordan y describe la operación y el uso de las máquinas eléctricas
+estáticas y rotatorias en el contexto de los generadores y transformadores presentantes en
+instalaciones productivas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Administración y Liderazgo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que tiene por objetivo entregar los fundamentos de la
+administración como ciencia social, que posibilite la identificación y comprensión de los
+elementos y fenómenos presentes en empresas y organizaciones. En su parte práctica esta asignatura tiene por objetivos que las y los estudiantes desarrollen
+sus habilidades de análisis y diseño necesarias para el mejoramiento de la eficacia y eficiencia
+de los procesos administrativos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Optimización I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura se entregan los conceptos y herramientas fundamentales de la
+optimización lineal, con el objetivo de que las y los estudiantes aprendan a modelar situaciones
+mediante la programación lineal, la optimización en redes y la programación no lineal. También
+se enseñan algoritmos para resolución de estos problemas, así como conceptos básicos del
+análisis de complejidad de algoritmos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Análisis Estadístico Multivariado</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica donde se revisa e introduce a técnicas estadísticas avanzadas, que
+son aplicadas ampliamente por profesionales en áreas de ciencia de datos y su uso es
+transversal en diferentes competencias a lo largo de la carrera de Ingeniería Civil Industrial.
+Las y los estudiantes profundizarán su conocimiento en el manejo de series de datos,
+identificarán relaciones entre ellas y aplicarán técnicas de normalización y manejo de datos,
+que les permitirán desenvolverse en diversas áreas de la ingeniería industrial. Entre dichos
+contenidos, se introducirán conceptos relevantes de series de tiempo y se explorarán métricas
+introductorias a machine learning.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Complementaria</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Un ramo complementario es una asignatura destinada a ampliar la formación académica del estudiante mediante la incorporación de conocimientos, habilidades y actitudes que complementan su especialidad principal.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Microeconomía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En el desarrollo de la asignatura se estudian y analizan diferentes conceptos básicos de la
+microeconomía, en particular la formación de precios en los mercados. Se espera que el
+estudiantado adquiera la capacidad de comprender la conducta de los agentes económicos,
+reconocer aspectos diferenciadores en las estructuras de mercado y evaluar los efectos de
+políticas económicas en la asignación de recursos.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Contabilidad General y de Costos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura cubre conceptos, técnicas y metodologías que permiten al estudiantado
+comprender los mecanismos de generación e interpretación de los estados financieros
+emitidos por las empresas como a la vez de aquellos provenientes de la contabilidad de costos
+con el propósito que desarrollen habilidades analíticas y de interpretación de la información
+financiera contable orientadas a apoyar una correcta toma de decisiones en organizaciones
+donde se desempeñarán una vez egresados.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Simulación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura aborda temas de la ingeniería industrial y se enfoca en la simulación de
+sistemas discretos, fortaleciendo la capacidad para comprender modelos de simulación y
+aplicar metodologías estadísticas en estudios complejos. Se abordan modelos básicos de
+teoría de colas y se promueve la resolución colaborativa de problemas reales. Los contenidos
+incluyen la introducción a la simulación de sistemas, la metodología Montecarlo y la simulación
+de eventos discretos (modelos, análisis de estado estacionario y diseño experimental).
+Además, se aplica la simulación en sistemas de manufactura y servicios.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Optimización II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura se entregan los conceptos y herramientas de programación lineal entera,
+programación no lineal y programación dinámica para resolución de problemas de asignación
+de recursos de forma óptima y racional. También Se entregan fundamentos y metodologías
+para el planteamiento y desarrollo de modelos basados en algoritmos heurísticos y
+metaheurísticos para la toma de decisiones en escenarios complejos, con el objetivo de que
+el estudiantado pueda aplicar estos conocimientos en la industria o disciplina de la Ingeniería
+Industrial.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dibujo Industrial</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Es una asignatura gráfica en la cual se enseña la representación y la interpretación de dibujos
+de proyecciones ortogonales de acuerdo a las normas ISO — E e ISO — A, considerándose
+ejercicios de aplicación orientados tanto al dibujo de objetos como al dibujo y diseño de
+emplazamientos de equipos en plantas de proceso acordes a criterios de funcionalidad. En el
+proceso Enseñanza-Aprendizaje se utilizará un programa computacional de dibujo asistido,
+tridimensional.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electivo ciencias de la ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Ramo electivo orientado a las ciencias de la ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesos Industriales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura está orientada al análisis integrado de procesos químicos industriales
+implementados en la industria nacional, incorporando conocimientos relacionados con
+procesos físicos, químicos y biológicos que tienen relevancia en el quehacer industrial
+nacional y mundial. Se complementa con tópicos de operaciones unitarias (químicas, físicas
+y biológicas) y balances de materia y energía aplicados tanto a sistemas sencillos de procesos
+como a operaciones unitarias aisladas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Planificación y Control de Producción</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura se enfoca en la planificación y control de la producción en sistemas productivos.
+Se aborda el proceso de producción y manufactura de productos, desarrollando planes de
+producción con diferentes horizontes de tiempo. Los contenidos de la asignatura abordan la
+definición y clasificación de sistemas productivos, la planificación integrada con herramientas
+como pronóstico de demanda, control de inventarios y planificación de materiales (MRP), y la
+programación de sistemas de una máquina, máquinas paralelas y talleres flexibles. Además,
+se abordan enfoques de producción como Just inTime (JIT) y Optimized Production
+Technology (OPT).
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas de Producción y Logística</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Este curso introduce los principios fundamentales de los sistemas de manufactura y logística
+modernas, centrándose en la filosofía Lean Manufacturing, la gestión de inventarios, diseño
+de instalaciones y el procesamiento de pedidos en cadena. A través del estudio de
+metodologías clásicas de la ingeniería industrial, se aborda cómo optimizar los procesos
+productivos y mejorar la eficiencia operativa, eliminando desperdicios y fomentando la mejora
+continua. Además, se exploran los desafíos inherentes al diseño de sistemas integrados, los
+cuales requieren de un enfoque práctico y una comprensión profunda de las interacciones
+dentro del entorno industrial, permitiendo a las y los estudiantes aplicar estos conceptos a
+situaciones logísticas y productivas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Finanzas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura cubre conceptos, técnicas y metodologías que permiten al estudiantado
+comprender los mecanismos que los agentes económicos utilizan en la toma de decisiones de
+inversión y financiamiento óptimo de corto y largo plazo con el propósito que se desarrollen
+habilidades de gestión financiera orientadas a crear valor en las organizaciones donde se
+desempeñarán una vez egresen.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Macroeconomía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En el desarrollo de la asignatura se estudian y analizan diferentes conceptos básicos de la
+macroeconomía, en particular la determinación de la actividad económica medida por el
+Producto Interno Bruto (PIB) bajo distintos modelos de equilibrio para el corto, mediano y largo
+plazo. Se espera que el estudiantado adquiera la capacidad para comprender las causas de
+los cambios en diferentes variables macroeconómicas y sus impactos en la economía.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inteligencia y Analítica de Negocios</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La asignatura cubre conceptos, técnicas y metodologías que permiten al estudiantado
+extender sus conocimientos estadísticos para el uso de métodos de análisis de datos en
+contextos aplicados de la ingeniería industrial. El propósito es que el estudiantado desarrolle
+habilidades que les permitan analizar data real o simulada, a fin de contribuir a la evaluación
+de procesos y toma de decisión en diversas organizaciones.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto de ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura consiste en el desarrollo de un proyecto real de Ingeniería Civil Industrial
+mediante un trabajo integrado y aplicado. Considera una práctica laboral como requisito
+obligatorio para desarrollar el proyecto grupal. El propósito es fomentar la vinculación temprana
+del estudiantado con el mundo laboral, promoviendo habilidades de comunicación,
+responsabilidad y trabajo en equipo. Se deben aplicar herramientas propias de la Ingeniería
+Civil Industrial considerando aspectos técnicos, económicos y de gestión. 
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sustentabilidad y Responsabilidad Social en Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura tiene como objetivo entregar conocimientos y herramientas para llevar a cabo
+la práctica de la ingeniería respetando los principios de la sustentabilidad, en el contexto de
+una conducta ética y socialmente responsable. Para ello, se presentan los desafíos
+socioambientales y éticos que enfrenta la ingeniería, así como las estrategias que se han
+levantado para su resolución. Se entrega una visión general de las responsabilidades legales
+aplicables a los proyectos de ingeniería y los lineamientos de ética profesional respectivos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Preparación y Evaluación de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En el desarrollo de la asignatura se estudian y analizan diferentes conceptos, metodologías y
+técnicas sobre la preparación y evaluación de proyectos. Se espera que el estudiantado
+comprenda los distintos mecanismos para recopilar, crear, analizar los antecedentes
+económicos y financieros que posibiliten juzgar cualitativa y cuantitativamente los costos y
+beneficios de asignar recursos a una determinada iniciativa. Especial énfasis se pondrá en la
+preparación y evaluación de proyectos desde un punto de vista económico y financiero.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión Estratégica y Control de Gestión</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que tiene como objetivo manejar los conceptos y las habilidades
+necesarias para crear, implementar y controlar planes estratégicos coherentes y completos
+para una compañía. Las y los estudiantes deberán además realizar análisis críticos de
+situaciones y/o problemas reales, y entregar propuestas de soluciones estratégicas viables.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dirección y Control de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura desarrolla en su estudiantado los conocimientos y las competencias
+necesarias para dirigir un proyecto desde su inicio hasta su cierre. El diseño de la asignatura
+permitirá al estudiantado aplicar los fundamentos de la gestión de proyectos en variados
+contextos tales como empresas, sector público, organizaciones no gubernamentales,
+desarrollos tecnológicos, investigación científica, etc.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Innovación y Emprendimiento Tecnológico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La presente asignatura busca desarrollar una mentalidad de negocios con pensamiento
+estratégico promoviendo el trabajo en equipo y el liderazgo a través de actividades grupales.
+Se busca crear propuestas de valor tecnológicas mediante la innovación, la creatividad y el
+emprendimiento. Los contenidos incluyen la metodología Lean Startup, abordando la
+innovación y la evolución del modelo de negocios; finanzas para el emprendimiento, con
+énfasis en etapas de crecimiento y rondas de inversión; y la fase inicial, con prototipaje y
+experimentación.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión de Personas y Comportamiento Organizacional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico - práctica orientada a entregar los conocimientos necesarios para la gestión
+de personas en organizaciones. La asignatura incluye la entrega de conocimiento y el
+desarrollo de habilidades directivas que les permitirán al estudiantado analizar y participar de
+una forma más efectiva en las organizaciones.
+
+En su parte práctica esta asignatura tiene por objetivos que las y los estudiantes desarrollen
+sus habilidades de análisis y diseño necesarias para el mejoramiento de la eficacia y eficiencia
+de los procesos de gestión de personas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 5</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Habilitación Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                La Habilitación Profesional constituye la última asignatura integradora de la carrera de
+Ingeniería Civil Industrial y es un requisito para la obtención del Título de Ingeniera o Ingeniero
+Civil Industrial. El estudiantado debe demostrar a través de desarrollo de la Habilitación
+Profesional las habilidades para aplicar conocimiento y resolver problemas a nivel profesional
+o de investigación en el campo en el cual se desarrollará. Esto implica que la o el estudiante
+que aprueba la Habilitación Profesional ha logrado con éxito los objetivos de la carrera y ha
+adquirido las competencias que definen el perfil de egreso de la carrera de Ingeniería Civil
+Industrial.
+
+Considera una práctica profesional como requisito para desarrollar un proyecto individual que
+puede realizarse en dos modalidades: como investigación o como trabajo aplicado. Ambas
+modalidades implican un trabajo de un semestre académico completo.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="practicas-section">
+            <div class="practicas-title">Actividades Complementarias</div>
+            <div class="practicas-container">
+                <div class="practica-item">
+                    <h3>Práctica Laboral</h3>
+                    <p>Experiencia profesional en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Complementaria 1</h3>
+                    <p>Asignatura complementaria según intereses del estudiante.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Práctica Profesional</h3>
+                    <p>Experiencia profesional avanzada en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ponderaciones-section">
+            <div class="ponderaciones-title">Ponderaciones de Admisión</div>
+            <div class="ponderaciones-grid">
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">20%</div>
+                    <div class="ponderacion-prueba">NEM</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">RANKING</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">COMPRENSIÓN LECTORA</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">25%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">-</div>
+                    <div class="ponderacion-prueba">HISTORIA Y CS. SOCIALES</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">10%</div>
+                    <div class="ponderacion-prueba">CIENCIAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS II</div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Universidad de Concepción - Facultad de Ingeniería - Ingeniería Civil Industrial</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>Fuente: admision.udec.cl - Hecho por GIIA UdeC</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

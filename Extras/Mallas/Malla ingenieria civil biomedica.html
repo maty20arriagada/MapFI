@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Colores Institucionales UdeC (según imagen proporcionada) */
+        :root {
+            --color-udec-azul: #223c6a; /* Pantone 541C / RGB 34 G 60 B106 */
+            --color-udec-gris: #a0a0a0; /* Gris para acentos */
+            --color-udec-fondo-malla: #f5f7fa; /* Fondo claro para las columnas de año */
+        }
+
+        body {
+            /* Fondo con degradado del color institucional para un toque moderno */
+            background: linear-gradient(135deg, var(--color-udec-azul), #344f80, #5c7cb3);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--color-udec-azul);
+        }
+
+        h1 {
+            color: var(--color-udec-azul);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700; /* Poppins Bold */
+        }
+
+        h2 {
+            color: var(--color-udec-azul);
+            font-size: 1.8rem;
+            font-weight: 500; /* Poppins Regular */
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: var(--color-udec-azul);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 700; /* Poppins Bold */
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: var(--color-udec-gris); /* Usamos el gris institucional */
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid var(--color-udec-gris); /* Borde gris para acento */
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #ffffff; /* Blanco limpio */
+        }
+
+        .ramo-header:hover {
+            background: #f0f4f8; 
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 300px; /* Altura máxima para el contenido expandido */
+            overflow-y: auto; /* Permite desplazamiento vertical cuando el contenido es más largo */
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+            font-weight: 400; /* Poppins Regular */
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: var(--color-udec-azul);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #344f80;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 400;
+        }
+
+        .practicas-section {
+            background: var(--color-udec-fondo-malla);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid var(--color-udec-gris);
+        }
+
+        .practicas-title {
+            color: var(--color-udec-azul);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .practicas-section h3 {
+             font-weight: 600;
+        }
+
+        .practicas-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .practica-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sección de Ponderaciones de Admisión */
+        .ponderaciones-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f0f4f8; 
+            border-radius: 10px;
+            border-top: 3px solid var(--color-udec-azul);
+        }
+        
+        .ponderaciones-title {
+            color: var(--color-udec-azul);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .ponderaciones-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .ponderacion-item {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 120px;
+            flex: 1 1 auto; 
+            max-width: 150px;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .ponderacion-porcentaje {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .ponderacion-prueba {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Colores específicos para cada ponderación según la imagen */
+        .ponderacion-item:nth-child(1) {
+            background: #223c6a; /* Azul UdeC */
+        }
+        
+        .ponderacion-item:nth-child(2) {
+            background: #4caf50; /* Verde */
+        }
+        
+        .ponderacion-item:nth-child(3) {
+            background: #ff9800; /* Naranja */
+        }
+        
+        .ponderacion-item:nth-child(4) {
+            background: #f44336; /* Rojo */
+        }
+        
+        .ponderacion-item:nth-child(5) {
+            background: #9c27b0; /* Morado */
+        }
+        
+        .ponderacion-item:nth-child(6) {
+            background: #8b6076; /* Gris azulado */
+        }
+
+        .ponderacion-item:nth-child(7) {
+            background: #8b608a; /* Rosa */
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .practicas-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .ponderaciones-grid {
+                gap: 15px;
+            }
+            
+            .ponderacion-item {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .ramo.open .ramo-content {
+                max-height: 250px; /* Altura reducida en móviles */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil Biomedica</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que proporciona a los y las estudiantes conocimientos y
+habilidades necesarias para la resolución de problemas de cálculo diferencial aplicados a la ingeniería, contribuyendo a desarrollar la abstracción y análisis, esenciales para toda
+especialidad de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega los conceptos fundamentales de la matemática,
+proporcionando la base de la operatoria y del razonamiento formal necesario para el estudio
+del Cálculo |, Cálculo II y Álgebra II aplicadas a la ingeniería, contribuyendo a desarrollar las
+capacidades de abstracción, análisis y síntesis, esenciales para toda especialidad de la
+Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla la cinemática y la dinámica de traslación, así como los métodos y herramientas que
+ésta utiliza, contribuyendo a desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega conceptos químicos básicos, tales
+como, las propiedades y reacciones de los elementos y compuestos químicos y de sus
+disoluciones y conceptos específicos, tales como, los enfoques modernos de la descripción
+atómica y molecular de la materia, sus manifestaciones energéticas y los conceptos básicos
+de equilibrio físico y químico, contribuyendo a desarrollar la capacidad de abstracción, análisis
+y síntesis, como esquemas de razonamientos lógicos, formales y heurísticos, esenciales para
+toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la ingeniería Biomedica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Esta asignatura es el primer acercamiento formal de las y los estudiantes con la ingeniería y
+su especialidad. El propósito es establecer las bases generales del proceso de ingeniería, para
+luego abordar un proyecto con un enfoque de ingeniería en el contexto de la especialidad,
+relevando la autogestión del aprendizaje como factor importante del perfil profesional y
+facilitador de la integración a la educación superior.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos del cálculo
+integral de una variable aplicado a ingeniería, series numéricas y de potencias, y a curvas en
+el espacio, contribuyendo a desarrollar las capacidades de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce al estudiantado en los conceptos básicos de los
+espacios vectoriales, matrices y sistemas de ecuaciones lineales, contribuyendo, además de
+una base matemática necesaria para Ecuaciones diferenciales y cursos de especialidad
+ingenieriles, que les permite desarrollar la capacidad de abstracción, análisis y síntesis,
+esenciales para toda especialidad de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico-experimental de introducción a la Física General que tiene como
+propósito que el estudiantado alcance una visión clara de los conceptos, leyes y principios que
+contempla los Sistemas de Partículas y la Mecánica de Cuerpos Rígidos, Mecánica de Fluidos
+y Oscilaciones, así como los métodos y herramientas que ésta utiliza, contribuyendo a
+desarrollar la capacidad de abstracción, análisis y síntesis, esenciales para toda especialidad
+de la Ingeniería.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ciencias Ambientales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura es teórica-práctica, cubre paradigmas, principios, metodologías y
+aplicaciones de las ciencias ambientales, introduciendo el funcionamiento de los ecosistemas
+y las presiones derivadas del uso humano de recursos. Se enfatiza la identificación de
+presiones ambientales derivadas del cambio global y su impacto social y económico. Las y
+los estudiantes podrán resolver problemas complejos, diseñar soluciones sostenibles,
+comunicar hallazgos con claridad y colaborar éticamente en equipo.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a los Sistemas de Información en Salud</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que brinda a las y los estudiantes una visión global de los
+sistemas de información en salud, contextualizando su aplicación nacional e internacional, la
+estructura de los SIS, normas y estándares, y técnicas de análisis de datos. El estudiantado
+podrá diseñar soluciones tecnológicas ajustadas a necesidades sanitarias, fomentando la
+comunicación clara con distintos públicos, la toma de decisiones éticas y el uso de datos para
+guiar conclusiones de ingeniería.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Español Académico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                metodológicas para redactar textos académicos y profesionales en ciencia y tecnología,
+siguiendo normas y convenciones del discurso especializado. El y la estudiante podrá construir
+resúmenes e informes con estrategias retóricas y convenciones formales.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales Ordinarias</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura desarrolla algunos métodos de resolución analítica de ecuaciones ordinarias
+diferenciales lineales. Introduce al estudiantado en el conocimiento de los conceptos básicos
+y aplicaciones del análisis de Fourier y las ecuaciones diferenciales parciales de segundo
+orden.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electromagnetismo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórica que estudia leyes que modelan los fenómenos electromagnéticos,
+analizando campos eléctricos y magnéticos estacionarios y variables en el tiempo. Las y los
+estudiantes aplican herramientas matemáticas y físicas para abordar problemas de ingeniería
+complejos y se promueve el diseño de soluciones de ingeniería. De este modo, se fortalecen
+habilidades analíticas y de diseño de soluciones ingenieriles.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Teoría de Circuitos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Asignatura teórica que desarrolla los fundamentos de circuitos eléctricos monopuerta y
+monofásicos con componentes concentrados, capacitando en el análisis en el dominio del
+tiempo. Mediante el estudio de variables, elementos y teoremas, se promueve la habilidad de
+descomponer y resolver problemas matemáticos y físicos complejos. Al abordar circuitos RL,
+RC y análisis sinusoidal, las y los estudiantes desarrollan criterios para aplicar soluciones
+seguras y eficientes, considerando aspectos técnicos y su repercusión práctica.
+
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Circuitos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura práctica obligatoria que combina experiencias grupales de laboratorio en
+electricidad básica, instrumentación y electromagnetismo, formando a las y los estudiantes en
+el diseño asistido por computador y la evaluación experimental de circuitos eléctricos
+fundamentales, A través de la resolución de montajes prácticos y el análisis de datos, las y los
+estudiantes fortalecerán su habilidad de análisis y solución de problemas complejos, junto la
+comunicación de resultados técnicos y el aprendizaje autónomo mediante la experimentación.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Taller de Habilidades Comunicacionales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica orientada a desarrollar y potenciar habilidades comunicativas verbales y no verbales en contextos laborales y académicos, abordando argumentación,
+despliegue de presentaciones efectivas, comunicación no verbal, negociación y liderazgo.
+Esto contribuye al desarrollo de habilidades de la y el estudiante, como comunicación efectiva
+con diversas audiencias, fomentando el trabajo colaborativo y de liderazgo transformacional.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Taller de Introducción a Matlab</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura práctica que introduce a las y los estudiantes en el uso del software Matlab para el
+análisis, formulación y programación de cálculos científicos e ingenieriles. Mediante ejercicios
+prácticos, las y los estudiantes podrán abordar problemas complejos con herramientas
+computacionales, fomentando el aprendizaje autónomo de nuevas tecnologías.
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega las bases sobre las cuales se fundamenta el uso de
+los computadores como herramientas de solución de problemas complejos. Su objetivo es
+habilitar al estudiantado en el uso de los lenguajes de programación, como medio de expresión
+de la resolución de problemas complejos y herramienta indispensable para la generación de
+productos de software en el área de la ingeniería biomédica.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Principios de Bioelectrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                               Asignatura teórica donde se estudian los elementos semiconductores y circuitos electrónicos
+junto con su interacción con modelos biológicos. A través del análisis teórico y de simulación
+computacional, las y los estudiantes formulan y resuelven desafíos complejos en el ámbito de
+la bioelectrónica. Se estudian los procesos de diseño electrónico de circuitos que integran
+criterios de seguridad electromédica, evaluando su impacto técnico y social. De este modo, se
+fortalecen habilidades analíticas y de diseño electrónico adaptadas al contexto biomédico.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Bioelectrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura práctica integradora, obligatoria de ciencias de ingeniería, estructurada con experiencias grupales de laboratorio en electricidad, electrónica analógica, instrumentación y
+sensores. Las y los estudiantes realizarán diseño y análisis asistido por computador y en
+evaluación experimental de circuitos electrónicos fundamentales para el desarrollo de
+sistemas biomédicos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Bioestadística</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica de introducción a los principios de la probabilidad y la estadística
+en el contexto biomédico. Las y los estudiantes exploran técnicas de estadística descriptiva e
+inferencial, modelos de regresión y conceptos de probabilidad mediante ejemplos y ejercicios
+prácticos. Se trabaja en la organización, el análisis y la interpretación de datos provenientes
+de experimentos y estudios clínicos. Al finalizar, podrán aplicar métodos estadísticos para
+respaldar decisiones en proyectos de ingeniería biomédica.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Biología Celular y Tisular</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que comprende aspectos de Biología Celular e Histología para
+estudiar la relación entre estructura y función subyacente a los principales fenómenos celulares
+y tisulares. Estos conocimientos permitirán al Ingeniero Civil Biomédico comprender los
+principios biológicos que gobiernan el funcionamiento de los sistemas vivos, permitiéndole
+validar resultados a partir de estos principios y así cubrir los campos interdisciplinarios entre
+biología, Ingeniería y Medicina tanto en el ejercicio profesional como en la investigación.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso de inglés comunicativo dirigido a lograr un nivel de competencia A1 (hablante/usuario
+básico) de acuerdo a la definición de niveles de competencia estándar de la Comunidad
+Europea “Common European Framework for Modern Languages”.
+
+Al mismo tiempo, el curso contribuye al desarrollo de competencias genéricas, tales como: la
+autonomía de aprendizaje, mediante estrategias para aprender a aprender en forma
+independiente en un proceso de capacitación continua a lo largo de la vida; la responsabilidad
+y control en el avance hacia el logro de las metas de aprendizaje propuestas: habilidades para
+el trabajo colaborativo, mediante la participación activa en actividades grupales y redes de
+interacción propiciadas por la comunidad UdeC English Online.
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas Digitales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que provee a las y los estudiantes herramientas para analizar y
+diseñar circuitos digitales, además de comprender arquitecturas computacionales modernas.
+Mediante el diseño, simulación y evaluación de sistemas de tamaño pequeño y mediano, se
+fortalece la generación de soluciones digitales a problemas propuestos. La o el estudiante
+podrá presentar resultados con claridad a distintos públicos y aplicar métodos experimentales
+para validar el funcionamiento y desempeño de los circuitos diseñados.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Modelación de Sistemas Biomédicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica en la que las y los estudiantes desarrollan las habilidades y
+conocimientos necesarios para modelar, simular y analizar comportamientos dinámicos de
+sistemas biomédicos, con énfasis en aplicaciones a sistemas fisiológicos humanos y
+dispositivos médicos. Las y los estudiantes aprenderán a formular modelos matemáticos
+basados en balances fenomenológicos, modelar sistemas cardiovasculares, respiratorios y
+musculoesqueléticos, así como sistemas de regulación homeostática.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                En esta asignatura el estudiantado aprende a construir diagramas de cuerpo libre de sistemas
+de partículas y de cuerpos rígidos sometidos a fuerzas y momentos, para aplicar las ecuaciones
+de equilibrio y obtener la distribución total de fuerzas y momentos que afectan el cuerpo
+analizado. Además, las y los estudiantes aprenden a calcular desplazamientos, velocidades,
+aceleraciones junto con aplicar las leyes de la dinámica a sistemas de partículas y cuerpos
+rígidos y desarrollar ecuaciones del movimiento.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Anatomía Humana</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que ofrece una visión integral de la morfología humana y del
+sistema nervioso, combinando exposiciones con material audiovisual y ejemplos
+anatomoclínicos. Mediante seminarios prácticos grupales, las y los estudiantes aprenden a
+presentar conocimientos anatómicos de forma clara, reforzando la capacidad de transmitir
+información científica con precisión y de colaborar en equipo, organizando tareas conjuntas
+para profundizar en contenidos y resolver desafíos anatómicos.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Complementario 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Ramo complementario para la formación del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Básico II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Al mismo tiempo, el curso contribuye al desarrollo de competencias transversales, tales como:
+la autonomía de aprendizaje, mediante estrategias para aprender a aprender, de forma
+independiente, en un proceso de formación continua a lo largo de la vida; la responsabilidad y
+control en el avance hacia el logro de las metas de aprendizaje propuestas; la capacidad para
+el trabajo colaborativo, mediante la participación activa en actividades grupales y redes de
+interacción propiciadas por la comunidad UdeC English Online.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Fundamentos de Computación y Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que prepara a las y los estudiantes en programación y análisis de
+sistemas computacionales modernos. Se estudian arquitectura de equipos, algoritmos,
+diagramas de flujo y se profundiza en el lenguaje C: tipos de datos, estructuras, punteros y
+listas enlazadas. A través de ejercicios prácticos, las y los estudiantes podrán plantear y
+resolver desafíos técnicos complejos y de diseñar soluciones informáticas eficientes para
+contextos diversos.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Control de Sistemas Biomédicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso teórico que aborda los fundamentos y aplicaciones del control automático en sistemas
+biomédicos, con énfasis en sistemas fisiológicos humanos y dispositivos médicos asociados.
+Las y los estudiantes aprenderán a diseñar y analizar controladores para mantener
+condiciones estables en el organismo, a implementar estrategias de control prealimentadas y
+realimentadas, y a evaluar la robustez y confiablidad de estas técnicas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Biomecánica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que introduce principios de mecánica aplicados a sistemas
+biológicos, enfatizando el análisis cuantitativo y la modelación del sistema musculoesquelético.
+Se estudian propiedades mecánicas, cinemática y cinética de cuerpos, así como métodos
+experimentales y de simulación para analizar el movimiento humano y reforzar el juicio de
+ingeniería. Mediante proyectos, las y los estudiantes podrán resolver desafíos biomecánicos y
+optimizar dispositivos clínicos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Fisiología I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica dedicada al estudio de la fisiología celular, molecular y de sistemas
+de regulación nerviosa y endocrina. A través de clases y actividades prácticas, las y los
+estudiantes analizan transporte biológico, potenciales bioeléctricos y mecanismos de control,
+diseñan y discuten experimentos y procesan datos para comprender la dinámica del
+organismo. Al finalizar, podrán aplicar estos fundamentos técnicos para resolver retos
+biomédicos y colaborar eficientemente en equipos interdisciplinarios.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Economía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura de carácter teórico del ciclo licenciatura que proporciona al estudiantado una visión
+de los problemas de escasez que enfrenta cualquier sociedad y cómo ésta se organiza para
+resolverlos, tanto a nivel de agente individual (microeconómico) como en forma agregada
+(macroeconómico). Contribuye al perfil de egreso al introducir la comprensión del
+funcionamiento de los mercados, las relaciones entre agentes económicos y los efectos de las
+políticas públicas en contextos productivos y sociales. Al finalizar la asignatura, el estudiantado
+podrá interpretar fenómenos económicos relevantes y argumentar decisiones estratégicas con
+base en principios fundamentales de la economía.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo Nivel Intermedio</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso de inglés comunicativo dirigido a lograr un nivel de competencia B1 (hablante/usuario
+independiente), de acuerdo a la definición de niveles de competencia estándar de la
+Comunidad Europea “Common European Framework of Reference for Modern Languages”
+(CEFR).
+
+Al mismo tiempo, el curso contribuye al desarrollo de competencias transversales, tales como:
+la autonomía de aprendizaje, mediante estrategias para aprender a aprender en forma
+independiente, en un proceso de formación continua a lo largo de la vida; la responsabilidad y
+control en el avance hacia el logro de las metas de aprendizaje propuestas; habilidades para
+el trabajo colaborativo, mediante la participación activa en actividades grupales y redes de
+interacción propiciadas por la comunidad UdeC English Online
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesamiento Digital de Señales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica dedicada al estudio de técnicas de procesamiento digital de
+señales biomédicas, incluyendo adquisición, transformadas, STFT y filtrado. Mediante
+proyectos prácticos, las y los estudiantes diseñan algoritmos, analizan datos fisiológicos y
+validan resultados con rigor, fortaleciendo su habilidad para formular y resolver desafíos de
+ingeniería. Al finalizar, podrán implementar filtros y algoritmos para el análisis de señales de
+origen fisiológico.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas Embebidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que proporciona a las y los estudiantes experiencia en diseño,
+programación e implementación de sistemas embebidos basados en microcontroladores.
+Mediante ejercicios de laboratorio, se abordan desafíos de ingeniería embebida, incentivando
+la descomposición de problemas complejos y el desarrollo de soluciones técnicas rigurosas
+evaluadas por pruebas experimentales. Al finalizar, podrán diseñar e implementar dispositivos
+confiables para aplicaciones biomédicas en entornos reales.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Biomateriales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórica que aborda los fundamentos de los materiales biocompatibles enfatizando
+la relación estructura-propiedades, biocompatibilidad y comportamiento mecánico en entornos
+biológicos. Las y los estudiantes examinan metales, polímeros, cerámicos y compuestos,
+aplicando criterios de selección para el diseño de dispositivos considerando biocompatibilidad.
+Mediante análisis de datos y discusión de resultados, fortalecen su habilidad de investigación
+
+y diseño. Al finalizar, las y los estudiantes podrán seleccionar y caracterizar biomateriales para
+aplicaciones en salud.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Fisiología II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que aborda de manera avanzada la fisiología de órganos y
+sistemas con énfasis en la homeostasis. A través de clases y actividades prácticas, las y los
+estudiantes exploran mecanismos de autorregulación, interpretan datos de variables
+fisiológicas y comparan modelos funcionales, elaborando y discutiendo estudios de caso. Al
+finalizar, estarán en condiciones de integrar conocimientos fisiológicos para diseñar soluciones
+biomédicas y comunicarlas efectivamente en equipos multidisciplinarios.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Gestión en Salud</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctico en el que las y los estudiantes comprenden la gestión de sistemas
+de salud y los aspectos técnicos y normativos del equipamiento médico y la infraestructura
+hospitalaria. En clases teóricas, visitas y simulaciones, las y los estudiantes aplican innovación
+tecnológica, normas de seguridad y principios de economía de la salud para evaluar proyectos
+clínicos. Así, fortalecen su análisis, colaboración interdisciplinaria y decisión estratégica. Al
+finalizar, las y los estudiantes podrán diseñar soluciones costo-eficientes que cumplan
+estándares de calidad y normativas sanitarias.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Formulación y Evaluación de Proyectos en Salud</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórica que prepara a las y los estudiantes en el diseño y evaluación de proyectos
+clínicos en el contexto sanitario chileno. Se abordan las etapas del ciclo de un proyecto, desde
+la identificación de necesidades hasta el análisis de viabilidad técnica, ética y financiera,
+integrando normativas nacionales y buenas prácticas. A través de aprendizaje por proyecto y
+trabajo colaborativo, se planifican y evalúan proyectos de equipamiento e insfraestructura para
+el sistema de salud. Al finalizar, podrán formular y presentar proyectos conforme a estándares
+regulatorios y de calidad.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ciencia de Datos Aplicado a Salud</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que entrega a las y los estudiantes las herramientas esenciales de
+pensamiento computacional, análisis de datos y estadística para aplicaciones biomédicas. Se
+trabaja con herramientas de software para limpieza, exploración, modelado estadístico y
+simulación de datos clínicos, mediante casos reales y proyectos prácticos que integran trabajo
+colaborativo y buenas prácticas de reproducibilidad, ética y privacidad. Al finalizar, las y los
+estudiantes estarán en condiciones de diseñar, implementar e interpretar flujos de trabajo de
+ciencia de datos en salud para tomar decisiones en entornos clínicos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesamiento Digital de Imágenes</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica dedicada al estudio de técnicas de procesamiento digital de
+imágenes biomédicas, integrando Python para el procesamiento, análisis, y visualización de
+los resultados. A través de ejercicios prácticos, las y los estudiantes diseñan e implementan
+algoritmos, analizan resultados experimentales y comunican hallazgos técnicos con rigor,
+desarrollando juicio profesional para proponer soluciones de salud. Al finalizar, podrán
+implementar flujos de procesamiento de imágenes básicos para apoyar el desarrollo de
+tecnologías clínicas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Laboratorio de Equipos Clínicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura práctica enfocada en el análisis de los principios que soportan el funcionamiento
+de equipos médicos para diagnóstico y tratamiento hospitalario. En sesiones de laboratorio,
+se distinguen mediciones biomédicas, transductores y sistemas RIS/PACS/HIS, se elaboran
+informes técnicos y se validan dispositivos mediante pruebas experimentales. Al finalizar, las
+y los estudiantes podrán aplicar protocolos de laboratorio para asegurar la funcionalidad y
+confiabilidad de equipos biomédicos en entornos reales.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Áreas Clínicas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórica enfocada en el manejo y análisis de equipos de diagnóstico y tratamiento
+hospitalario, cubriendo neuroanatomía, radiología, cuidados intensivos pediátricos, cardiología
+e imagenología, y realizan prácticas en entornos clínicos. Mediante proyectos y simulaciones,
+desarrollan juicio profesional para evaluar y adaptar tecnologías, comunican resultados con
+claridad en equipos multidisciplinarios y aplican métodos experimentales para validar datos. Al
+finalizar, las y los estudiantes podrán diseñar e integrar soluciones tecnológicas a necesidades
+clínicas.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto ICB</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura consiste en el desarrollo de un proyecto de equipamiento o sistema Biomédico
+consistente en un hardware y/o software con aplicación en el área de la salud humana o
+veterinaria. Los proyectos deben ser ideas innovadoras o versiones mejoradas de soluciones
+existentes con el fin de promover el avance de la tecnología biomédica. El proyecto considera
+la integración de los aprendizajes de los semestres anteriores del plan de estudio.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inteligencia Artificial</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura teórico-práctica que brinda a las y los estudiantes bases de inteligencia artificial en
+el ámbito biomédico. Se abordan enfoques clásicos y aprendizaje automático, además de
+consideraciones éticas. A través de proyectos prácticos en análisis de imágenes médicas,
+procesamiento de señales y sistemas de apoyo a la decisión clínica, fortalecen su habilidad
+de diseñar y evaluar soluciones. Al finalizar, las y los estudiantes podrán implementar modelos
+de lA para resolver retos biomédicos reales.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura electiva según intereses del estudiante.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Práctica Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura tiene como propósito el desarrollo de competencias requeridas en un entorno
+laboral de su especialidad, que le permitan desarrollar los aprendizajes requeridos en el
+ejercicio profesional. Se promueve que, a través de la experiencia, las y los estudiantes pongan
+en contexto sus aprendizajes previos y consoliden sus habilidades a partir del abordaje de
+problemáticas de ingeniería reales, en ambientes complejos.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto de Memoria de Título</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Asignatura integradora para la carrera de Ingeniería Civil Biomédica donde las y los
+estudiantes realizan un trabajo de preparación del tema de su Memoria de Título. La asignatura
+implica la detección de una necesidad dentro del ámbito de la Ingeniería Biomédica, para la
+cual pueda dar solución mediante las competencias adquiridas durante sus estudios. Al final
+del curso se espera que desarrolle la definición del problema, el estudio del marco teórico
+asociado a la temática de estudio, la formulación de una metodología y plan de trabajo para
+responder a esta necesidad, considerando factores financieros, sociales y ambientales,
+cuando corresponda. Además, se espera que la o el estudiante realice también avances
+preliminares de tipo teórico-prácticos que le permitan formular y desarrollar su trabajo de
+Memoria de Título.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Memoria de Titulo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Esta asignatura tiene como propósito validar las competencias adquiridas durante su
+formación y aplicarlas en un proyecto de su especialidad, que le permitan complementar los
+aprendizajes para el ejercicio profesional. Se promueve que las y los estudiantes aborden
+problemáticas relevantes y usuales de su especialidad, consolidando sus aprendizajes
+mediante la resolución de un problema real en contextos complejos.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="practicas-section">
+            <div class="practicas-title">Actividades Complementarias</div>
+            <div class="practicas-container">
+                <div class="practica-item">
+                    <h3>Práctica Laboral</h3>
+                    <p>Experiencia profesional en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Complementaria 1</h3>
+                    <p>Asignatura complementaria según intereses del estudiante.</p>
+                </div>
+                <div class="practica-item">
+                    <h3>Práctica Profesional</h3>
+                    <p>Experiencia profesional avanzada en el ámbito de la ingeniería civil Industrial.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ponderaciones-section">
+            <div class="ponderaciones-title">Ponderaciones de Admisión</div>
+            <div class="ponderaciones-grid">
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">20%</div>
+                    <div class="ponderacion-prueba">NEM</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">RANKING</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">COMPRENSIÓN LECTORA</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">25%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">-</div>
+                    <div class="ponderacion-prueba">HISTORIA Y CS. SOCIALES</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">10%</div>
+                    <div class="ponderacion-prueba">CIENCIAS</div>
+                </div>
+                <div class="ponderacion-item">
+                    <div class="ponderacion-porcentaje">15%</div>
+                    <div class="ponderacion-prueba">MATEMÁTICAS II</div>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Universidad de Concepción - Facultad de Ingeniería - Ingeniería Civil Biomedica</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>Fuente: admision.udec.cl - Hecho por GIIA UdeC</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
