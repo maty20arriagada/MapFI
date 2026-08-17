@@ -2,12 +2,22 @@
 (function () {
   "use strict";
 
+  // SUPERADMIN es superconjunto de ADMIN en el servidor (cumpleRol() en
+  // server.js). Helper UNICO para esa comprobacion: antes cada pagina
+  // (kpis-view.js, admin-panel.js, calendario-view.js, dashboard-view.js)
+  // repetia su propio `rol === "ADMIN"`, y arreglar el bug aqui abajo no
+  // alcanzaba a esas copias — un SUPERADMIN veia el enlace de navegacion
+  // pero la pagina lo rechazaba igual (revision de codigo 2026-08-17).
+  window.esAdminOSuper = function esAdminOSuper(user) {
+    return !!user && (user.rol === "ADMIN" || user.rol === "SUPERADMIN");
+  };
+
   // ── Namespace MapFI (F8.5) ────────────────────────────────────────────────
   // Punto de acceso unico: MapFI.api, MapFI.CalendarView, MapFI.toast, etc.
   // Getters perezosos: resuelven el global real al momento de usarlo, asi no
   // importa el orden de carga de los <script> y no se rompe nada existente.
   var MODULOS = [
-    "api", "toast", "Icon", "Icons", "escapeHtml", "CsvUtils", "Filters",
+    "api", "toast", "Icon", "Icons", "escapeHtml", "esAdminOSuper", "CsvUtils", "Filters",
     "CalendarView", "HeatmapView", "HorariosView", "MatchCalculator",
     "EventTable", "Onboarding", "Tour", "Tooltips", "DashboardView",
     "CalendarioView", "toggleTheme", "logout",
@@ -34,12 +44,7 @@
     // 3) Estado de sesion → mostrar/ocultar zonas .auth-only / .guest-only.
     try {
       const { user } = await api.get("/api/auth/me");
-      // SUPERADMIN es superconjunto de ADMIN en el servidor (cumpleRol() en
-      // server.js): esta comprobacion debe reflejar lo mismo, o el
-      // SUPERADMIN pierde toda seccion .admin-only del sitio sin que el
-      // backend se lo impida (D-2, Spec 003 — hallado al probar horarios.html
-      // en vivo: el bug es global, no solo de esa pagina).
-      const esAdmin = !!user && (user.rol === "ADMIN" || user.rol === "SUPERADMIN");
+      const esAdmin = esAdminOSuper(user);
       document.body.dataset.auth = user ? "si" : "no";
       document.body.dataset.rol = user ? user.rol : "";
       document.querySelectorAll(".auth-only").forEach((e) => (e.hidden = !user));

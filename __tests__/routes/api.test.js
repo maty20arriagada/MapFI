@@ -830,6 +830,12 @@ describe("API endpoints públicos", () => {
       expect(res.body.error).toMatch(/rango/i);
     });
 
+    test("un rango invertido en /conflictos responde 400, no 500 (revisión de código 2026-08-17)", async () => {
+      const res = await request(app).get("/api/actividades/conflictos?desde=2026-06-01&hasta=2026-01-01");
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/hasta|desde/i);
+    });
+
     test("A-2 — /api/health informa versión y última migración aplicada", async () => {
       const res = await request(app).get("/api/health");
       expect(res.status).toBe(200);

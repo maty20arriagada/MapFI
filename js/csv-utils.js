@@ -138,13 +138,23 @@
    * @param {number} [limiteBytes=80000]
    * @returns {Array<Array>} lotes (nunca vacíos, conservan el orden original)
    */
+  // JSON.stringify(...).length cuenta unidades UTF-16 (caracteres), no bytes.
+  // El body real viaja como UTF-8, donde cada acento (á, é, í, ó, ú, ñ — muy
+  // comunes en titulos/ubicacion en español) pesa 2 bytes, no 1: un lote con
+  // texto acentuado podia quedar bajo el umbral en .length y superar de
+  // todos modos los 100kb reales de express.json(), el 413 que este mismo
+  // batching existe para evitar (revision de codigo 2026-08-17).
+  function bytesUtf8(s) {
+    return new TextEncoder().encode(s).length;
+  }
+
   function dividirEnLotes(actividades, limiteBytes) {
     limiteBytes = limiteBytes || 80000;
     const lotes = [];
     let loteActual = [];
     let bytesActual = 2; // "[" + "]"
     for (const a of actividades) {
-      const bytesFila = JSON.stringify(a).length + 1; // +1 por la coma separadora
+      const bytesFila = bytesUtf8(JSON.stringify(a)) + 1; // +1 por la coma separadora
       if (loteActual.length && bytesActual + bytesFila > limiteBytes) {
         lotes.push(loteActual);
         loteActual = [];

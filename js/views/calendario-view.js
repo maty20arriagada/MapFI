@@ -78,7 +78,7 @@
     (async function () {
       try {
         var r = await api.get("/api/auth/me");
-        isAdmin = !!(r.user && r.user.rol === "ADMIN");
+        isAdmin = esAdminOSuper(r.user);
       } catch (_) {}
 
       cat = await Filters.cargar();
