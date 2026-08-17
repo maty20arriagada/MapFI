@@ -8,8 +8,9 @@ jest.mock("../../js/db", () => ({
   query: jest.fn(),
 }));
 
-const { construir, aTextoCsv, campoCsv } = require("../../js/db/importar-horarios");
+const { construir, aTextoCsv, campoCsv, escribirSalidas } = require("../../js/db/importar-horarios");
 const { CARRERA } = require("../../js/services/horarioCarrera");
+const fs = require("fs");
 
 const T = "\t";
 
@@ -70,6 +71,49 @@ describe("importar-horarios — aTextoCsv", () => {
       diaSemana: 1, horaInicio: "08:00", horaFin: "09:30",
       descripcion: "Cálculo I", codigo: "500107", seccion: "1", sala: "A-411", docente: "Ana",
     });
+  });
+});
+
+describe("importar-horarios — escribirSalidas no bloquea la carga", () => {
+  // En el contenedor de producción /app es de root y el proceso corre como
+  // usuario no-root, así que escribir el respaldo falla con EACCES. Ese
+  // respaldo es un extra: si no se puede escribir, la carga debe seguir.
+  const segmentos = new Map([["6|1", [{
+    diaSemana: 1, horaInicio: "08:00", horaFin: "09:30", tipo: "CLASE",
+    descripcion: "Cálculo I", codigo: "500107", seccion: "1", sala: "A-411", docente: null,
+  }]]]);
+
+  afterEach(() => jest.restoreAllMocks());
+
+  test("un EACCES devuelve {ok:false} en vez de lanzar", () => {
+    jest.spyOn(fs, "mkdirSync").mockImplementation(() => {
+      const e = new Error("EACCES: permission denied, mkdir '/app/Extras/salida'");
+      e.code = "EACCES";
+      throw e;
+    });
+    let r;
+    expect(() => { r = escribirSalidas(segmentos, "informe", "/app/Extras/salida"); }).not.toThrow();
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/EACCES/);
+    expect(r.dir).toBe("/app/Extras/salida");
+  });
+
+  test("un fallo al escribir un CSV tampoco lanza", () => {
+    jest.spyOn(fs, "mkdirSync").mockImplementation(() => undefined);
+    jest.spyOn(fs, "writeFileSync").mockImplementation(() => { throw new Error("ENOSPC"); });
+    const r = escribirSalidas(segmentos, "informe", "/lo/que/sea");
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/ENOSPC/);
+  });
+
+  test("cuando sí puede escribir, devuelve ok con el directorio usado", () => {
+    const escritos = [];
+    jest.spyOn(fs, "mkdirSync").mockImplementation(() => undefined);
+    jest.spyOn(fs, "writeFileSync").mockImplementation((ruta) => { escritos.push(String(ruta)); });
+    const r = escribirSalidas(segmentos, "informe", "/destino");
+    expect(r).toMatchObject({ ok: true, dir: "/destino" });
+    expect(escritos.some((p) => p.includes("REVISION.md"))).toBe(true);
+    expect(escritos.some((p) => p.includes("horario-ICI-1.csv"))).toBe(true);
   });
 });
 
