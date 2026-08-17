@@ -1,2 +1,8 @@
 * text=auto eol=lf
 *.bat text eol=crlf
+
+# Datos de origen del horario: se versionan TAL CUAL los entregó la Facultad,
+# sin normalizar saltos de línea. El parser los tolera igual, pero así el
+# archivo que verifican las pruebas es byte a byte el mismo en toda máquina.
+/Extras/Horarios_FI_UDEC.txt -text
+/Extras/Mallas/*.html -text

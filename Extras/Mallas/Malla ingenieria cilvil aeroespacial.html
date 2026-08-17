@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malla Curricular - Ingeniería Civil Aeroespacial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0056A4, #1a6fc4, #2a8ae4);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #0056A4;
+        }
+
+        h1 {
+            color: #0056A4;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #1a6fc4;
+            font-size: 1.8rem;
+            font-weight: 500;
+        }
+
+        .disclaimer {
+            background: #ffeb3b;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: inline-block;
+            color: #333;
+        }
+
+        .malla-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .anio-col {
+            background: #f5f7fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .anio-col:hover {
+            transform: translateY(-5px);
+        }
+
+        .anio-title {
+            background: #0056A4;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .semestre {
+            margin-bottom: 20px;
+        }
+
+        .semestre-title {
+            background: #1a6fc4;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .ramo {
+            background: white;
+            border-left: 4px solid #2a8ae4;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .ramo:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ramo-header {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            background: #f0f4f8;
+        }
+
+        .ramo-header:hover {
+            background: #e1e8f0;
+        }
+
+        .ramo-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .ramo.open .ramo-icon {
+            transform: rotate(180deg);
+        }
+
+        .ramo-content {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: #f9fbfd;
+        }
+
+        .ramo.open .ramo-content {
+            padding: 15px;
+            max-height: 500px;
+        }
+
+        .ramo-descripcion {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .profesores {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+
+        .profesores-titulo {
+            font-weight: 600;
+            color: #0056A4;
+            margin-bottom: 5px;
+        }
+
+        .profesores-lista {
+            list-style-type: none;
+            font-size: 0.85rem;
+        }
+
+        .profesores-lista li {
+            padding: 3px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        button {
+            background: #0056A4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #1a6fc4;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1200px) {
+            .malla-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .malla-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .malla-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ingeniería Civil Aeroespacial</h1>
+            <h2>Facultad de Ingeniería</h2>
+            <div class="disclaimer">Información referencial. Podría ser modificada.</div>
+        </header>
+
+        <div class="malla-container" id="malla">
+            <!-- Año 1 -->
+            <div class="anio-col">
+                <div class="anio-title">1º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM I</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos del álgebra lineal y sus aplicaciones en problemas de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Carlos Méndez</li>
+                                    <li>Dra. Ana López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo I Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del cálculo diferencial e integral con aplicaciones en problemas de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                    <li>Mg. Patricia González</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de los principios fundamentales de la física y su aplicación en problemas de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Comunicación Gráfica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de representación gráfica aplicadas al diseño e ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Laura Torres</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Química General I</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales de la química y su aplicación en procesos aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Fernando Castro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM II</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Álgebra II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del álgebra lineal con aplicaciones avanzadas en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Carlos Méndez</li>
+                                    <li>Dra. Ana López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo II Aplicado a la Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de cálculo multivariable y sus aplicaciones en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                    <li>Mg. Patricia González</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Física II</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del estudio de la física con énfasis en electricidad, magnetismo y termodinámica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Innovación en Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Conceptos básicos de innovación y creatividad aplicados al campo de la ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 2 -->
+            <div class="anio-col">
+                <div class="anio-title">2º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM III</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo III</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de ecuaciones diferenciales y cálculo vectorial con aplicaciones en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Programación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de programación y algoritmos aplicados a la solución de problemas de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mediciones Mecánicas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas y herramientas para mediciones en sistemas mecánicos aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Materiales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de propiedades y comportamiento de materiales utilizados en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Claudia Navarro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estática</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Análisis de sistemas en equilibrio estático aplicados a estructuras aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IV</div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Cálculo Numérico para Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Métodos numéricos para la resolución de problemas matemáticos en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades básicas de comunicación en inglés técnico aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Nivel Básico Economía</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios básicos de economía aplicada a la ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Andrés López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Inglés Comunicativo 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Continuación del desarrollo de habilidades comunicativas en inglés técnico.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Nivel Básico Alto</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Consolidación de nivel básico alto en inglés técnico aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Mg. Susan Miller</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 3 -->
+            <div class="anio-col">
+                <div class="anio-title">3º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM V</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Termodinámica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de las leyes de la termodinámica y su aplicación en sistemas de propulsión aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Ecuaciones Diferenciales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de ecuaciones diferenciales y sus aplicaciones en modelamiento de sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Dinámica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del movimiento de cuerpos y sistemas bajo la acción de fuerzas en aplicaciones aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estadística y Probabilidades</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de estadística descriptiva e inferencial y teoría de probabilidades aplicadas.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Natalia Vargas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a Procesos de Manufactura</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios y técnicas básicas de procesos de manufactura aplicados a la industria aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                <li>Dra. Claudia Navarro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VI</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas Mecánicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de sistemas mecánicos aplicados a aeronaves y vehículos espaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Fluidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del comportamiento de fluidos en reposo y movimiento, con aplicaciones en aerodinámica.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Alejandro Ríos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica de Sólidos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Comportamiento de materiales sólidos bajo diferentes tipos de carga en estructuras aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Claudia Navarro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>CDiO</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Concepción, Diseño, Implementación y Operación de sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Estructuras Aeroespaciales</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de estructuras para aplicaciones aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 4 -->
+            <div class="anio-col">
+                <div class="anio-title">4º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Análisis de Sistemas Dinámicos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del comportamiento de sistemas dinámicos en el tiempo aplicados a aeronaves y naves espaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Transferencia de Calor</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Mecanismos de transferencia de calor y sus aplicaciones en sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Miguel Ángel Soto</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electrotecnia</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Fundamentos de electricidad y sus aplicaciones en sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Eduardo Morales</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecatrónica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Integración de mecánica, electrónica e informática en sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Introducción a la Ingeniería Aeroespacial</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios fundamentales y aplicaciones de la ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM VIII</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Aerodinámica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio del comportamiento del aire alrededor de cuerpos en movimiento, con aplicaciones en diseño de aeronaves.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Alejandro Ríos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Simulación Numérica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Técnicas de simulación numérica aplicadas a problemas de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Daniel Herrera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Procesos Industriales de Fabricación</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Procesos avanzados de fabricación en la industria aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                    <li>Dra. Claudia Navarro</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Aerospace Forum</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Foro de discusión sobre temas actuales y tendencias en la industria aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 1</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 2</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Año 5 -->
+            <div class="anio-col">
+                <div class="anio-title">5º AÑO</div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM IX</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Astronáutica</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios de ingeniería para viajes espaciales y diseño de naves espaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Proyecto de Ingeniería</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de un proyecto integral de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Diseño Mecánico</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios y metodologías para el diseño de sistemas mecánicos aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Sistemas de Control</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Diseño y análisis de sistemas de control automático para aplicaciones aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Roberto Silva</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Elementos de Máquinas</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Estudio de componentes fundamentales de máquinas utilizadas en sistemas aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Jorge Fuentes</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 3</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 4</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semestre">
+                    <div class="semestre-title">SEM X</div>
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Mecánica del Vuelo</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Principios físicos y matemáticos del vuelo de aeronaves.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Alejandro Ríos</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Propulsión</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Sistemas de propulsión para aeronaves y vehículos espaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Formulación y Evaluación de Proyectos</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Metodologías para la formulación y evaluación de proyectos de ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Andrés López</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Relaciones Humanas y Habilidades de Gestión Organizacional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Desarrollo de habilidades interpersonales y de gestión en organizaciones aeroespaciales.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dra. Patricia Rojas</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Habilitación Profesional</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Preparación para el ejercicio profesional de la ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Dr. Ricardo Espinoza</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 5</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ramo">
+                        <div class="ramo-header">
+                            <span>Electiva 6</span>
+                            <i class="fas fa-chevron-down ramo-icon"></i>
+                        </div>
+                        <div class="ramo-content">
+                            <div class="ramo-descripcion">
+                                Curso electivo según especialización en ingeniería aeroespacial.
+                            </div>
+                            <div class="profesores">
+                                <div class="profesores-titulo">Profesores:</div>
+                                <ul class="profesores-lista">
+                                    <li>Por definir</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="expandAll"><i class="fas fa-expand"></i> Expandir Todo</button>
+            <button id="collapseAll"><i class="fas fa-compress"></i> Colapsar Todo</button>
+        </div>
+
+        <footer>
+            <p>Facultad de Ingeniería - Ingeniería Civil Aeroespacial</p>
+            <p>Malla curricular actualizada - Información referencial sujeta a modificaciones</p>
+            <p>admision.udec.cl</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Funcionalidad para expandir/colapsar ramos
+            const ramosHeaders = document.querySelectorAll('.ramo-header');
+            
+            ramosHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const ramo = this.parentElement;
+                    ramo.classList.toggle('open');
+                });
+            });
+            
+            // Botones para expandir/colapsar todos los ramos
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.add('open');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.ramo').forEach(ramo => {
+                    ramo.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

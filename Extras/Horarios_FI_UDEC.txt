@@ -1,0 +1,1448 @@
+INGENIERIA CIVIL (TODAS LAS CARRERAS)
+500107	1	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-411) - Ju 1,2 (A-411)
+[P] Ma 8,9 (A-9)
+[T] Úrsula Moya Moya	23/06/26
+500107	2	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-511) - Ju 1,2 (A-511)
+[P] Ma 8,9 (A-213)
+[T] Felipe Vargas Martínez	23/06/26
+500107	3	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 8,9 (A-2) - Ju 8,9 (A-3)
+[P] Ma 1,2 (A-413)
+[T] Víctor Aros Q	23/06/26
+500107	4	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 8,9 (A-4) - Ju 8,9 (A-112)
+[P] Ma 1,2 (A-414)
+[T] Jonathan Briones	21/07/26
+500107	5	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 8,9 (A-6) - Ju 8,9 (A-211)
+[P] Ma 1,2 (A-415)
+[T] Rodrigo Quezada	23/06/26
+500107	6	Cálculo I Aplicado a la Ingeniería	5	[T] Ma 8,9 (A-3) - Ju 8,9 (A-212)
+[P] Ma 1,2 (A-416)
+[T] Úrsula Moya Moya	21/07/26
+500108	1	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-211) - Ju 3,4 (A-211)
+[P] Ma 10,11 (A-414)
+[T] Felipe Vargas Martínez	23/06/26
+500108	2	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-9) - Ju 10,11 (A-2)
+[P] Ma 3,4 (A-212)
+[T] Manuel Melo	21/07/26
+500108	3	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-5) - Ju 10,11 (A-4)
+[P] Ma 3,4 (A-213)
+[T] Rodrigo Quezada	23/06/26
+500108	4	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-513) - Ju 10,11 (A-113)
+[P] Ma 3,4 (A-214)
+[T] Elizabeth Manosalva	21/07/26
+500108	5	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-113) - Ju 10,11 (A-211)
+[P] Ma 8,9 (A-313)
+[T] Luis Bello	15/07/26
+500108	6	Álgebra I Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-114) - Ju 10,11 (A-213)
+[P] Ma 8,9 (A-411)
+22/07/26
+500117	1	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-111) - Ju 1,2 (A-111)
+[P] Ma 8,9 (A-113)
+[T] Víctor Aros Q	23/06/26
+500117	2	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-112) - Ju 1,2 (A-112)
+[P] Ma 8,9 (A-114)
+[T] Elizabeth Manosalva	23/06/26
+500117	3	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-113) - Ju 1,2 (A-113)
+[P] Ma 8,9 (A-511)
+[T] Mauricio Ascencio	23/06/26
+500117	4	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-114) - Ju 1,2 (A-114)
+[P] Ma 8,9 (A-214)
+[T] Luis Bello	21/07/26
+500117	5	Cálculo II Aplicado a la Ingeniería	5	[T G1] Ma 1,2 (A-211) - Ju 1,2 (A-211)
+[P G1] Ma 8,9 (A-415)
+[P G2] Mi 8,9 (TM 3-7)
+[T] Jonathan Briones	13/08/26
+500117	6	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-1) - Ju 1,2 (A-1)
+[P] Ma 8,9 (A-412)
+[T] Manuel Melo	23/06/26
+500117	7	Cálculo II Aplicado a la Ingeniería	5	[T] Ma 1,2 (A-6) - Ju 1,2 (A-6)
+[P] Ma 8,9 (Pend)
+12/08/26
+500118	1	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-412) - Ju 3,4 (A-412)
+[P] Ma 10,11 (A-1)
+[T] Úrsula Moya Moya	13/08/26
+500118	2	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-413) - Ju 3,4 (A-413)
+[P] Ma 10,11 (A-512)
+[T] Mauricio Ascencio	23/06/26
+500118	3	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-414) - Ju 3,4 (A-414)
+[P] Ma 10,11 (A-514)
+[T] Rodrigo Quezada	23/06/26
+500118	4	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-415) - Ju 3,4 (A-415)
+[P] Ma 10,11 (A-413)
+[T] Jonathan Briones	21/07/26
+500118	5	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-1) - Ju 3,4 (A-1)
+[P] Ju 10,11 (A-413)
+[T] Manuel Melo	21/07/26
+500118	6	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 10,11 (A-6) - Ju 10,11 (A-214)
+[P] Ma 3,4 (A-3)
+[T] Úrsula Moya Moya	13/08/26
+500118	7	Álgebra II Aplicado a la Ingeniería	5	[T] Ma 3,4 (A-2) - Ju 3,4 (A-2)
+[P] Ju 10,11 (A-313)
+[T] Luis Bello	10/08/26
+500150	1	ACOMAT	3	[T G1] Lu 5,6 (TM 1-3) - Lu 7,8 (TM 3-17) - Mi 5,6 (TM 1-3) - Vi 6,7 (TM 3-3)
+[P G1] Lu 6,7 (TM 3-3) - Mi 5,6 (TM 3-5)
+[L G1] Mi 5,6 (TM 3-10)
+[L G2] Mi 5,6 (TM 3-7)
+[T] Nicole Groz	17/08/26
+500151	1	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (TM 3-10)
+[T] Roberto Riquelme	31/07/26
+500155	1	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (Sala Teaching)
+[T] Oscar Farías - Meylí Valin	29/07/26
+500155	2	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (Diseño Mec)
+[T] Alejandro López	29/05/26
+500155	3	Introducción a la Innovación en Ingeniería	2	[T] Ma 5,6 (TQ 5-1)
+[T] Braulio Morales	23/07/26
+500155	4	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (TM 3-1)
+OBLIG	[T] Rodrigo Yepsen	29/05/26
+500155	5	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (TM 3-9)
+OBLIG	[T] Richard Riffo	29/05/26
+500155	6	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (TM 3-10)
+OBLIG	[T] Pedro Vera	30/07/26
+500155	7	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (Diseño Mec)
+OBLIG	[T] Fernando Castillo	15/06/26
+500155	8	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (TM 1-3)
+OBLIG	[T] Javier Vidal	08/08/26
+500155	9	Introducción a la Innovación en Ingeniería	2	[T] Lu 5,6 (TM 3-9)
+OBLIG	[T] Rodrigo Yepsen	15/06/26
+500155	10	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (Sala Teaching)
+OBLIG	[T] Jorge Maluenda	03/08/26
+500155	11	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (TM 3-5)
+OBLIG	[T] Braulio Morales	06/08/26
+500155	12	Introducción a la Innovación en Ingeniería	2	[T] Lu 6,7 (TM 3-15)
+OBLIG	[T] James Morales	23/06/26
+500155	13	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (TM 3-5)
+OBLIG	[T] Braulio Morales	23/07/26
+500155	14	Introducción a la Innovación en Ingeniería	2	[T] Lu 3,4 (TM 3-3)
+OBLIG	[T] Gustavo Riveros	07/08/26
+500155	15	Introducción a la Innovación en Ingeniería	2	[T] Lu 1,2 (IS 2-2)
+OBLIG	[T] James Morales	07/08/26
+500502	1	Principios de Conducta Responsable en la Industria de Procesos Químicos	2	[T] Ju 8,9,10 (TQ 2-2)
+[T] Braulio Morales	03/06/26
+500601	1	Habilidades Comunicativas para Ingeniería	2	[T] Mi 10 (TM 1-3)
+[P] Mi 8,9 (TM 1-3)
+[T] Sergio Barría	11/08/26
+500701	1	Inglés Comunicativo 1 Nivel Principiante	3	[T] Lu 8,9 (TM 3-3) - Vi 8,9 (TM 3-10)
+[T] Bernardo Gallegos - Ghiren Canahuate	09/07/26
+500702	1	Inglés Comunicativo 2 Nivel Elemental	3	[T] Lu 10,11 (Sala Teaching) - Vi 10,11 (Sala Teaching)
+[T] Ghiren Canahuate - Bernardo Gallegos	03/06/26
+500703	1	Inglés Comunicativo 3 Nivel Básico	3	[T] Ma 5,6 (IS 2-2) - Mi 8,9 (TM 3-16)
+[T] Ghiren Canahuate	03/06/26
+500704	1	Inglés Comunicativo 4 Nivel Básico Alto	3	[T] Lu 5,6 (TM 3-16) - Ju 7,8 (TM 3-7)
+[T] Ghiren Canahuate	09/06/26
+500711	1	InglÃ©s Comunicativo 1 Nivel Principiante	3	[T] Lu 8,9 (TM 3-3) - Vi 8,9 (TM 3-10)
+
+INGENIERIA CIVIL
+544499	1	Memoria de Título	20		OBLIG	[T] Rodrigo Silva	02/06/26
+544555	1	Introducción a las Ciencias Ambientales	3	[T] Ma 8,9 (Pend)
+[P] Vi 6,7 (TM 3-1)
+[T] Jaime Zaror	12/08/26
+554033	1	Hidráulica	4	[T] Mi 8,9 (TM 3-1) - Ju 4 (TM 3-15)
+[P] Vi 5 (TM 3-15)
+[L] Vi 6 (TM 3-15)
+OBLIG	[P] Maricarmen Guerra	06/08/26
+554034	1	Análisis de Estructuras	4	[T] Ma 1,2 (A-212) - Vi 2 (TM 3-1)
+[P] Ju 1,2 (TM 3-15)
+OBLIG	[T] Rodrigo Silva	15/07/26
+554042	1	Ingeniería Antisísmica	4	[T] Ma 1,2 (A-313)
+[P] Ju 3,4 (TM 3-9) - Vi 5 (A-512)
+OBLIG	[P] Patricio Cendoya	13/08/26
+554048	1	Ingeniería Ambiental	4	[T] Lu 9,10 (LabCiv 2-2) - Ju 8 (LabCiv 2-2)
+[P] Ju 9 (LabCiv 2-2)
+OBLIG	[T] Alex Schwarz	02/06/26
+554050	1	Proyecto de Memoria de Título	4	[T] Mi 10,11 (TM 3-14)
+[P] Vi 3,4 (TM 1-1)
+OBLIG	[T] Alejandro Tudela	15/06/26
+554061	1	Memoria de Título	18		OBLIG	[T] Rodrigo Silva	27/05/26
+554075	1	Taller de Investigación de Pregrado I	1	[P] Ma 3,4 (TM 3-2)
+[T] Gonzalo Montalva - Daniella Escribano	14/07/26
+554124	1	Introducción a la Ingeniería Civil II	4	[T G1] Lu 3,4,5 (A-3)
+[P G1] Vi 7,8,9 (TM 3-9)
+[P G2] Vi 7,8,9 (A-201)
+OBLIG	[T] Alexis Orellana - Víctor Aguilar	12/08/26
+554202	1	Inspección Técnica de Obras	4	[T] Ma 11,12,13 (TM 3-18)
+[P] Ju 11,12 (TM 3-18)
+ELECT	[T] Pablo Ávalos - Rodrigo Silva	14/07/26
+554205	1	Gestion de Infraestructura	4	[T] Lu 1,2 (TM 3-17) - Ma 1 (TM 3-18)
+[P] Ma 2,3 (TM 3-18)
+OBLIG	[T] Tomás Echaveguren	03/06/26
+554250	1	Estática	3	[T] Lu 3,4 (TM 3-1) - Ju 2 (LabCiv 2-1)
+[P] Mi 8,9 (LabCiv 2-1)
+OBLIG	[T] Sebastián Calderón	07/08/26
+554250	2	Estática	3	[T] Mi 3,4 (TM 1-3) - Ju 6 (TM 1-3)
+[P] Lu 8,9 (TM 1-3)
+OBLIG	[T] Rodrigo Silva	13/08/26
+554251	1	Proyecto de Construcción Sustentable	2	[T] Ma 8,9 (TM 3-1)
+[P] Ju 10 (A-201)
+OBLIG	[T] Luis Merino	12/08/26
+554252	1	Geomática	3	[T] Ma 1,2 (TM 3-1)
+[P] Vi 3,4,5 (LabCiv 2-2)
+OBLIG	[T] Alexis Orellana	02/06/26
+554290	1	Práctica Laboral	2		OBLIG	[T] Rodrigo Silva	02/06/26
+554323	2	Mecánica de Fluidos	4	[T] Lu 3,4,5 (LabCiv 2-2)
+[P] Vi 1,2 (TM 3-15)
+[T] Fernando Betancourt	08/08/26
+554327	1	Calidad del Agua	4	[T] Lu 5,6 (TM 3-17)
+[P] Ma 8,9 (TM 1-2)
+ELECT	[T] Alex Schwarz	11/08/26
+554328	1	Ciudad y Transporte	4	[T] Ma 4,5 (TM 3-18) - Mi 1 (TM 1-2)
+[P] Mi 2 (TM 1-2)
+ELECT	[T] Juan Carrasco	02/06/26
+554333	1	Diseño de Estructuras Industriales de Acero	4	[T] Ma 11,12,13 (TM 3-17)
+[P] Ju 11,12 (TM 3-17)
+ELECT	[T] Carlos Ramírez - Rodrigo Silva	14/07/26
+554335	1	Diseño Sismoresistente	4	[T] Ma 2,3 (IS 2-2)
+[P] Ju 7 (IS 2-1)
+[L] Ju 8,9 (IS 2-1)
+ELECT	[T] Sebastián Calderón	13/08/26
+554337	1	Gestión de Infraestructura de Transporte	4	[T] Lu 1,2 (TM 3-17) - Ma 1 (TM 3-18)
+[P] Ma 2,3 (TM 3-18)
+ELECT	[T] Tomás Echaveguren	02/06/26
+554341	1	Ingeniería de Ríos	4	[T] Ma 3,4 (LabCiv 2-2)
+[P] Vi 5,6 (LabCiv 2-1)
+ELECT	[T] Oscar Link	02/06/26
+554346	1	Inspección Técnica de Obras	4	[T] Ma 11,12,13 (TM 3-18)
+[P] Ju 11,12 (TM 3-18)
+ELECT	[T] Pablo Ávalos	02/06/26
+554347	1	Modelamiento Numérico de Problemas Geotécnicos	4	[T] Ma 3,4 (TM 3-13) - Ju 8 (LabCiv 2-1)
+[P] Ju 9,10 (LabCiv 2-1)
+ELECT	[T] Rafael Martínez	02/06/26
+554350	1	Análisis Estructural	3	[T] Ma 1,2 (A-212) - Vi 2 (TM 3-1)
+[P] Ju 1,2 (TM 3-15)
+OBLIG	[T] Rodrigo Silva	15/07/26
+554351	1	Geotecnia	3	[T] Lu 3,4 (A-413)
+[P] Mi 1 (A-214)
+[L] Mi 2 (A-214)
+OBLIG	[T] Gonzalo Montalva	03/08/26
+554352	1	Hidraúlica	4	[T] Mi 8,9 (TM 3-1) - Ju 4 (TM 3-15)
+[P] Vi 5 (TM 3-15)
+[L] Vi 6 (TM 3-15)
+OBLIG	[T] Maricarmen Guerra	06/08/26
+554353	1	Ingeniería del Hormigón	3	[T] Lu 1,2 (TM 3-15)
+[L] Vi 3,4 (A-212)
+OBLIG	[T] Luis Merino	14/08/26
+554354	1	Proyecto de Ingeniería Conceptual	2	[T] Ma 10,11 (LabCiv 2-1)
+[P] Ju 5 (LabCiv 2-2)
+OBLIG	[T] Oscar Link - Víctor Aguilar	15/07/26
+554356	1	Planificación y Economía de Transporte	4	[T] Ju 1,2 (TM 1-2)
+[P] Vi 1,2 (TM 3-12)
+ELECT	[T] Alejandro Tudela	02/06/26
+554363	1	Mecánica de Suelos Avanzada	4	[T] Mi 8,9 (TM 3-18) - Ju 3 (TM 3-18)
+[P] Ju 4,5 (TM 3-18)
+ELECT	[T] Daniella Escribano	02/06/26
+554366	1	Hidrología Distribuida	4	[T] Mi 8,9 (TM 3-14) - Ju 4 (TM 3-13)
+[P] Ju 5,6 (TM 3-13)
+ELECT	[T] Alejandra Stehr	15/06/26
+554367	1	Ingeniería de Puentes	4	[T] Mi 2,3,4 (DII 2)
+[P] Ma 8,9 (I2030)
+ELECT	[T] Víctor Aguilar - Oscar Link - Gonzalo Montalva	11/08/26
+554372	1	Geoingeniería en Terreno	0	[T] Lu 8 (IS 2-3) - Ma 1,2 (TM 3-3)
+[P] Lu 9,10 (IS 2-3)
+ELECT	[T] René Gómez - Gonzalo Montalva - Roberto Gómez - Daniella Escribano	15/06/26
+554373	1	Diseño de Edificios de Hormigón Armado	4	[T] Lu 7,8 (LabCiv 2-1) - Vi 5 (DII 1)
+[P] Vi 6,7 (DII 1)
+ELECT	[T] Alexander Opazo	07/08/26
+554374	1	Edificación	4	[T] Lu 5,6 (TM 3-12) - Vi 5 (TM 3-18)
+[P] Vi 6,7 (TM 3-18)
+ELECT	[T] Rodrigo Valenzuela	07/07/26
+554452	1	Infraestructura de Transporte	3	[T] Mi 1,2 (TM 3-5)
+[P] Ju 5,6 (TM 3-7)
+OBLIG	[T] Tomás Echaveguren	08/08/26
+554453	1	Ingeniería Antisísmica	3	[T] Ma 1,2 (A-313)
+[P] Ju 3,4 (TM 3-9) - Vi 5 (A-512)
+OBLIG	[T] Patricio Cendoya	13/08/26
+554454	1	Fundaciones	3	[T] Ma 8,9 (LabCiv 2-1)
+[P] Vi 1,2 (LabCiv 2-1)
+[L] Vi 3 (LabCiv 2-1)
+OBLIG	[T] Mario Valenzuela	11/08/26
+554455	1	Ingeniería Ambiental	3	[T] Lu 8,9 (LabCiv 2-2) - Ju 8 (LabCiv 2-2)
+[P] Ju 9 (LabCiv 2-2)
+OBLIG	[T] Alex Schwarz	02/06/26
+554456	1	Proyecto de Ingeniería de Detalle	3	[T] Mi 3,4 (TM 3-5)
+[P] Vi 3,4 (IS 2-2)
+OBLIG	[T] Patricio Cendoya - César Cortés	11/08/26
+554490	1	Práctica Pre Profesional	5		OBLIG	[T] Rodrigo Silva	02/06/26
+554504	1	Proyecto Hidráulico-Ambiental	4	[T] Mi 1,2 (LabCiv 2-1)
+[P] Vi 1,2 (LabCiv 2-2)
+ELECT	[T] Claudio Morales	12/08/26
+554550	1	Proyecto de Ingeniería Civil II	1	[T] Vi 8 (TM 3-3)
+[P] Vi 9 (TM 3-3)
+OBLIG	[T] César Cortés - Alejandra Stehr - Alejandro Tudela - Juan Carrasco	14/07/26
+554590	1	Práctica Pre Profesional II	4		OBLIG	[T] Juan Carrasco	02/06/26
+554604	1	Economía de Transporte	4	[T] Ju 1,2 (TM 1-2)
+[P] Vi 1,2 (TM 3-12)
+ELECT	[T] Alejandro Tudela	10/07/26
+554695	1	Memoria de Título	20		OBLIG	[T] Rodrigo Silva	02/06/26
+554701	1	Sismología Aplicada a la Ingeniería	4	[T] Ma 5,6,7 (TM 3-12)
+[P] Ju 1,2 (TM 3-13)
+[T] Javier Ojeda	15/06/26
+554702	1	Ciencia De Datos Espaciales Para IngenierÃ­a Civil	4	[T] Mi 10,11,12 (TM 3-11)
+[P] Vi 1 (TM 3-17)
+[L] Vi 2 (TM 3-17)
+ELECT	[T] Rodrigo Victoriano - Alexis Orellana	30/07/26
+
+INGENIERIA ELECTRICA
+543201	1	Electromagnetismo	4	[T] Lu 8,9 (TM 3-15)
+[P] Vi 7,8 (LabCiv 2-2)
+OBLIG	[T] Maykop	14/08/26
+543206	1	Electromagnetismo Aplicado	4	[T] Lu 3 (TM 3-2) - Vi 3,4 (DII 1)
+[P] Vi 8,9 (DII 1)
+[T] Luis García	07/08/26
+543214	1	Sistemas Lineales Dinámicos	4	[T] Lu 1,2 (IS 2-1) - Mi 2 (IS 2-3)
+[P] Vi 5,6 (IS 2-1)
+OBLIG	[T] Carlos Madariaga	06/08/26
+543243	1	Laboratorio de Electrónica	3	[T] Ju 8,9 (TM 3-5)
+[L] Ju 1,2,3,4 (Lab.Ele-2)
+OBLIG	[T] Miguel Albornoz	04/08/26
+543244	1	Sistemas de Control	4	[T] Ma 3,4 (A-201) - Mi 9 (A-8)
+[P] Ju 10,11 (TM 3-10)
+OBLIG	[T] Alejandro Rojas	12/08/26
+543246	1	Sistemas de Comunicaciones	3	[T] Ma 3 (TM 3-15) - Ju 1,2 (TM 3-10)
+[P] Ma 10,11 (TM 3-10)
+OBLIG	[T] Fernando Castillo	05/08/26
+543251	1	Electromagnetismo	4	[T] Lu 8,9 (TM 3-15)
+[P] Vi 7,8 (LabCiv 2-2)
+[T] Maykop	11/08/26
+543262	1	Teoría de Circuitos	4	[T] Ma 1,2 (TM 3-7) - Ju 4 (TM 1-3)
+[P] Ma 6,7 (TM 1-1)
+OBLIG	[T] Sergio Torres - Francisco Pérez	04/08/26
+543262	2	Teoría de Circuitos	4	[T] Ma 1,2 (A-2) - Ju 1 (A-2)
+[P] Vi 4,5 (TM 3-16)
+OBLIG	[T] Richard Riffo	04/08/26
+543262	3	Teoría de Circuitos	4	[T] Ma 1,2 (A-2) - Ju 1 (A-2)
+[P] Ju 8,9 (A-202)
+OBLIG	[T] Richard Riffo	04/08/26
+543263	1	Laboratorio de Circuitos Eléctricos	3	[T] Mi 3,4 (Sala Teaching)
+[P] Ma 7,8,9 (Lab.Ele-1)
+OBLIG	[T] Claudio Roa	11/08/26
+543263	2	Laboratorio de Circuitos Eléctricos	3	[T] Mi 10,11 (TM 3-7)
+[L] Lu 7,8,9 (Lab.Ele-2)
+OBLIG	[T] Claudio Roa	04/08/26
+543290	1	Sistemas Digitales	3	[T] Ma 1,2 (LabBio Señales) - Mi 2 (LabBio Señales)
+[P] Mi 10,11 (LabBio Señales)
+OBLIG	[T] Pablo Aqueveque	11/08/26
+543350	1	Rectificación Industrial	3	[T] Lu 4,5 (LabCom IS-2) - Ju 6 (Lab.Mec.Comp)
+[P] Ju 7 (Lab.Mec.Comp)
+OBLIG	[T] Eduardo Wiechmann	14/08/26
+543351	1	Electromagnetismo	3	[T] Lu 8,9 (IS 2-2)
+[P] Vi 8,9 (TM 3-5)
+[T] Carlos Madariaga	07/08/26
+543351	2	Electromagnetismo	3	[T] Lu 8,9 (TM 3-15)
+[P] Vi 7,8 (LabCiv 2-2)
+[P] Maykop	06/08/26
+543362	1	Conversión Electromecánica de la Energía	4	[T] Ma 8,9 (TM 3-9) - Mi 3,4 (LabCiv 2-1)
+[P] Lu 10,11 (LabCiv 2-1)
+OBLIG	[T] Juan Tapia - Carlos Madariaga	11/08/26
+543434	1	Tópicos en Control Automático	4	[T] Ju 1,2 (TM 3-14)
+[P] Ma 8,9,10 (Lab.Ctrl)
+ELECT	[T] Juan Pablo Segovia	04/08/26
+543453	1	Accionamientos Eléctricos	4	[T] Ma 1,2 (TM 1-3) - Mi 3,4 (TM 3-16) - Mi 8,9 (TM 3-3)
+OBLIG	[T] Rubén Peña	04/08/26
+543454	1	Distribución Industrial de la Energía	4	[T] Lu 8,9 (TM 3-5) - Ma 7 (TM 3-13)
+[P] Ma 8,9 (TM 3-13)
+OBLIG	[T] Luis Morán	11/08/26
+543492	1	Práctica Laboral	2		OBLIG	[T] Leonardo Palma	04/08/26
+543499	1	Memoria de Título	20			[T] Leonardo Palma	05/08/26
+543540	1	Mercado Eléctrico de la Distribución	3	[T] Mi 8,9 (Pend) - Ju 10 (TM 3-2)
+[P] Ju 11 (TM 3-2)
+ELECT	[T] Rosa Aguilera - Alejandro Andalaft - Enrique López	07/08/26
+543551	1	Taller de Proyectos Eléctricos	3	[T G1] Vi 7,8 (Diseño Mec)
+[P G1] Vi 10,11,12 (LabCom IS-1)
+[P G2] Vi 10,11,12 (LabCom IS-2)
+OBLIG	[T] Cristian Gutiérrez	04/08/26
+543586	1	Introducción al Diseño de Vehículos Eléctricos	3	[T] Lu 2,3 (TM 1-2) - Mi 3 (TM 1-2)
+ELECT	[T] Leonardo Palma	14/08/26
+543590	1	Practica Profesional	0		OBLIG	[T] Leonardo Palma	04/08/26
+543690	1	Práctica Profesional	4		OBLIG	[T] Leonardo Palma	04/08/26
+543695	1	Memoria de Título	20		OBLIG	[T] Leonardo Palma	04/08/26
+543697	1	Proyecto de MT Eléctrico	3		ELECT	[T] Leonardo Palma	05/08/26
+543699	1	Memoria de Título	18		OBLIG	[T] Leonardo Palma	04/08/26
+543707	1	Identificación de Parámetros	3	[T] Ju 3,4,5 (TM 1-2)
+ELECT	[T] Alejandro Rojas	04/08/26
+543726	1	Modelación Dinámica de Redes Eléctricas	4	[T] Ma 10,11 (TM 3-11) - Ju 7 (TM 1-1)
+[P] Vi 4,5 (TM 3-13)
+ELECT	[T] Claudio Roa	12/08/26
+543728	1	Procesamiento Digital de Señales	3	[T] Lu 8,9,10 (Diseño Mec)
+OBLIG	[T] Daniel Sbarbaro	04/08/26
+543756	1	Comunicaciones Satelitales	3	[T] Vi 8,9,10 (TM 3-17)
+ELECT	[T] Carlos Loyola	05/08/26
+543808	1	Calidad de Suministro Eléctrico	3	[T] Lu 2 (TM 3-18) - Ma 3,4 (I2030)
+ELECT	[T] Luis Morán	04/08/26
+543810	1	Control Sobre Redes	4	[T] Lu 3,4 (IS 2-3) - Vi 1,2 (IS 2-3)
+ELECT	[T] Alejandro Rojas	04/08/26
+543811	1	Convertidores Estáticos Multinivel	3	[T] Ma 5,6 (TM 3-13) - Ju 6 (TM 3-18)
+ELECT	[T] José Espinoza	05/08/26
+543812	1	Diseño de Circuitos en VLSI	4	[T] Ma 8,9 (TM 1-1) - Mi 4 (IS 2-2)
+ELECT	[T] Miguel Figueroa	05/08/26
+543818	1	Sensores Ópticos	4	[T] Ma 3,4,5 (TM 1-1)
+[L] Mi 9,10,11 (Lab.Ele-1)
+ELECT	[T] Sergio Torres	12/08/26
+543819	1	Teoría de Detección y Estimación	3	[T] Ju 4,5 (LabTel MicroOndas)
+[P] Vi 2,3 (LabTel MicroOndas)
+ELECT	[T] Sebastián Godoy	05/08/26
+543823	1	Diseño Avanzado de Controladores	4	[T] Ma 10,11 (TM 3-2) - Mi 1,2 (TM 3-14)
+ELECT	[T] Alejandro Rojas	04/08/26
+543824	1	Reconocimiento de Patrones y Aprendizaje Automático	3	[T] Ma 4,5 (DII 4)
+[L] Ju 2,3,4 (LabCom IS-2)
+ELECT	[T] Rosa Figueroa	05/08/26
+543827	1	Seminario de Análisis de Señales e Imágenes Médicas	3	[T] Mi 3,4 (TM 3-11)
+[P] Ju 8,9 (LabBio InfMed)
+ELECT	[T] Esteban Pino - Pamela Guevara	05/08/26
+547243	1	Microelectronica	3	[T] Ma 8,9 (TM 3-11) - Vi 1 (TM 3-13)
+[P] Vi 2,3 (TM 3-13)
+OBLIG	[T] Lautaro Salazar	04/08/26
+547250	1	Programación II	3	[T G1] Lu 1,2 (LabCom TM)
+[L G1] Vi 3,4,5 (LabCom TM)
+[L G2] Ju 5,6,7 (LabCom TM)
+OBLIG	[T] Ricardo Sánchez	10/08/26
+547251	1	Modelación de Procesos	4	[T] Lu 3,4,5 (A-313)
+[P] Mi 8,9 (TM 3-15)
+OBLIG	[T] Juan Pablo Segovia	04/08/26
+547251	2	Modelación de Procesos	4	[T] Lu 3,4,5 (A-313)
+[P] Mi 8,9 (TM 3-15)
+OBLIG	[T] Juan Pablo Segovia	04/08/26
+547252	1	Taller de Habilidades Comunicacionales	4	[T] Vi 6,7,8 (TM 3-7)
+[P] Ju 8,9 (Diseño Mec)
+OBLIG	[T] Sergio Barría	04/08/26
+547252	2	Taller de Habilidades Comunicacionales	4	[T] Vi 9,10,11 (TM 3-7)
+[P] Ju 10,11 (TM 3-12)
+OBLIG	[T] Sergio Barría	13/08/26
+547255	1	Taller de Habilidades Comunicacionales	4	[T] Vi 9,10,11 (TM 3-7)
+[P] Ju 10,11 (TM 3-12)
+OBLIG	[T] Sergio Barría	12/08/26
+547306	1	Redes de Datos y Comunicaciones Industriales	4	[T] Lu 8 (TM 3-13) - Ju 3,4 (TM 3-11)
+[L] Lu 9,10 (Fija Prof) - Ju 5 (LabTel SisCom)
+OBLIG	[T] Sergio Sobarzo	04/08/26
+547307	1	Sistemas Electrónicos	4	[T] Ma 1,2 (TM 3-11)
+[L] Ju 8,9,10 (Lab.Eln)
+OBLIG	[T] Lautaro Salazar	04/08/26
+547325	1	Proyecto Electrónico	3	[T] Ju 1 (TM 3-11)
+[L] Ju 2,3,4 (Lab.Eln)
+OBLIG	[T] Mario Medina	07/08/26
+547350	1	Sistemas Operativos	3	[T] Lu 8,9 (TM 3-18)
+[P] Ju 8,9 (TM 3-18)
+ELECT	[T] Mario Medina	04/08/26
+547351	1	Diseño de Sistemas Digitales	4	[T] Lu 3,4 (LabCiv 2-1) - Mi 2 (LabCiv 2-2)
+[P] Mi 10,11,12 (Diseño Mec)
+OBLIG	[T] Javier Soto	09/08/26
+547351	2	Diseño de Sistemas Digitales	4	[T] Lu 3,4 (IS 2-2) - Mi 2 (TM 3-16)
+[P] Vi 7,8,9 (TM 3-12)
+OBLIG	[T] Miguel Figueroa	05/08/26
+547352	1	Microelectrónica	4	[T] Ma 8,9 (TM 3-11) - Vi 1 (TM 3-13)
+[P] Vi 2,3 (TM 3-13)
+OBLIG	[T] Lautaro Salazar	05/08/26
+547353	1	Sistemas de Control	4	[T] Ma 3,4 (A-201) - Mi 9 (A-8)
+[P] Ju 10,11 (TM 3-10)
+OBLIG	[T] Alejandro Rojas	12/08/26
+547353	2	Sistemas de Control	4	[T] Ma 3,4 (TM 3-5) - Mi 9 (TM 3-10)
+[P] Ju 10,11 (A-202)
+OBLIG	[T] José Espinoza	08/08/26
+547354	1	Laboratorio de Electrónica	3	[T] Ju 8,9 (TM 3-5)
+[L] Ju 1,2,3,4 (Lab.Ele-2)
+OBLIG	[T] Miguel Albornoz	04/08/26
+547450	1	Taller de Electrónica de Potencia	3	[T G1] Ju 8,9 (TM 3-3)
+[L G1] Lu 4,5,6 (Lab.Ele-1)
+[L G2] Ju 3,4,5 (Lab.Ele-1)
+[L G3] Vi 2,3,4 (Lab.Ele-1)
+OBLIG	[T] Rubén Peña - Leonardo Palma	04/08/26
+547451	1	Taller de Sistemas Digitales	3	[T] Mi 3,4 (TM 3-14)
+[L] Vi 2,3,4 (Lab.Eln)
+OBLIG	[T] Mario Medina	04/08/26
+547452	1	Taller de Sistemas Electrónicos	3	[T] Ma 1,2 (TM 3-11)
+[L] Ju 8,9,10 (Lab.Eln)
+OBLIG	[T] Lautaro Salazar	04/08/26
+547455	1	Redes de Datos	4	[T] Lu 8 (TM 3-13) - Ju 3,4 (TM 3-11)
+[L] Lu 9,10 (TM 3-13) - Ju 5 (LabTel SisCom)
+OBLIG	[T] Sergio Sobarzo	04/08/26
+547490	1	Práctica Laboral	2		OBLIG	[T] Mario Medina	05/08/26
+547516	1	Taller de Emprendimiento e Innovación Tecnológica	3	[T] Lu 1,2,3 (A-102)
+OBLIG	[T] Alvaro Ananías	05/08/26
+547550	1	Automatización y Robótica Industrial	3	[T] Mi 1,2 (TM 3-12)
+[L] Lu 8,9,10 (Lab.Ele-1)
+OBLIG	[T] Juan Pablo Segovia	04/08/26
+547551	1	Proyecto Electrónico	1	[T] Ju 1 (TM 3-11)
+[L] Ju 2,3,4 (Lab.Eln)
+OBLIG	[T] Mario Medina	07/08/26
+547580	1	Proyecto de Memoria de Título	1		OBLIG	[T] Mario Medina	04/08/26
+547590	1	Práctica Profesional	0		OBLIG	[T] Mario Medina	06/08/26
+547591	1	Práctica Profesional	4		OBLIG	[T] Mario Medina	06/08/26
+547696	1	Proyecto de Memoria de Titulo	2		OBLIG	[T] Mario Medina	04/08/26
+547698	1	Memoria de Título	18		OBLIG	[T] Mario Medina	04/08/26
+547800	1	Sistemas Híbridos de Generación	0	[T] Lu 8,9 (TM 3-14)
+[P] Vi 8,9 (IS 2-1)
+ELECT	[P] Lautaro Salazar	04/08/26
+549107	1	Taller de Desarrollo de Habilidades Comunicativas	3	[T] Vi 6,7,8 (TM 3-7)
+[P] Ju 8,9 (Diseño Mec)
+OBLIG	[T] Sergio Barría	04/08/26
+549251	1	Estadística Avanzada	4	[T] Mi 1 (TM 3-18) - Vi 1,2 (TM 3-10)
+[P] Ma 8,9 (TM 3-12)
+OBLIG	[T] Francisco Pérez	04/08/26
+549252	1	Análisis de Fourier para Telecomunicaciones	4	[T] Lu 5 (LabTel SisCom) - Ma 3,4 (LabTel SisCom)
+[P] Ju 10,11 (LabTel SisCom)
+OBLIG	[T] Sebastián Godoy	05/08/26
+549253	1	Taller de Aplicación TIC 1	2	[T] Lu 4 (TM 1-2)
+[L] Ju 7,8,9 (LabTel SisCom)
+OBLIG	[T] Vincenzo Caro	08/08/26
+549350	1	Procesamiento Digital de Señales	3	[T] Lu 8,9,10 (Diseño Mec)
+OBLIG	[T] Daniel Sbarbaro	05/08/26
+549350	2	Procesamiento Digital de Señales	3	[T] Vi 4,5,6 (LabTel SisCom)
+OBLIG	[T] Sebastián Godoy	05/08/26
+549351	1	Microondas	4	[T] Lu 2,3,4 (TM 1-1)
+[P] Ju 1,2 (TM 3-2)
+OBLIG	[T] Roberto Carvajal	07/08/26
+549352	1	Sistemas de Comunicaciones	4	[T] Lu 8,9,10 (I2030)
+[P] Vi 8,9 (TM 3-13)
+OBLIG	[T] Lisandra Álvarez	05/08/26
+549353	1	Taller de Integración TIC	2	[T] Vi 3 (TM 3-16)
+[L] Mi 8,9,10 (IS 2-2)
+OBLIG	[T] Luciano Radrigán	05/08/26
+549450	1	Fibras ópticas	3	[T] Ma 8,9 (TM 3-14)
+[P] Ju 8,9 (TM 3-14)
+OBLIG	[T] Gabriel Saavedra	05/08/26
+549451	1	Comunicaciones Inalámbricas	4	[T] Lu 2,3,4 (LabTel SisCom)
+[P] Vi 2,3 (LabTel SisCom)
+OBLIG	[T] Sergio Torres	05/08/26
+549452	1	Procesamiento Digital de Imágenes	3	[T] Mi 2,3,4 (LabTel SisCom)
+OBLIG	[T] Vincenzo Caro	05/08/26
+549453	1	Laboratorio de Electrónica de Alta Frecuencia II	1	[T] Mi 8,9,10 (LabTel SisCom)
+OBLIG	[T] Diego Arroyo	05/08/26
+549454	1	Sistemas de Comunicaciones	4	[T] Ma 3 (TM 3-15) - Ju 1,2 (TM 3-10)
+[P] Ma 10,11 (TM 3-10)
+OBLIG	[T] Fernando Castillo	05/08/26
+549454	2	Sistemas de Comunicaciones	4	[T] Ma 3 (TM 3-15) - Ju 1,2 (TM 3-10)
+[P] Ma 10,11 (TM 3-10)
+OBLIG	[T] Fernando Castillo	05/08/26
+549455	1	Redes de Datos	4	[T] Ma 3,4,5 (TM 3-17)
+[L] Ju 3,4,5 (LabTel SisCom)
+OBLIG	[T] Sergio Sobarzo	04/08/26
+549503	1	Derecho en Telecomunicaciones	3	[T] Ma 10 (TM 3-18) - Mi 10,11 (TM 3-17)
+ELECT	[T] Paulina Cid	05/08/26
+549509	1	Tecnologías de Borde y Computación en la Nube	3	[T] Mi 1,2 (IS 2-1)
+[P] Vi 1,2 (TM 3-2)
+ELECT	[T] Luciano Radrigán	05/08/26
+549533	1	Aprendizaje de Máquinas	3	[T] Vi 3,4,5 (TM 3-10)
+ELECT	[T] Francisco Pérez	04/08/26
+549550	1	Proyecto de Memoria de Título	4		OBLIG	[T] Sebastián Godoy	05/08/26
+549690	1	Práctica Profesional	4		OBLIG	[T] Sebastián Godoy	05/08/26
+549695	1	Memoria de Título	20		OBLIG	[T] Sebastián Godoy	05/08/26
+549700	1	Tópicos Avanzados En Comunicaciones Ópticas	3	[T] Ma 5,6 (TM 3-2)
+[P] Vi 8,9 (TM 3-18)
+ELECT	[T] Gabriel Saavedra	05/08/26
+549701	1	Comunicaciones Ópticas Inalámbricas (OWC)	3	[T] Mi 4,5 (TM 1-2)
+[P] Ju 3,4 (TM 3-12)
+ELECT	[T] Lisandra Álvarez	05/08/26
+550155	1	Introducción a los Sistemas de Información en Salud	2	[T] Lu 4,5 (TM 3-15)
+OBLIG	[T] Rosa Figueroa	08/08/26
+550221	1	Teoría de Circuitos	4	[T] Ma 4,5 (LabCom TM) - Ju 5 (LabCom IS-2)
+[P] Ju 6,7 (LabCom IS-2)
+OBLIG	[T] Eduardo Wiechmann	10/08/26
+550222	1	Laboratorio de Circuitos	3	[L G1] Lu 2,3,4 (LabBio InfMed)
+[L G2] Ju 1,2,3 (LabBio InfMed)
+OBLIG	[T] Esteban Pino	07/08/26
+550251	1	Teoría de Circuitos	3	[T] Ma 4,5 (LabCom TM) - Ju 5 (LabCom IS-2)
+[P] Ju 6,7 (LabCom IS-2)
+OBLIG	[T] Eduardo Wiechmann	14/08/26
+550252	1	Laboratorio de Circuitos	2	[L G1] Lu 2,3,4 (LabBio InfMed)
+[L G2] Ju 1,2,3 (LabBio InfMed)
+OBLIG	[T] Esteban Pino	05/08/26
+550253	1	Principios De Bioelectrónica	3	[T] Lu 8,9,10 (LabBio InfMed)
+[P] Mi 3 (LabBio InfMed)
+OBLIG	[T] Pablo Aqueveque	11/08/26
+550254	1	Laboratorio de Bioelectrónica	2	[L] Ma 1,2,3,4,5 (LabBio InfMed)
+OBLIG	[T] Fraancisco Saavedra	05/08/26
+550255	1	Bioestadística	3	[T] Ma 7,8 (LabBio InfMed)
+[P] Mi 1,2 (TM 3-9)
+OBLIG	[T] Anibal Morales	12/08/26
+550256	1	Programación	3	[T] Ju 5,6 (IS 2-1) - Vi 5,6 (TM 3-5)
+[L] Vi 8,9,10 (LabCom TM)
+OBLIG	[T] Pamela Guevara	07/08/26
+550350	1	Control de Sistemas Biomédicos	4	[T] Lu 2,3,4 (TM 3-16)
+[P] Mi 8,9 (TM 3-5)
+OBLIG	[T] Fraancisco Saavedra	08/08/26
+550351	1	Fundamentos de Computación y Programación	3	[T] Ma 2,3 (LabCom TM)
+[P] Mi 3,4 (LabCom TM)
+OBLIG	[T] Rosa Figueroa	05/08/26
+550452	1	Procesamiento Digital de Imágenes	3	[T] Vi 3,4 (TM 3-5)
+[P] Ju 3,4 (LabCom TM)
+OBLIG	[P] Pamela Guevara	05/08/26
+550453	1	Inteligencia Artificial	3	[T] Lu 9,10 (LabBio Señales)
+[P] Ma 5,6 (LabBio Señales)
+OBLIG	[T] Anibal Morales	12/08/26
+550454	1	Procesamiento Digital de Imágenes	3	[T] Vi 3,4 (TM 3-5)
+[P] Ju 3,4 (LabCom TM)
+OBLIG	[T] Pamela Guevara	05/08/26
+550455	1	Ingeniería Clínica	3	[T] Ma 3,4 (TM 3-12)
+[P] Ju 1,2 (TM 3-7)
+OBLIG	[T] Ricardo Erices	05/08/26
+550503	1	Proyecto ICB	4	[T] Mi 2 (TM 3-7)
+OBLIG	[T] Esteban Pino	05/08/26
+550550	1	Práctica Profesional	0		OBLIG	[T] Pamela Guevara	05/08/26
+550590	1	Proyecto Memoria de Título	2		OBLIG	[T] Pablo Aqueveque	05/08/26
+550699	1	Memoria de Título	20		OBLIG	[T] Pablo Aqueveque	05/08/26
+
+INGENIERIA INDUSTRIAL
+	Comportamiento Organizacional	3	[T] Vi 1,2,3 (DII 4)
+[T] Ramón Díaz	14/07/26
+546101	1	Gestión de Empresas	4	[T] Ma 12,13 (A-1)
+[P] Ju 12,13 (A-1)
+[T] María Hormazábal -	15/07/26
+546102	1	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-1)
+[T] Alejandro Andalaft	15/06/26
+546104	1	Formulacion y Evaluacion de Proyectos Ing. Ambiental	4	[T] Ma 2 (Sala Nonguén) - Vi 4,5 (Sala Nonguén)
+[P] Lu 8,9 (Sala Nonguén)
+[T] Alejandro Andalaft	23/07/26
+546351	1	Optimizacion I	4	[T] Lu 8,9 (Sala Teaching) - Mi 9 (LabCom TM)
+[P] Mi 10,11 (LabCom TM)
+[T] Rosa Medina	13/08/26
+546370	1	Economía	4	[T] Lu 10 (A-2) - Mi 10,11 (A-2)
+[P] Vi 10,11 (A-313)
+[T] Alejandro Andalaft	16/06/26
+546415	1	Taller en Optimización	3	[T] Mi 3,4 (DII 1)
+[P] Ju 8,9 (DII 1)
+ELECT	[T] Lorena Pradenas	16/06/26
+546495	1	Introducción a los Sistemas Inteligentes de Producción	3	[T] Mi 10,11 (DII 1)
+[P] Vi 10,11 (DII 1)
+ELECT	[T] Patricio Sáez - Jaime Rivera	20/07/26
+546497	1	Gestión de la Felicidad Laboral: Una Aproximación Desde la Ciencia	3	[T] Lu 3,4 (DII 1)
+[P] Ma 6,7 (TM 1-3)
+ELECT	[T] Angela Zenteno	16/06/26
+554150	1	Introducción a la Sustentabilidad en Ingeniería	3	[T] Mi 1,2 (TM 3-1)
+[P] Ju 6,7 (TM 3-1)
+[T] Jaime Zaror	12/08/26
+554150	2	Introducción a la Sustentabilidad en Ingeniería	3	[T] Ma 8,9 (A-512)
+[P] Vi 6,7 (TM 3-1)
+[T] Jaime Zaror	14/08/26
+554150	3	Introducción a la Sustentabilidad en Ingeniería	3	[T] Lu 8,9 (TM 3-1) - Ma 6,7 (Diseño Mec)
+[P] Vi 8,9 (A-411)
+[T] - Jaime Zaror	17/08/26
+580211	1	Modelación de Sistemas	2	[T] Ma 8,9 (A-314)
+[P] Lu 5,6 (TM 3-1)
+OBLIG	[T] Sebastián Astroza - Pablo Catalan - Juan Carlos Caro	06/08/26
+580211	2	Modelación de Sistemas	2	[T] Ma 8,9 (A-314)
+[P] Lu 5,6 (A-109)
+OBLIG	[T] Sebastián Astroza - Pablo Catalan - Juan Carlos Caro	06/08/26
+580301	1	Innovación	3	[T] Vi 8,9 (A-416)
+[P] Ju 10,11 (TM 3-15)
+[T] Carlos Lagos	12/08/26
+580301	2	Innovación	3	[T] Vi 8,9 (A-416)
+[P] Ju 5,6 (Sala Teaching)
+[T] Carlos Lagos	21/07/26
+580321	1	Administración	3	[T] Ju 3,4 (A-212)
+[P] Mi 8,9 (Sala Teaching)
+OBLIG	[T] Angela Zenteno - Jorge Maluenda	21/07/26
+580321	2	Administración	3	[T] Ju 3,4 (A-212)
+[P] Ju 8,9 (TM 3-1)
+OBLIG	[T] Angela Zenteno - Jorge Maluenda	12/08/26
+580323	1	Macroeconomía	3	[T] Vi 6,7 (A-202)
+[P] Ju 1,2 (TM 3-9)
+OBLIG	[T] Cristian Mardones	24/07/26
+580323	2	Macroeconomía	3	[T] Vi 6,7 (A-202)
+[P] Ma 1,2 (TM 3-9)
+OBLIG	[T] Cristian Mardones	24/07/26
+580325	1	Optimización II	3	[T] Mi 3,4 (A-5)
+[P] Ma 8,9 (TM 3-10)
+OBLIG	[T] Carlos Contreras - Rosa Medina - Mauricio Vega	11/08/26
+580325	2	Optimización II	3	[T] Mi 3,4 (A-5)
+[P] Ma 8,9 (LabCiv 2-2)
+OBLIG	[T] Mauricio Vega - Carlos Contreras - Rosa Medina	15/06/26
+580325	3	Optimización II	3	[T] Mi 3,4 (A-5)
+[P] Ma 8,9 (TM 1-3)
+OBLIG	[T] Mauricio Vega - Carlos Contreras - Rosa Medina	11/08/26
+580327	1	Simulación	3	[T] Mi 1,2 (A-5)
+[P] Ma 5,6 (Sala Teaching)
+OBLIG	[T] Sebastián Rodríguez	08/08/26
+580327	2	Simulación	3	[T] Mi 1,2 (A-5)
+[P] Ju 5,6 (LabCiv 2-1)
+OBLIG	[T] Sebastián Rodríguez	07/08/26
+580421	1	Planificación y Control de la Producción	4	[T] Ju 3,4,5 (A-113)
+[P] Ma 5,6 (TM 3-1)
+OBLIG	[T] Eduardo Salazar	03/08/26
+580421	2	Planificación y Control de la Producción	4	[T] Ju 3,4,5 (A-113)
+[P] Ma 5,6 (TM 3-10)
+OBLIG	[T] Eduardo Salazar	03/08/26
+580423	1	Gestión y Control de la Calidad	3	[T] Ma 3,4 (TM 3-9)
+[P] Mi 10,11 (TM 3-15)
+OBLIG	[T] - Hernaldo Reinoso	06/08/26
+580423	2	Gestión y Control de la Calidad	3	[T] Lu 1,2 (TM 3-7)
+[P] Mi 8,9 (LabCiv 2-2)
+OBLIG	[T] Hernaldo Reinoso	08/08/26
+580425	1	Ingeniería Económica	3	[T] Vi 8,9 (A-9)
+[P] Ju 10,11 (LabCiv 2-2)
+OBLIG	[T] Cristian Ulloa - María Hormazábal	11/08/26
+580425	2	Ingeniería Económica	3	[T] Vi 8,9 (A-9)
+[P] Ma 10,11 (IS 2-2)
+OBLIG	[T] Cristian Ulloa - María Hormazábal	15/07/26
+580427	1	Gestión Ambiental	3	[T] Ma 3,4,5 (IS 2-3)
+ELECT	[T] Jorge Jimenez - Magdalena Jensen	15/06/26
+580429	1	Finanzas	4	[T] Lu 3,4,5 (A-415)
+[P] Ju 1,2 (TM 3-1)
+OBLIG	[T] Marcela Parada	07/08/26
+580429	2	Finanzas	4	[T] Lu 3,4,5 (A-415)
+[P] Ju 1,2 (TM 3-3)
+OBLIG	[T] Marcela Parada	15/06/26
+580450	1	Práctica Profesional	0		OBLIG	[T] Sebastián Astroza	15/06/26
+580451	1	Optimización	4	[T] Lu 8,9 (Sala Teaching) - Mi 9 (LabCom TM)
+[P] Mi 10,11 (LabCom TM)
+[T] Rosa Medina	13/08/26
+580490	1	Práctica Laboral	2		OBLIG	[T] Carlos Contreras	15/06/26
+580521	1	Logística	3	[T] Lu 8,9 (A-9)
+[P] Ma 8,9 (Diseño Mec)
+OBLIG	[T] Hernaldo Reinoso	15/06/26
+580521	2	Logística	3	[T] Lu 8,9 (A-9)
+[P] Vi 3,4 (Diseño Mec)
+OBLIG	[T] Hernaldo Reinoso	15/06/26
+580523	1	Taller de Emprendimiento	3	[T] Mi 1,2 (Sala Teaching)
+[P] Ju 10,11 (Sala Teaching)
+OBLIG	[T] Inti Núñez	15/06/26
+580523	2	Taller de Emprendimiento	3	[T] Ma 10,11 (Diseño Mec)
+[P] Vi 5,6 (Diseño Mec)
+OBLIG	[T] Inti Núñez	15/06/26
+580525	1	Dirección y Control de Proyectos	3	[T] Mi 8,9 (A-6)
+[P] Vi 1,2 (TM 3-9)
+OBLIG	[T] José Oliveros	14/07/26
+580525	2	Dirección y Control de Proyectos	3	[T] Mi 8,9 (A-6)
+[P] Ju 3,4 (TM 3-5)
+OBLIG	[T] José Oliveros	11/08/26
+580560	1	Taller de Gestión de Operaciones	3	[T] Lu 2,3,4 (DII 4)
+ELECT	[T] Eduardo Salazar	16/06/26
+580562	1	Programación Aplicada a la Ingeniería Industrial	3	[T] Lu 5,6 (DII 4)
+[L] Vi 1,2 (LabCom IS-2)
+ELECT	[T] Carlos Contreras	16/06/26
+580564	1	Gestión en Salud	3	[T] Ju 7,8,9 (TM 1-2)
+ELECT	[T] Cristian Ulloa	16/06/26
+580612	1	Cambio Climático y Sistemas Alimentarios	3	[T] Ma 8,9 (IS 2-3)
+[P] Ju 8,9 (IS 2-2)
+ELECT	[T] Magdalena Jensen - Gislaine Granfeldt	13/08/26
+580613	1	SIG Aplicado a Ingeniería Industrial	3	[T] Ma 10,11 (LabCom IS-1)
+[P] Ju 8,9 (LabCom IS-1)
+ELECT	[T] Luciana Das Dores de Jesús	16/06/26
+580694	1	Generative Artificial Intelligence	0	[T] Ju 3,4 (TM 3-7)
+[P] Vi 5,6 (TM 3-11)
+ELECT	[T] Carlos Navarrete	16/06/26
+580695	1	Memoria de Título	20		OBLIG	[T] Angela Zenteno	15/06/26
+580699	1	Memoria de Título	18		OBLIG	[T] Angela Zenteno	15/06/26
+580701	1	Economía	4	[T] Lu 10 (A-2) - Mi 10,11 (A-2)
+[P] Vi 10,11 (A-313)
+[T] Alejandro Andalaft	06/05/26
+580701	2	Economía	4	[T] Lu 10 (A-1) - Mi 10,11 (A-1)
+[P] Vi 10,11 (A-314)
+15/07/26
+580701	3	Economía	4	[T] Lu 10 (A-9) - Mi 10,11 (A-102)
+[P] Vi 10,11 (A-412)
+[T] Clorinda Gatti	29/07/26
+580701	4	Economía	4	[T] Lu 10 (A-102) - Mi 10,11 (A-202)
+[P] Vi 10,11 (A-413)
+16/06/26
+580701	5	Economía	4	[T] Lu 10 (A-5) - Mi 10,11 (A-5)
+[P] Vi 10,11 (A-111)
+16/06/26
+580703	1	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-1)
+[T] Alejandro Andalaft	29/07/26
+580703	2	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-2)
+29/07/26
+580703	3	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-4)
+29/07/26
+580703	4	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-5)
+29/07/26
+580703	5	Formulación y Evaluación de Proyectos	4	[T] Lu 11,12,13 (A-9)
+[P] Mi 12,13 (A-102)
+[T] Mylene Malig	29/07/26
+580705	1	Gestión de Empresas	3	[T] Ma 12,13 (A-1)
+[P] Ju 12,13 (A-1)
+[T] María Hormazábal	15/07/26
+580705	2	Gestión de Empresas	3	[T] Ma 12,13 (A-311)
+[P] Ju 12,13 (A-311)
+[T] Eduardo Jerez	13/08/26
+580705	3	Gestión de Empresas	3	[T] Ma 12,13 (A-102)
+[P] Ju 12,13 (A-102)
+16/06/26
+580705	4	Gestión de Empresas	3	[T] Ma 12,13 (A-201)
+[P] Ju 12,13 (A-201)
+[T] Omar Veloso	15/07/26
+580705	5	Gestión de Empresas	3	[T] Ma 12,13 (A-202)
+[P] Ju 12,13 (A-202)
+[T] Nicolás Von Caprivi	15/07/26
+
+INGENIERIA INFORMATICA
+1	Lógica	5	[T] Ma 3,4 (IS 2-1) - Mi 10,11 (IS 2-1)
+[P] Ju 3,4 (TM 3-17)
+OBLIG	[T] Lilian Salinas	08/08/26
+501203	1	Programación de Computadores	4	[T G1] Lu 4,5 (A-1) - Ju 7 (TM 3-15)
+[L G1] Vi 8,9 (LabRedes)
+[L G2] Vi 8,9 (LabSoftwar)
+[L G3] Vi 8,9 (LabCom IS-1)
+OBLIG	[T] José Fuentes	10/08/26
+501251	1	Sistemas Operativos	4	[T G1] Lu 5 (A-314) - Mi 3,4 (TM 3-15)
+[L G1] Mi 8,9 (LabRedes)
+[L G2] Mi 8,9 (LabSoftwar)
+OBLIG	[T] Cecilia Hernández	12/08/26
+501252	1	Matemáticas Discretas	5	[T] Ma 1,2 (A-202) - Ju 1,2 (A-202)
+[P] Vi 3,4 (TM 3-15)
+OBLIG	[T] Waldo Gálvez - Pierluigi Cerulo	14/08/26
+501253	1	Proyecto de Programación	1	[L] Lu 8,9,10 (LabCom TM)
+OBLIG	[T] Geoffrey Hecht	27/05/26
+501305	1	Ingeniería de Software	4	[T G1] Ma 3,4 (TM 3-1) - Mi 2 (A-201)
+[P G1] Ma 9,10 (LabSoftwar)
+[P G2] Ma 9,10 (LabRedes)
+OBLIG	[T] Gonzalo Rojas	12/08/26
+501350	1	Análisis de Datos	3	[T] Ma 1,2 (LabCiv 2-2)
+[L] Mi 3,4 (LabRedes)
+OBLIG	[T] Guillermo Cabrera	31/07/26
+501351	1	Inteligencia Artificial	4	[T] Ju 1,2 (IS 2-2) - Vi 1 (IS 2-2)
+[P] Vi 2,3 (TM 3-3)
+OBLIG	[T] Julio Godoy	29/07/26
+501405	1	Testing y Aseguramiento de la Calidad de Software	4	[T G1] Ma 10,11 (LabCiv 2-2)
+[L G1] Mi 10,11 (LabCom IS-2)
+[L G2] Ju 8,9 (LabCom IS-2)
+OBLIG	[T] Geoffrey Hecht	07/08/26
+501440	1	Practica Laboral	2		OBLIG	[T] Javier Vidal	27/05/26
+501450	1	Seguridad Informática	4	[T] Lu 4 (TM 3-11) - Mi 3,4 (TM 3-12)
+[L] Ju 10,11 (IS 2-1)
+OBLIG	[T] Pedro Pinacho	12/08/26
+501451	1	Integración de Sistemas	4	[T] Ma 1 (IS 2-2) - Ju 4,5 (IS 2-2)
+[L] Ma 2,3 (LabSoftwar)
+OBLIG	[T] Gonzalo Pérez	07/08/26
+503151	1	Informática para la Gestión	2	[T] Ju 1,2 (A-212)
+[T] José Durán - Eduardo Mendez	27/05/26
+503156	1	Principios de Ingenieria de Software	3	[T] Lu 1,2 (TM 3-14) - Ma 6 (TM 3-14)
+[P] Ju 8,9 (TM 3-11)
+[T] Rodrigo Coronado	27/05/26
+503157	1	Proyecto de Desarrollo de Software II	3		ELECT	[T] Geoffrey Hecht	
+503158	1	Análisis y Diseño de Sistemas Ciberfísicos	3	[T] Lu 8,9 (TM 1-1)
+[L] Ju 7,8 (LabRedes)
+ELECT	[T] Hugo Garcés	20/07/26
+503162	1	Taller de Ciberseguridad I	1	[L] Vi 4,5 (LabSoftwar)
+ELECT	[T] Pedro Pinacho	27/05/26
+503163	1	Taller de Ciberseguridad II	1	[L] Vi 4,5 (LabSoftwar)
+ELECT	[T] Pedro Pinacho	27/05/26
+503164	1	Taller de Ciberseguridad III	1	[L] Vi 4,5 (LabSoftwar)
+ELECT	[T] Pedro Pinacho	27/05/26
+503202	1	Programación	3	[T] Vi 10,11 (A-514)
+[T] Eduardo Mendez	15/07/26
+503202	2	Programación	3	[T] Vi 10,11 (A-513)
+[T] Daniela Pinto	29/07/26
+503202	3	Programación	3	[T] Mi 10,11 (A-214)
+[T] Eduardo Mendez	24/07/26
+503203	1	Programación	3	[T] Vi 10,11 (A-514)
+[T] Eduardo Mendez	15/07/26
+503203	2	Programación	3	[T] Vi 10,11 (A-513)
+[T] Daniela Pinto	29/07/26
+503203	3	Programación	3	[T] Mi 10,11 (A-214)
+[T] Eduardo Mendez	24/07/26
+503213	1	Matemáticas Discretas	4	[T] Ma 1,2 (A-202) - Ju 1,2 (A-202)
+[P] Vi 7,8 (Pend)
+OBLIG		14/08/26
+503225	1	Programación	3	[T] Mi 10,11 (A-313)
+[T] Javier Vidal	29/07/26
+503225	2	Programación	3	[T] Vi 10,11 (A-214)
+[T] Yarelis Prieto	29/07/26
+503302	1	Tópicos en Manejo de Grandes Volúmenes de Datos	3	[T] Ma 10,11 (IS 3-1)
+[P] Vi 3,4 (IS 3-1)
+ELECT	[T] Cecilia Hernández	08/06/26
+503305	1	Arquitectura de Computadores	4	[T G1] Lu 3,4 (A-202) - Vi 1 (TM 3-1)
+[L G1] Lu 5,6 (LabSoftwar)
+[L G2] Lu 5,6 (LabRedes)
+OBLIG	[T] Hugo Garcés	08/08/26
+503306	1	Teoría de Computación	4	[T] Ma 1,2 (Pend) - Ju 1,2 (Pend)
+[P] Vi 7,8 (Pend)
+OBLIG	[T] Lilian Salinas	07/08/26
+503307	1	Bases de Datos I	4	[T G1] Ma 3,4 (LabRedes) - Vi 5 (IS 2-2)
+[L G1] Mi 1,2 (LabSoftwar)
+[L G2] Mi 1,2 (LabRedes)
+[L G3] Ju 10,11 (LabSoftwar)
+[L G4] Ju 10,11 (LabRedes)
+OBLIG	[T] - Andrea Rodríguez	11/08/26
+503308	1	Sistemas Operativos	4	[T G1] Ma 10 (IS 2-1) - Mi 3,4 (IS 3-1)
+[L G1] Mi 8,9 (LabCom IS-1)
+[L G2] Mi 8,9 (LabCom IS-2)
+OBLIG	[T] Juan F González	07/08/26
+503354	1	Ingeniería de Software I	4	[T G1] Lu 3,4 (TM 3-14) - Vi 2 (IS 2-2)
+[L G1] Ma 7,8 (LabRedes)
+[L G2] Ma 7,8 (LabSoftwar)
+OBLIG	[T] Gonzalo Rojas	08/08/26
+503369	1	Proyecto Informático	4	[T G1] Ma 4,5 (LabCiv 2-1)
+[L G1] Ju 1,2 (LabRedes)
+[L G2] Ju 1,2 (LabSoftwar)
+OBLIG	[T] Mabel Miranda	14/07/26
+503398	1	Sistemas Adaptativos	3	[T] Ju 7,8,9 (TM 3-13)
+ELECT	[T] Pedro Pinacho	27/05/26
+503580	1	Estructuras de Datos y Algoritmos Avanzados	3	[T] Ma 3,4 (IS 3-1) - Mi 3 (IS 2-2)
+[P] Mi 4,5 (LabSoftwar)
+ELECT	[T] José Fuentes	28/05/26
+503599	1	Memoria de Título	20		OBLIG	[T] Javier Vidal	27/05/26
+503601	1	Taller de Programación Competitiva I	1	[P] Mi 6 (LabSoftwar) - Mi 7 (IS 2-1)
+[L] Mi 5 (Pend) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	30/07/26
+503602	1	Taller de Programación Competitiva II	1	[P] Mi 6 (LabCom IS-1) - Mi 7 (IS 2-1)
+[L] Mi 5 (LabCom IS-1) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	
+503603	1	Taller de Programación Competitiva III	1	[P] Mi 6 (LabCom IS-1) - Mi 7 (IS 2-1)
+[L] Mi 5 (LabCom IS-1) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	
+503604	1	Taller de Programación Competitiva IV	1	[P] Mi 6 (LabCom IS-1) - Mi 7 (IS 2-1)
+[L] Mi 5 (LabCom IS-1) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	
+503605	1	Taller de Programación Competitiva V	1	[P] Mi 6 (LabCom IS-1) - Mi 7 (IS 2-1)
+[L] Mi 5 (LabCom IS-1) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	
+503606	1	Taller de Programación Competitiva VI	1	[P] Mi 6 (LabCom IS-1) - Mi 7 (IS 2-1)
+[L] Mi 5 (LabCom IS-1) - Mi 6 (IS 2-1)
+ELECT	[T] Waldo Gálvez	
+503621	1	Bases de Datos Espaciales y Sistemas de Información Geográfica	3	[T] Mi 8,9 (TQ 1-1)
+[L] Vi 3,4 (LabRedes)
+ELECT	[T] Andrea Rodríguez	09/06/26
+503623	1	Tópicos en Optimización Combinatoria	3	[T] Ma 8,9 (TM 3-2)
+[P] Ju 8 (LabSoftwar)
+[L] Ju 9 (LabSoftwar)
+ELECT	[T] Waldo Gálvez	28/05/26
+503630	1	Taller de Programación de Robots I	1	[L] Vi 5,6 (LabRedes)
+ELECT	[T] Julio Godoy	28/05/26
+503633	1	Taller de Programación de Robots II	1	[L] Vi 5,6 (LabRedes)
+ELECT	[T] Julio Godoy	28/05/26
+503646	1	Taller de Programación de Robots III	1	[L] Vi 5,6 (LabRedes)
+ELECT	[T] Julio Godoy	09/06/26
+503647	1	Tópicos en Complejidad y Teoría de la Información	3	[T] Lu 1,2 (IS 3-1)
+[P] Mi 1,2 (TM 3-17)
+ELECT	[T] Lilian Salinas	28/05/26
+503648	1	Aprendizaje de Máquina Probabilístico	3	[T] Lu 1,2 (IS 2-3)
+[P] Vi 1,2 (TM 1-1)
+ELECT	[T] Pierluigi Cerulo	07/08/26
+503650	1	Aprendizaje por Refuerzo	3	[T] Mi 3,4 (TM 3-3)
+[L] Vi 2,3 (LabSoftwar)
+ELECT	[T] Julio Godoy	29/07/26
+503653	1	Psico-Informática	3	[T] Mi 3,4 (DII 4)
+[L] Vi 7,8,9 (Lab.Mec.Comp)
+ELECT	[T] Jéremy Barbay	10/08/26
+503700	1	Tecnologías de Información	4	[T] Lu 10,11 (A-6) - Lu 12 (A-1)
+[P] Ma 8,9 (LabCom TM)
+[T] Ilse Gutiérrez	22/07/26
+503700	2	Tecnologías de Información	4	[T] Lu 10,11 (A-6) - Lu 12 (A-1)
+[P] Ju 8,9 (LabCom TM)
+[T] Ilse Gutiérrez	22/07/26
+503701	1	Desarrollo de Juegos para Dispositivos Móviles	3	[T] Ma 5,6 (LabRedes)
+[L] Mi 10,11 (LabRedes)
+ELECT	[T] Erich Grüttner	06/08/26
+503702	1	Generative Deep Learning	3	[T] Lu 10,11,12 (TM 3-17)
+ELECT		13/08/26
+
+INGENIERIA MECANICA
+1	Relaciones Humanas	3	[T] Lu 12,13 (TM 3-1)
+[P] Ma 12,13 (TM 3-1)
+OBLIG	[T] Cecilia Gutiérrez	07/08/26
+541126	1	Comunicación Gráfica	4	[T] Ma 7 (LabCom TM) - Mi 2 (LabCom TM)
+[P] Vi 6,7 (LabCom TM)
+OBLIG	[T] Alexis Salas	22/07/26
+541202	1	Mecánica	4	[T] Ma 7,8,9 (IS 2-2)
+[P] Mi 8,9 (TM 3-9)
+[T] Cristian Canales	13/08/26
+541203	1	Termodinámica	4	[T] Ma 3,4,5 (A-512)
+[P] Lu 8,9 (A-4)
+[L] Vi 5 (Fija Prof)
+OBLIG	[T] Einara Blanco	20/07/26
+541203	2	Termodinámica	4	[T] Ma 3,4,5 (A-5)
+[P] Vi 8,9 (TM 3-1)
+[T] Javier Parra - Saulo Gómez	11/06/26
+541203	3	Termodinámica	4	[T] Ma 3,4,5 (A-5)
+[P] Mi 3,4 (TM 3-9)
+[T] Javier Parra - Saulo Gómez	07/08/26
+541208	1	Mecánica de Sólidos I	4	[T] Lu 7,8,9 (TM 3-9)
+[P] Vi 5,6 (TM 3-9)
+[T] Jean Laubrie	06/08/26
+541214	1	Elementos de Máquinas	4	[T] Ju 7,8,9 (TM 3-9)
+[P] Lu 3,4 (TM 3-9)
+OBLIG	[P] Emilio Dufeu - Cristian Canales	12/08/26
+541215	1	Transferencia de Calor	4	[T] Mi 3,4 (A-314) - Ju 3 (TM 3-1)
+[P] Ju 4 (TM 3-1)
+[L] Ju 8,9 (TM 3-15)
+OBLIG	[T] Cristian Cuevas	07/08/26
+541225	1	Mecánica	4	[T] Ma 7,8,9 (A-102)
+[P] Mi 8,9 (Diseño Mec)
+[T] Jean Laubrie	22/07/26
+541225	2	Mecánica	4	[T] Ma 7,8,9 (IS 2-2)
+[P] Mi 8,9 (TM 3-9)
+[T] Cristian Canales	13/08/26
+541228	1	Comunicación Gráfica	2	[T] Ma 7 (LabCom TM) - Mi 2 (LabCom TM)
+[P] Vi 6,7 (LabCom TM)
+OBLIG	[T] Alexis Salas	22/07/26
+541229	1	Mecánica	4	[T] Ma 7,8,9 (IS 2-2)
+[P] Mi 8,9 (TM 3-9)
+[T] Cristian Canales	13/08/26
+541233	1	Dinámica	4	[T] Lu 3,4 (A-2)
+[P] Vi 8,9 (A-3)
+[T] Manuel Moncada	08/08/26
+541234	1	Analisis de Sistemas Dinamicos	4	[T] Lu 1,2,3 (A-211)
+[P] Vi 1,2,3 (A-5)
+OBLIG	[T] Cristian Vicuña - Bernardo Hernández	07/08/26
+541236	1	Sistemas de Control	3	[T] Mi 1,2 (TM 3-15)
+[P] Ju 10,11 (TM 3-1)
+[L] Vi 8,9 (TM 3-15)
+OBLIG	[T] Bernardo Hernández	05/08/26
+541242	1	Estructuras Aeroespaciales	4	[T] Ma 8,9,10 (TM 3-16)
+[P] Ju 1,2 (Diseño Mec)
+OBLIG	[T] Carlos Lanziotti	07/08/26
+541250	1	Materiales	4	[T] Mi 3,4 (A-112) - Vi 3 (A-1)
+[P] Vi 4 (A-1)
+[L] Ju 5 (Fija Prof)
+OBLIG	[T] Carlos Lanziotti	12/08/26
+541252	1	Dinámica	3	[T] Lu 3,4 (A-2)
+[P] Vi 8,9 (A-3)
+OBLIG	[T] Manuel Moncada	08/08/26
+541253	1	Introducción a Procesos de Manufactura	3	[T] Ma 8,9 (TM 3-15)
+[L] Ju 1,2 (A-313)
+OBLIG	[T] Meylí Valin	22/07/26
+541254	1	Comunicación en Ingeniería	1	[T] Ma 1 (TM 3-15)
+[P] Ma 2 (TM 3-15)
+OBLIG	[T] Joyce Olsen - Frank Tinapp	08/06/26
+541257	1	Estadística y Probabilidades	4	[T] Ju 3 (A-112) - Vi 1,2 (A-211)
+[P] Ju 10,11 (A-212)
+OBLIG	[T] Félix Leaman - Daniel Sacasas	08/06/26
+541260	1	Dibujo Asistido por Computador	3	[T] Ju 8,9 (IS 2-3)
+[P] Vi 8,9 (LabCom IS-2)
+[T] Roberto Ramírez	07/08/26
+541261	1	Control y Gestion de Calidad	3	[T] Mi 10,11 (TM 3-13) - Vi 8 (TM 1-1)
+[P] Vi 9 (TM 1-1)
+[T] Rubén Uribe	12/08/26
+541271	1	Mecánica	3	[T] Lu 7,8,9 (A-2)
+[P] Vi 3,4 (TM 3-9)
+[T] Cristian Canales	13/08/26
+541271	2	Mecánica	3	[T] Lu 7,8,9 (A-2)
+[P] Vi 3,4 (TM 3-1)
+[T] Cristian Canales	13/08/26
+541352	1	Integración a través de CDIO	3	[T G1] Lu 5 (A-201)
+[P G1] Lu 6,7 (Diseño Mec) - Ma 5,6,7 (TM 3-9)
+[P G2] Lu 6,7 (Sala Teaching) - Ma 5,6,7 (TM 3-15)
+OBLIG	[T] Enrique Wagemann - Alexis Salas - Frank Tinapp	12/08/26
+541353	1	Transferencia de Calor	4	[T] Mi 3,4 (A-314) - Ju 3 (TM 3-1)
+[P] Ju 4 (TM 3-1)
+[L] Ju 8,9 (TM 3-15)
+OBLIG	[T] Cristian Cuevas	20/07/26
+541354	1	Estructuras Aeroespaciales	4	[T] Ma 8,9,10 (TM 3-16)
+[P] Ju 1,2 (Diseño Mec)
+OBLIG	[T] Carlos Lanziotti	30/07/26
+541355	1	Análisis de Sistemas Dinámicos	3	[T] Lu 1,2,3 (A-211)
+[P] Vi 1,2,3 (A-5)
+OBLIG	[T] Bernardo Hernández - Cristian Vicuña	03/08/26
+541356	1	Mecánica de Sólidos II	4	[T] Ma 2 (Sala Teaching) - Ju 5,6 (TM 3-9)
+[P] Mi 10,11 (TM 3-9)
+OBLIG	[T] Meylí Valin	08/08/26
+541357	1	Mecánica de Sólidos	3	[T] Lu 7,8,9 (TM 3-9)
+[P] Vi 5,6 (TM 3-9)
+[T] Jean Laubrie	28/07/26
+541380	1	Dibujo Industrial	3	[T] Lu 1,2 (A-414)
+[P] Ma 10,11,12 (LabCom TM)
+[T] Roberto Ramírez	15/06/26
+541380	2	Dibujo Industrial	3	[T G1] Lu 1,2 (A-414)
+[P G1] Ju 10,11,12 (LabCom TM)
+[P G2] Ju 10,11,12 (LabCom IS-1)
+[T] Roberto Ramírez	13/08/26
+541408	1	Centrales de Energía	3	[T] Lu 7,8 (TM 3-16) - Ma 3,4,5 (TM 3-16)
+[P] Ju 4,5 (TM 3-3)
+ELECT	[T] Daniel Sacasas - Oscar Farías	07/08/26
+541437	1	Proyectos Termicos	3	[T] Lu 7,8 (TM 3-11)
+[P] Ju 2,3,4 (TM 1-1)
+ELECT	[T] Andrés Escalona	08/06/26
+541468	1	Lubricación	3	[T] Ma 10,11 (IS 2-3)
+[P] Mi 10,11 (TM 3-3)
+ELECT	[T] Eduardo Núñez	08/06/26
+541474	1	Turbomáquinas	3	[T] Mi 8,9 (DII 4)
+[P] Ma 3,4 (TM 3-3)
+ELECT	[T] Cristian Cuevas	20/07/26
+541476	1	Integración a Través de Investigación	3	[T] Ju 1 (Sala Teaching)
+[P] Ju 2,3 (Sala Teaching) - Vi 4,5,6 (Sala Teaching)
+OBLIG	[T] Daniel Sacasas - Saulo Gómez - Cristian Vicuña	08/06/26
+541477	1	Centrales de Energía	6	[T] Lu 7,8 (TM 3-16) - Ma 3,4,5 (TM 3-16)
+[P] Ju 4,5 (TM 3-3)
+OBLIG	[T] Daniel Sacasas - Oscar Farías	19/06/26
+541478	1	Mecánica del Vuelo	4	[T] Ju 4,5 (LabTecAer) - Vi 1 (LabTecAer)
+[P] Vi 2,3 (LabTecAer)
+OBLIG	[T] Frank Tinapp	08/06/26
+541479	1	Sistemas de Control	4	[T] Mi 1,2 (TM 3-15)
+[P] Ju 10,11 (TM 3-1)
+[L] Vi 8,9 (TM 3-15)
+OBLIG	[T] Bernardo Hernández	30/07/26
+541482	1	Elementos de Máquinas	4	[T] Ju 7,8,9 (TM 3-9)
+[P] Lu 3,4 (TM 3-9)
+OBLIG	[T] Emilio Dufeu - Cristian Canales	12/08/26
+541484	1	Soldadura	3	[T] Mi 8,9 (TM 1-2)
+[P] Ju 10,11 (TM 3-16)
+ELECT	[T] Eduardo Núñez	09/06/26
+541486	1	Relaciones Humanas	3	[T] Lu 12,13 (TM 3-1)
+[P] Ma 12,13 (TM 3-1)
+OBLIG	[T] Cecilia Gutiérrez	07/08/26
+541496	1	Proyecto de Ingeniería	6		OBLIG	[T] Alejandro López	10/06/26
+541497	1	Proyecto de Ingeniería Mecánica	6		OBLIG	[T] Oscar Farías	09/06/26
+541499	1	Memoria de Título	20		OBLIG	[T] Oscar Farías	10/06/26
+541562	1	Habilidades Directivas	3	[T] Lu 8,9 (TM 3-7)
+[P] Ma 5,6 (I2030)
+ELECT	[T] Javier Piedra	29/07/26
+541568	1	Integradora Solución de Un Problema Complejo	3	[T] Mi 1 (Diseño Mec)
+[P] Ma 1,2 (Diseño Mec) - Mi 2,3,4 (Diseño Mec)
+OBLIG	[T] Pablo Cornejo - Cristian Rodríguez - Alejandro López - Oscar Farías	08/08/26
+541578	1	Fundamentos de Ingeniería de Sistemas Aeroespaciales	3	[T] Ma 8,9 (LabTecAer)
+[L] Mi 8,9 (LabTecAer)
+ELECT	[T] Alejandro López	09/06/26
+541583	1	Proyectos de Ingeniería Residencial y Comercial	3	[T] Mi 8,9 (TM 3-2)
+[P] Ju 8,9 (TM 3-2)
+ELECT	[T] Andrés Escalona	20/07/26
+541587	1	Manejo de Materiales	3	[T] Ma 3,4 (TM 3-11)
+[P] Mi 3,4 (TM 3-2)
+ELECT	[T] Manuel Moncada	23/07/26
+541690	1	Práctica Profesional	4		OBLIG	[T] Oscar Farías - Alejandro López	10/06/26
+541695	1	Memoria de Título	20		OBLIG	[T] Oscar Farías	10/06/26
+541695	2	Memoria de Título	20		OBLIG	[T] Alejandro López	10/06/26
+541698	1	Práctica Profesional	0		OBLIG	[T] Alejandro López	10/06/26
+541699	1	Memoria de Título	18		OBLIG	[T] Oscar Farías	10/06/26
+541699	2	Memoria de Título	18		OBLIG	[T] Alejandro López	10/06/26
+541700	1	Formulación de Proyectos de Investigación	3	[T] Ma 8,9 (TM 3-17)
+[P] Ju 8,9 (TM 3-16)
+ELECT	[T] Cristian Vicuña	09/06/26
+541701	1	Métodos Experimentales	4	[T] Vi 3,4 (IS 2-1)
+[P] Mi 8,9 (TM 3-17)
+[L] Ju 1,2 (Lab.Mec.Comp)
+ELECT	[T] Félix Leaman	09/06/26
+541714	1	Acondicionamiento del Aire en Recintos	3	[T] Ju 3,4 (TM 3-14)
+[P] Vi 3,4 (TM 3-14)
+ELECT	[T] Adelqui Fissore	07/07/26
+541715	1	Dinámica de Fluidos Computacional	3	[T] Mi 10,11 (Lab.Mec.Comp)
+[P] Ju 9,10,11 (Lab.Mec.Comp)
+ELECT	[T] Pablo Cornejo	09/06/26
+541718	1	Mantenimiento Predictivo	4	[T] Vi 8,9,10 (TM 3-2)
+[P] Mi 10,11 (TM 3-2)
+ELECT	[T] Cristian Rodríguez - Cristian Vicuña	19/06/26
+541719	1	Materiales Compuestos	4	[T] Mi 8,9 (Fija Prof)
+[L] Mi 3,4 (Lab.Mec.Comp) - Vi 7,8,9 (Lab Mediciones)
+ELECT	[T] Alexis Salas - Carlos Lanziotti	13/08/26
+541724	1	Modelación y Simulación de Sistemas Térmicos	3	[T] Ma 8,9 (DII 1)
+[P] Ju 1,2 (DII 1)
+ELECT	[T] Cristian Cuevas	23/07/26
+541726	1	Vibraciones Mecánicas en Ingeniería	2	[T] Lu 8,9 (IS 2-1)
+ELECT	[T] Cristian Rodríguez - Cristian Vicuña	12/06/26
+541729	1	Manufactura Digital	3	[T] Lu 8,9 (TM 3-2)
+[P] Vi 3,4 (TM 3-2)
+ELECT	[T] Enrique Wagemann	11/06/26
+541734	1	Propulsión De Cohetes	3	[T] Ma 8,9 (TM 3-7)
+[P] Vi 1,2 (TM 3-14)
+ELECT	[T] Saulo Gómez	14/08/26
+541801	1	Aprendizaje Automático en Ingeniería Mecánica	3	[T] Lu 5,6 (TM 3-10)
+[P] Ju 5,6 (TM 3-14)
+ELECT	[T] Félix Leaman	07/08/26
+541802	1	Selección de Materiales	3	[T] Ma 1,2 (TM 3-17)
+[P] Ju 8,9 (Fija Prof)
+ELECT	[T] Juan Pablo Sanhueza - Carlos Lanziotti	13/08/26
+541803	1	Combustibles Renovables y Tecnologías de Captura de CO2	3	[T] Lu 3,4 (TM 3-12)
+[P] Mi 8,9 (IS 2-3)
+[L] Vi 9 (Fija Prof)
+ELECT	[T] Einara Blanco	09/06/26
+541806	1	Taller de Vehículos de Competición	1		ELECT	[T] Enrique Wagemann	10/06/26
+541807	1	Aplicaciones de Elementos Finitos	3	[T] Ma 10,11 (TM 3-9)
+[P] Vi 5,6 (Lab.Mec.Comp)
+ELECT	[T] Emilio Dufeu - Cristian Canales	09/06/26
+541809	1	Taller de Vehículos de Competición II	1		ELECT	[T] Enrique Wagemann	10/06/26
+541812	1	Taller de Vehículos de Competición III	1		ELECT	[T] Enrique Wagemann	15/07/26
+541815	1	Taller de Aprendizaje Automatico Aplicado	1	[L] Ma 5,6 (Lab Mediciones)
+ELECT	[T] Félix Leaman	11/06/26
+541816	1	Taller de Monitoreo de Condición y Diagnóstico	1	[L] Vi 5,6 (Lab Mediciones)
+ELECT	[T] Félix Leaman	11/06/26
+541817	1	Herramientas Computacionales Para Ingenieria	3	[T] Ma 8,9 (Lab.Mec.Comp)
+[L] Vi 1,2 (Lab.Mec.Comp)
+ELECT	[T] Manuel Moncada
+
+INGENIERIA METALURGICA
+	1	Balance de Materia y Energía	3	[T] Lu 10,11 (TM 1-2) - Mi 8,9 (TM 3-13)
+OBLIG	[T] Eduardo Balladares	14/08/26
+542253	1	Fenómenos de Transporte	4	[T] Ma 10,11 (TM 3-3)
+[P] Ju 8,9 (TM 1-3)
+OBLIG	[T] Victor Parra	17/06/26
+542332	1	Aplicaciones de Software en Ingenieria	4	[T] Mi 1,2 (LabCom IS-1) - Vi 3 (LabCom Min)
+[P] Vi 1,2 (LabCom Min)
+ELECT	[T] Luis Salinas	06/08/26
+542334	1	Ingeniería de Materiales	3	[T] Ma 5,6 (TM 3-11) - Mi 8 (TM 3-12)
+[P] Mi 9,10 (TM 3-12)
+OBLIG	[T] Eugenia Araneda	11/08/26
+542337	1	Espesamiento y Filtración	3	[T] Lu 1,2 (TM 3-2)
+[P] Mi 8,9 (I2030)
+OBLIG	[T] Fernando Betancourt	23/07/26
+542340	1	Tecnología Pur. de Soluciones	3	[T] Mi 8,9 (DII 1)
+[P] Vi 7 (TM 3-11)
+[L] Vi 8,9 (LabMET1)
+OBLIG	[T] Fernando Parada	12/08/26
+542341	1	Prevención y Seguridad Minera	3	[T] Ma 10 (Sala Teaching) - Mi 3,4 (TM 3-10)
+[P] Ma 11 (Sala Teaching)
+OBLIG	[T] Germán Vargas	17/06/26
+542342	1	Siderurgia	2	[T] Mi 1,2 (TM 3-2)
+[P] Mi 7 (TM 3-2)
+OBLIG	[T] Rafael Padilla	17/06/26
+542343	1	Ingenieria Ambiental en Mineria	3	[T] Ma 3,4,5 (TM 3-14)
+OBLIG	[T] Froilan Vergara	17/06/26
+542353	1	Ingeniería de Materiales	4	[T] Ma 5,6 (TM 3-11) - Mi 8 (TM 3-12)
+[P] Mi 9,10 (TM 3-12)
+OBLIG	[T] Eugenia Araneda	11/08/26
+542354	1	Cinética y Transferencia de Masa	4	[T] Ju 1,2,3 (TM 1-3)
+[L] Ma 3,4 (LabMET1)
+OBLIG	[T] Victor Parra	17/06/26
+542355	1	Transferencia de Calor	4	[T] Mi 3,4,5 (TM 3-1)
+[P] Lu 10,11 (TM 3-1)
+OBLIG	[T] Christian Hernández	07/08/26
+542355	2	Transferencia de Calor	4	[T G1] Lu 3,4,5 (A-411)
+[P G1] Lu 10,11 (TM 3-1)
+[P G2] Vi 4,5 (IS 2-3)
+[T] Christian Hernández	29/07/26
+542390	1	Práctica Laboral	2		OBLIG	[T] Froilan Vergara	17/06/26
+542400	1	Transferencia de Calor	3	[T] Mi 3,4,5 (TM 3-1)
+[P] Lu 10,11 (TM 3-9)
+OBLIG	[T] Christian Hernández	07/08/26
+542401	1	Flotación	3	[T] Ma 3,4 (TM 1-2)
+[P] Mi 2 (TM 1-3)
+[L] Vi 1,2 (LabMET1)
+OBLIG	[T] Leopoldo Gutiérrez	17/06/26
+542402	1	Hidrometalurgia	3	[T] Ju 1,2 (TM 3-12)
+[P] Ma 7,8 (IS 2-1)
+[L] Ma 8 (LabMET1)
+OBLIG	[T] Rodrigo Yepsen	19/06/26
+542405	1	Espesamiento y Filtración	3	[T] Lu 1,2 (TM 3-2)
+[P] Mi 8,9 (I2030)
+OBLIG	[T] Fernando Betancourt	29/07/26
+542482	1	Hidrometalurgia I	4	[T] Ju 1,2 (TM 3-12)
+[P] Ma 7,8 (IS 2-1)
+[L] Ma 8 (LabMET1)
+OBLIG	[T] Rodrigo Yepsen	19/06/26
+542483	1	Pirometalurgia del Cobre	4	[T] Lu 4,5 (IS 2-1) - Ma 5 (IS 2-1)
+[P] Mi 3,4 (TM 3-13)
+OBLIG	[T] Roberto Parra	17/06/26
+542484	1	Diseño de Reactores	4	[T] Ju 8,9,10 (I2030)
+[P] Ma 2 (TM 3-14)
+[L] Ma 1 (TM 3-14)
+OBLIG	[T] Fernando Parada	17/06/26
+542498	1	Proyecto de Ingeniería Metalúrgica	4		OBLIG	[T] Eduardo Balladares - Igor Wilkomirsky - Leopoldo Gutiérrez - Fernando Parada - Fernando Betancourt	17/06/26
+542560	1	Proyecto de Ingeniería Metalúrgica	2		OBLIG	[T] Igor Wilkomirsky - Leopoldo Gutiérrez - Fernando Parada - Fernando Betancourt - Eduardo Balladares	17/06/26
+542561	1	Prevención de Riesgos y Seguridad Minera	3	[T] Ma 10 (Sala Teaching) - Mi 3,4 (TM 3-10)
+[P] Ma 11 (Sala Teaching)
+OBLIG	[T] Germán Vargas	17/06/26
+542690	1	Práctica Profesional	4		OBLIG	[T] Froilan Vergara	17/06/26
+542695	1	Memoria de Título	20		OBLIG	[T] Froilan Vergara	17/06/26
+542699	1	Memoria de Título	18		OBLIG	[T] Froilan Vergara	17/06/26
+542705	1	Fundamentos y Aplicaciones de Muestreo en Procesos Metalúrgicos	3	[T] Ma 3,4 (TM 1-3)
+[P] Ju 1,2 (IS 2-1)
+ELECT	[T] Andrés Ramírez	07/08/26
+542713	1	Tecnologías Limpias y Economía Circular para Minería	3	[T] Lu 10,11,12 (TM 3-2)
+ELECT	[T] Mario Sánchez	18/06/26
+551250	1	Taller de Métodos de Explotación II	2	[T] Ju 5,6 (TM 3-10)
+OBLIG	[T] Roberto Gómez	08/08/26
+551314	1	Mecánica de Sólidos	3	[T] Ma 1,2 (LabCiv 2-1)
+[P] Ju 3,4 (LabCiv 2-1)
+OBLIG	[T] Patricio Toledo	18/06/26
+551321	1	Metalurgia Extractiva	4	[T] Lu 9,10,11 (TM 3-16)
+[P] Vi 4 (TM 3-3)
+[L] Vi 5 (TM 3-3)
+OBLIG	[T] Luis Salinas - Andrés Ramírez	12/08/26
+551323	1	Topografía	4	[T] Ju 10,11 (TM 3-11)
+[P] Ma 3,4 (LabCom Min)
+[L] Mi 7,8,9 (Terreno)
+OBLIG	[T] Ramón Díaz	12/08/26
+551340	1	Práctica Laboral	2		OBLIG	[T] Lucy Bravo	18/06/26
+551421	1	Perforación y Tronadura	4	[T] Ma 7,8,9 (TM 3-5)
+[L] Lu 6,7,8 (LabCom Min)
+OBLIG	[T] René Gómez	19/06/26
+551423	1	Estimación de Recursos Minerales	4	[T] Ju 5,6,7 (LabCom Min)
+[L] Ma 10,11 (LabCom Min) - Mi 1,2 (LabCom Min)
+OBLIG	[T] Roberto Fustos	18/06/26
+551451	1	Minería a Cielo Abierto	4	[T] Lu 1,2 (TM 3-12)
+[L] Ju 1,2,3,4 (LabCom Min)
+OBLIG	[T] Asieh Hekmat	18/06/26
+551514	1	Legislación y Seguridad Minera	4	[T] Lu 6,7 (TM 3-14) - Ju 10,11 (IS 2-3)
+OBLIG	[T] Rodrigo Cepeda	06/08/26
+551515	1	Minería a Cielo Abierto	3	[T] Lu 1,2 (TM 3-12)
+[L] Ju 1,2,3,4 (LabCom Min)
+OBLIG	[T] Asieh Hekmat	15/07/26
+551521	1	Seminario II	2	[T] Mi 1,2 (TM 3-3)
+OBLIG	[T] Ramón Díaz - Lucy Bravo	19/06/26
+551525	1	Estimación de Recursos Minerales	4	[T] Ju 5,6,7 (LabCom Min)
+[L] Ma 10,11 (LabCom Min) - Mi 1,2 (LabCom Min)
+OBLIG	[T] Roberto Fustos	18/06/26
+551526	1	Legislación y Seguridad Minera	4	[T] Lu 6,7 (TM 3-14) - Ju 10,11 (IS 2-3)
+OBLIG	[T] Rodrigo Cepeda	06/08/26
+551527	1	Planificación Minera	4	[T] Ju 3,4 (TM 3-16) - Vi 3 (TM 3-11)
+[P] Vi 4 (TM 3-11)
+[L] Mi 3,4 (LabCom Min)
+OBLIG	[T] Roberto Fustos	20/07/26
+551528	1	Proyecto de Ingeniería de Minas	4	[T] Ju 1,2,3,4 (IS 2-3)
+[L] Lu 2,3,4 (LabCom Min) - Ma 5,6,7 (LabCom Min)
+OBLIG	[T] Francisco Armijo	11/08/26
+551558	1	Proyecto de Ingeniería de Minas	4	[T] Vi 1,2 (TM 3-5)
+[L] Lu 2,3,4 (LabCom Min) - Ma 5,6,7 (LabCom Min)
+OBLIG	[T] Francisco Armijo	18/06/26
+551559	1	Planificación Minera	4	[T] Ju 3,4 (TM 3-16) - Vi 3 (TM 3-11)
+[P] Vi 4 (TM 3-11)
+[L] Mi 3,4 (LabCom Min)
+OBLIG	[T] Roberto Fustos	20/07/26
+551590	1	Práctica Profesional	0		OBLIG	[T] Lucy Bravo	19/06/26
+551591	1	Introducción a Memoria de Título	2	[T] Mi 1,2 (TM 3-3)
+OBLIG	[T] Lucy Bravo	19/06/26
+551601	1	Hidrogeología aplicada	3	[T] Lu 8,9 (TM 3-12)
+[P] Vi 7,8 (LabCom Min)
+ELECT	[T] Ramón Díaz	19/06/26
+551605	1	Inglés Técnico	3	[T] Ma 10,11 (TM 3-14)
+[P] Ju 3,4 (IS 2-1)
+ELECT	[T]	19/06/26
+551690	1	Práctica Profesional	4		OBLIG	[T] Lucy Bravo	19/06/26
+551695	1	Memoria de Título	20		OBLIG	[T] Ramón Díaz	19/06/26
+551699	1	Memoria de Título	18		OBLIG	[T] Ramón Díaz	19/06/26
+
+INGENIERIA QUIMICA
+	1	Análisis y Prevención de Riesgos	4	[T] Mi 2,3,4 (Fija Prof)
+[T] Ana Baeza - Manuel Gutiérrez - Felipe Meyer - Patricia González	13/08/26
+540110	1	Introduccion a los Bioprocesos	3	[T] Ma 1,2 (TQ 2-1) - Mi 1 (TQ 2-1)
+[T] Gerard Alonso	03/06/26
+540112	1	Operaciones de Bioingenieria II	4	[T] Ma 3 (TQ 1-1) - Ju 3,4 (TQ 1-1)
+[P] Vi 1,2 (TQ 1-1)
+[T] Constanza Arriagada	03/06/26
+540215	1	Balance de Materia y Energía	4	[T] Vi 2,3,4 (TQ 3-1)
+[P] Ma 3,4 (TQ 3-1)
+OBLIG	[T] José Matías Garrido	03/06/26
+540220	1	Diseño de Reactores Químicos	5	[T] Ma 3,4 (TQ 1-2) - Ju 3,4 (TQ 1-2)
+[P] Vi 3,4 (TQ 2-1)
+OBLIG	[T] Ximena García	30/07/26
+540259	1	Proyecto II	4	[T] Vi 7,8,9,10 (TQ 5-1)
+OBLIG	[T] Luis Arteaga - Carlos Tippmann - Jaime Faundez	30/07/26
+540262	1	Dinamica de Procesos	4	[T] Ma 3,4 (TQ 5-1) - Ju 3,4 (TQ 5-1)
+[P] Mi 3,4 (TQ 5-1)
+OBLIG	[T] Alejandro Karelovic	03/06/26
+540264	1	Termodinámica	4	[T] Mi 1,2 (TQ 3-1)
+[P] Ma 7,8,9 (TQ 3-1)
+OBLIG	[T] Andrés Mejía	07/08/26
+540265	1	Mecánica de Fluidos	5	[T] Lu 3,4 (TQ 5-1) - Ju 8,9 (TQ 5-1)
+[P] Vi 1,2 (TQ 5-1)
+OBLIG	[T] Oscar Valerio	03/06/26
+540266	1	Taller de Integración 1	2	[T] Vi 3,4 (TQ 5-1)
+OBLIG	[T] Teresita Marzialetti - Luis Pino	03/06/26
+540320	1	Introducción a los Bioprocesos	3	[T] Ma 1,2 (TQ 2-1) - Mi 1 (TQ 2-1)
+[T] Gerard Alonso	03/06/26
+540322	1	Operaciones de Bioingenieria II	4	[T] Ma 3 (TQ 1-1) - Ju 3,4 (TQ 1-1)
+[P] Vi 1,2 (TQ 1-1)
+[T] Constanza Arriagada	03/06/26
+540332	1	Termodinámica de Mezclas	4	[T] Vi 3,4,5 (TQ 1-2)
+[P] Ma 8,9 (TQ 1-2)
+OBLIG	[T] Diego Becerra	30/07/26
+540333	1	Transferencia de Calor	4	[T] Ju 2,3,4 (TQ 2-1)
+[P] Vi 5,6 (TQ 2-1)
+OBLIG	[T] Johana castaño	30/07/26
+540349	1	Práctica Laboral	2		OBLIG	[T] Teresita Marzialetti	03/06/26
+540351	1	Termodinámica de Superficies	4	[T] Lu 3,4,5 (TQ 3-1)
+[P] Mi 8,9 (TQ 3-1)
+OBLIG	[T] Gerard Alonso - Luis Montoya - Tatiana Bustamante	03/06/26
+540352	1	Transferencia de Materia	4	[T] Ju 1,2,3 (TQ 3-1)
+[P] Ma 1,2 (TQ 3-1)
+OBLIG	[T] Katherina Fernandez - Luis Pino	03/06/26
+540353	1	Taller de Integración 2	2	[T] Lu 1,2 (TQ 5-1)
+OBLIG	[T] Miguel Pereira - Diego Becerra	03/06/26
+540413	1	Diseño de Reactores Químicos	5	[T] Ma 3,4 (TQ 1-2) - Ju 3,4 (TQ 1-2)
+[P] Vi 3,4 (TQ 2-1)
+OBLIG	[T] Ximena García	30/07/26
+540414	1	Dinámica y Control de Procesos	5	[T] Ma 3,4 (TQ 5-1) - Ju 3,4 (TQ 5-1)
+[P] Mi 3,4 (TQ 5-1)
+OBLIG	[T] Alejandro Karelovic	03/06/26
+540452	1	Síntesis y Optimización de Procesos	4	[T] Mi 8,9,10 (TQ 5-1)
+[P] Lu 3,4 (LabCom TM)
+OBLIG	[T] Luis Arteaga - Fernando Márquez	03/06/26
+540453	1	Taller de Integración 3	2	[T] Lu 1,2 (TQ 1-1)
+OBLIG	[T] Claudio Zaror - Romel Jimenez	03/06/26
+540524	1	Topicos Especiales I	2		ELECT	[T] Teresita Marzialetti	03/06/26
+540559	1	Reacciones Cataliticas en Superficies	4	[T] Ma 3,4 (TQ 2-1) - Mi 3,4 (TQ 2-1)
+ELECT	[T] Romel Jimenez	03/06/26
+540561	1	Procesos de Pulpaje y Blanqueo de Madera	5	[T] Ma 4 (TQ 1-1) - Mi 1,2 (TQ 1-1)
+ELECT	[T] Miguel Pereira	03/06/26
+540563	1	Manejo Seguro de Sustancias Peligrosas	4	[T] Ma 8,9 (TQ 1-1)
+[P] Ju 1,2 (TQ 1-1)
+[T] Braulio Morales	30/07/26
+540565	1	Tratamiento Estadístico de Datos y Diseño de Experimentos	4	[T] Lu 1,2 (TQ 1-2)
+[P] Mi 1,2 (TQ 1-2)
+ELECT	[T] Katherina Fernandez	21/07/26
+540569	1	Diseño y Simulación de Procesos Químicos	4	[T] Ju 2,3,4 (LabCom IS-1)
+ELECT	[T] José Matías Garrido	03/06/26
+540572	1	Bio Refinerías	4	[T] Ma 7,8,9 (TQ 2-2)
+ELECT	[T] Teresita Marzialetti	07/08/26
+540575	1	Proyecto 2	4	[T] Vi 7,8,9,10 (TQ 5-1)
+OBLIG	[T] Jaime Faundez - Carlos Tippmann	03/06/26
+540576	1	Gestión de Riesgos Químicos	3	[T] Ju 7,8,9 (TQ 3-1)
+OBLIG	[T] Fernando Márquez - Luis Montoya	03/06/26
+540578	1	Tecnologías de Procesamiento y Reciclaje de Polímeros	4	[T] Ma 8,9 (TQ 2-1) - Ju 8,9 (Pend)
+ELECT	[T] Oscar Valerio	07/08/26
+540585	1	Investigación para Pregrado	3		ELECT	[T] Teresita Marzialetti	09/06/26
+540590	1	Práctica Profesional	0		OBLIG	[T] Teresita Marzialetti - Luis Arteaga	03/06/26
+540690	1	Práctica Profesional	4		OBLIG	[T] Luis Arteaga - Teresita Marzialetti	03/06/26
+540695	1	Memoria de Título	20		OBLIG	[T] Teresita Marzialetti	03/06/26
+540699	1	Memoria de Título	18		OBLIG	[T] Teresita Marzialetti	03/06/26
+540707	1	Fundamentos de la Caracterización de Materiales	4	[T] Mi 3,4 (TQ 1-2)
+[L] Vi 6,7 (TQ 1-2)
+ELECT	[T] Johana castaño - Tatiana Bustamante	30/07/26
+540711	1	Termodinamica Avanzada	4	[T] Ma 1,2 (TQ 1-2) - Ju 3,4 (TQ 2-2)
+ELECT	[T] Andrés Mejía	30/07/26
+540731	1	Reactores Quimicos	4	[T] Lu 3,4 (TQ 2-2) - Vi 3,4 (TQ 2-2)
+ELECT	[T] Romel Jimenez - Alejandro Karelovic	03/06/26
+540747	1	Ingeniería en Soft Matter y Reología	4	[T] Lu 3 (TQ 2-1)
+[P] Ju 7,8,9 (TQ 2-1)
+ELECT	[T] Diego Becerra	30/07/26
+540750	1	Biorreactores	3	[T] Mi 7,8,9 (TQ 2-2)
+ELECT	[T] Constanza Arriagada	04/08/26
+
+1	Ciencia de Materiales	5	[T] Lu 3,4 (I2030) - Ma 1,2 (TM 3-2)
+[P] Ju 1 (TM 3-18)
+[L] Ju 2 (TM 3-18)
+OBLIG	[T] Harry Cárdenas	07/08/26
+548256	1	Termodinámica de Materiales	4	[T] Mi 3,4 (TM 1-1) - Ju 3 (TM 3-2)
+[P] Vi 5,6 (TM 1-1)
+[L] Vi 7 (TM 1-1)
+OBLIG	[T] Víctor Guzmán	04/06/26
+548257	1	Prototipado	3	[T] Lu 5,6 (TM 1-1)
+[P] Vi 3,4 (TM 3-7)
+OBLIG	[T] Yovany Oropresa	22/07/26
+548304	1	Metalurgia Física	4	[T] Ma 3,4 (DII 2) - Ju 4 (TM 3-2)
+[P] Ju 5 (TM 3-2)
+[L] Mi 8,9,10 (Lab.DIMAT)
+OBLIG	[T] Juan Pablo Sanhueza	06/08/26
+548305	1	Mecánica de Materiales	4	[T] Ma 5,6,7 (TM 3-7)
+[P] Ju 8,9 (TM 3-12) - Vi 5,6 (TM 3-12)
+OBLIG	[T] Angelo	04/06/26
+548306	1	Transferencia de Calor	4	[T] Lu 1,2 (TM 3-13) - Mi 1 (TM 3-11)
+[P] Ma 1,2 (TM 3-13)
+OBLIG	[T] Víctor Guzmán	30/07/26
+548307	1	Liderazgo y Competencias Emprendedoras	3	[T] Vi 1,2,3 (Lab.DIMAT)
+OBLIG	[T] Pedro Vera	13/08/26
+548307	2	Liderazgo y Competencias Emprendedoras	3	[T] Ju 4,5,6 (Diseño Mec)
+[T] Pedro Vera	07/08/26
+548411	1	Fusión de Metales	4	[T] Ma 3,4 (Sala Teaching) - Mi 2 (TM 1-1)
+[L] Ju 8,9,10 (Lab.Fusión)
+OBLIG	[T] David Rojas	11/06/26
+548412	1	Pulvimetalurgia	3	[T] Ma 1,2 (I2030) - Ju 1 (TM 3-17)
+[L] Ju 2 (TM 3-17)
+OBLIG	[T] Felipe Sanhueza	06/08/26
+548413	1	Caracterización de Materiales	4	[T] Lu 8,9 (TM 3-10) - Ma 9 (TM 3-3)
+[L] Ju 3,4,5 (DII 1)
+OBLIG	[T] Claudia Carrasco	07/07/26
+548414	1	Corrosión	4	[T] Lu 4,5 (TM 3-2) - Mi 3 (TM 3-18)
+[P] Mi 4 (TM 3-18)
+[L] Ma 10 (Lab.Corr)
+OBLIG	[T] David Rojas	11/06/26
+548415	1	Visitas Industriales	1	[P] Mi 8,9,10 (Terreno)
+OBLIG	[T] Felipe Sanhueza	04/06/26
+548420	1	Materiales Compuestos	3	[T] Ju 1,2 (TM 3-16)
+[P] Mi 8,9 (TM 1-1)
+ELECT	[T] Venkata Ramam	18/06/26
+548524	1	Selección de Materiales	3	[T] Ma 8,9 (TM 3-18)
+[P] Vi 6,7 (TM 3-2)
+OBLIG	[T] Juan Pablo Sanhueza	04/06/26
+548525	1	Recubrimientos y Nanotecnologias	3	[T] Mi 3,4 (TM 3-17) - Vi 3 (TM 3-17)
+[L] Vi 4 (TM 3-17)
+OBLIG	[T] Venkata Ramam	11/06/26
+548526	1	Legislación, Seguridad y Medioambiente	3	[T] Mi 2 (TM 3-18) - Ju 5,6 (TM 1-1)
+OBLIG	[T] Carla Pérez	22/07/26
+548527	1	Proyecto de Ingeniería de Materiales	4	[T] Lu 3,4 (TM 3-18)
+OBLIG	[T] Venkata Ramam	06/08/26
+548599	1	Práctica Profesional	0		OBLIG	[T] Víctor Guzmán	11/06/26
+548628	1	Memoria de Título	18		OBLIG	[T] Víctor Guzmán	11/06/26
+548654	1	Biocombustibles, Almacenamiento y Conversión Energética	3	[T] Lu 8,9 (TM 1-2) - Ju 7 (TM 3-17)
+ELECT	[T] Felipe Sanhueza - Víctor Guzmán	03/08/26
+

@@ -337,6 +337,15 @@ main > .section:nth-child(3) { animation-delay: .12s; }
  * bloque tiene su grid-row/grid-column fijados en linea, asi que esconder
  * uno no recoloca a los demas (FR-027). */
 .tt-block.tt-filtrado { display: none; }
+/* Leyenda de la vista combinada: con varias carreras el color deja de indicar
+ * el tipo de bloque y pasa a indicar la carrera, así que hay que explicarlo. */
+.tt-legend-carreras { margin-bottom: 10px; }
+/* Panel "mi horario": un selector de sección por ramo con más de un paralelo. */
+.tt-secciones { margin-top: 12px; }
+.tt-secciones summary { cursor: pointer; font-weight: 600; color: var(--brand); }
+.tt-secciones .grid { margin-top: 10px; }
+.tt-secciones label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; }
+.tt-secciones select { margin: 0; }
 
 /* ── Impresion del horario (US5, R-8) ─────────────────────────────────────
  * #printHeader va oculto en pantalla y visible solo al imprimir; el color es
