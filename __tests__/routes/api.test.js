@@ -96,6 +96,17 @@ jest.mock("../../js/db", () => {
       if (/^DELETE FROM bloque_horario WHERE id/.test(sql)) {
         return { rowCount: 1 };
       }
+      // Contexto del mapa de calor semanal y del Match: bloques, matrícula y
+      // saturación por día. Un bloque de clase el lunes 08:00-10:00 para 7-1.
+      if (/^SELECT carrera_id, nivel, dia_semana/.test(sql)) {
+        return { rows: [{ carrera_id: 7, nivel: 1, dia_semana: 1, hora_inicio: "08:00", hora_fin: "10:00", tipo: "CLASE" }] };
+      }
+      if (sql.includes("FROM matricula")) {
+        return { rows: [{ carrera_id: 7, nivel: 1, cantidad: 120 }] };
+      }
+      if (sql.includes("vw_saturacion_segmento")) {
+        return { rows: [{ carrera_id: 7, nivel: 1, fecha: "2026-09-07", eventos: 4, examenes: 1 }] };
+      }
       if (sql.includes("FROM bloque_horario")) return { rows: [] };
       if (sql.includes("INSERT INTO schema_migrations")) return { rows: [] };
       // T045 (H-04): actividad 501, de la entidad 6, con fecha en el futuro
@@ -575,6 +586,78 @@ describe("API endpoints públicos", () => {
       const fs = require("fs");
       const src = fs.readFileSync(require.resolve("../../server.js"), "utf8");
       expect(src).not.toMatch(/multer|busboy|formidable|multipart/i);
+    });
+  });
+
+  describe("Mapa de calor — vista semanal por hora", () => {
+    test("es pública: un estudiante puede consultarla sin sesión", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=1&fecha=2026-09-07");
+      expect(res.status).toBe(200);
+    });
+
+    test("devuelve los 5 días de la semana con su fecha real", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=1&fecha=2026-09-07");
+      expect(res.body.dias.map((d) => d.fecha)).toEqual([
+        "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11",
+      ]);
+    });
+
+    test("la clase del lunes 08:00-10:00 aparece como ocupada", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=1&fecha=2026-09-07");
+      const fila = (9 * 60 - 480) / 15; // 09:00
+      expect(res.body.celdas[1][fila]).toMatchObject({ pctOcupado: 100, enClase: 1 });
+      expect(res.body.celdas[1][(11 * 60 - 480) / 15].pctOcupado).toBe(0);
+    });
+
+    test("incluye las mejores franjas para programar", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=1&fecha=2026-09-07");
+      expect(Array.isArray(res.body.franjas)).toBe(true);
+      expect(res.body.franjas[0].pctOcupado).toBe(0);
+      expect(res.body.franjas[0].fecha).toMatch(/^2026-09-\d{2}$/);
+    });
+
+    test("admite varias carreras a la vez", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&carreraId=9&nivel=1&fecha=2026-09-07");
+      expect(res.status).toBe(200);
+      expect(res.body.dias).toHaveLength(5);
+    });
+
+    test("sin carreraId o sin nivel responde 400", async () => {
+      expect((await request(app).get("/api/heatmap/semana?nivel=1")).status).toBe(400);
+      expect((await request(app).get("/api/heatmap/semana?carreraId=7")).status).toBe(400);
+    });
+
+    test("una fecha inválida responde 400, no 500", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=1&fecha=noesunafecha");
+      expect(res.status).toBe(400);
+    });
+
+    test("demasiadas carreras se rechazan con 400", async () => {
+      const muchas = Array.from({ length: 21 }, (_, i) => "carreraId=" + (i + 1)).join("&");
+      const res = await request(app).get("/api/heatmap/semana?" + muchas + "&nivel=1");
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/Máximo/i);
+    });
+  });
+
+  describe("Mapa de calor — vista de semestre", () => {
+    test("devuelve la matriz de semanas y celdas", async () => {
+      const res = await request(app).get("/api/heatmap/semestre?desde=2026-09-07&hasta=2026-09-11");
+      expect(res.status).toBe(200);
+      expect(res.body.semanas).toEqual(["2026-09-07"]);
+      expect(res.body.celdas["2026-09-07"]).toMatchObject({ eventos: 4, examenes: 1 });
+    });
+
+    test("los días sin actividad salen como libres, no ausentes", async () => {
+      const res = await request(app).get("/api/heatmap/semestre?desde=2026-09-07&hasta=2026-09-11");
+      expect(res.body.celdas["2026-09-08"]).toMatchObject({ eventos: 0, nivelId: "LIBRE" });
+    });
+
+    test("la ruta antigua /api/heatmap sigue funcionando", async () => {
+      const res = await request(app).get("/api/heatmap?carreraId=7&nivel=1");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body[0]).toHaveProperty("color");
     });
   });
 

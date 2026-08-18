@@ -236,8 +236,15 @@
     });
     ramos.forEach((r) => r.secciones.sort((a, b) => String(a).localeCompare(String(b), "es", { numeric: true })));
 
-    return { secciones, ramos, carreras: carrerasUsadas };
+    // Se devuelven los bloques crudos para que la vista de disponibilidad los
+    // reutilice sin repetir las peticiones.
+    return {
+      secciones, ramos, carreras: carrerasUsadas,
+      bloques: bloquesCrudos,
+      segmentos: ids.map((id) => ({ carreraId: +id, nivel: +nivel })),
+    };
   }
+
 
   global.HorariosView = { montar, aplicarFiltro, claveRamo };
 })(window);
