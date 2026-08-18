@@ -969,6 +969,70 @@ app.get("/api/heatmap", async (req, res) => {
   }
 });
 
+// Vista de SEMESTRE: la misma saturación por día, ya organizada en matriz
+// (días x semanas) y con los feriados marcados.
+app.get("/api/heatmap/semestre", async (req, res) => {
+  try {
+    const desde = req.query.desde;
+    const hasta = req.query.hasta;
+    const [filas, feriados] = await Promise.all([
+      kpiDao.saturacionSegmento({
+        carreraId: num(req.query.carreraId),
+        nivel: num(req.query.nivel),
+        desde, hasta,
+      }),
+      desde && hasta ? feriadoDao.listarFechasEntre(desde, hasta) : Promise.resolve([]),
+    ]);
+    res.json(heatmapService.semestrePorDia(filas, {
+      desde, hasta,
+      feriados: feriados.map((f) => f.fecha || f),
+    }));
+  } catch (e) {
+    console.error("[heatmap:semestre]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
+// Vista SEMANAL por hora: combina el horario de clases con las actividades ya
+// agendadas de esa semana, ponderado por matrícula. Responde "¿a qué hora de
+// esta semana meto mi actividad?".
+//
+// Reutiliza `actividadDao.cargarContextoMatch`, que ya trae exactamente lo que
+// hace falta (bloques, actividades de la semana, feriados y población) y es el
+// mismo contexto con el que el Match puntúa una fecha — así las dos funciones
+// no pueden discrepar sobre qué está ocupado.
+const HEATMAP_MAX_SEGMENTOS = 20;
+app.get("/api/heatmap/semana", async (req, res) => {
+  try {
+    const fecha = req.query.fecha || new Date().toISOString();
+    if (isNaN(new Date(fecha).getTime())) {
+      return res.status(400).json({ error: "La fecha no es válida" });
+    }
+
+    // El público puede venir como pares carreraId/nivel repetidos
+    // (?carreraId=7&carreraId=9&nivel=1) o como un solo segmento.
+    const carreras = [].concat(req.query.carreraId || []).map(num).filter(Boolean);
+    const nivel = num(req.query.nivel);
+    if (!carreras.length || !nivel) {
+      return res.status(400).json({ error: "Se requieren carreraId y nivel" });
+    }
+    if (carreras.length > HEATMAP_MAX_SEGMENTOS) {
+      return res.status(400).json({ error: `Máximo ${HEATMAP_MAX_SEGMENTOS} carreras a la vez` });
+    }
+
+    const publico = carreras.map((carreraId) => ({ carreraId, nivel }));
+    const contexto = await actividadDao.cargarContextoMatch(publico, fecha);
+    const rejilla = heatmapService.semanaPorHora(contexto, publico, { fecha });
+    res.json({
+      ...rejilla,
+      franjas: heatmapService.mejoresFranjas(rejilla, num(req.query.duracion) || 90),
+    });
+  } catch (e) {
+    console.error("[heatmap:semana]", e);
+    res.status(500).json({ error: "Error interno" });
+  }
+});
+
 // ── Feriados (lectura publica) ───────────────────────────────────────────────
 app.get("/api/feriados", async (req, res) => {
   try {

@@ -79,6 +79,9 @@
           <button class="btn secondary" type="button" id="btnVerDisponibilidad">
             <span class="icon" data-icon="target"></span> ¿Cuándo hago mi actividad?
           </button>
+          <!-- El "cuándo programar" vive en el mapa de calor, que además cruza
+               las actividades ya agendadas del calendario. Aquí solo se enlaza
+               con la selección hecha, para no duplicar la lógica. -->
           <span style="flex:1"></span>
           <button class="btn secondary" type="button" id="btnImprimir"><span class="icon" data-icon="printer"></span> Imprimir</button>
         </div>
@@ -232,10 +235,6 @@
       }
 
       let seccionesPorRamo = {};
-      // Lo último dibujado, para poder alternar entre horario y disponibilidad
-      // sin volver a pedir los bloques al servidor.
-      let ultimo = null;
-      let vista = "horario";
 
       /** Mensaje bajo los botones: qué falta, o qué se está mostrando. */
       function actualizarEstado() {
@@ -255,8 +254,7 @@
           : `Listo: ${f.carreraId.length} carreras seleccionadas — se mostrarán superpuestas.`;
       }
 
-      const render = async (nuevaVista) => {
-        if (nuevaVista) vista = nuevaVista;
+      const render = async () => {
         const f = filtros();
         if (!f.carreraId.length || !f.nivel) { actualizarEstado(); return; }
 
@@ -270,15 +268,8 @@
 
         seccionesPorRamo = leerSecciones();
         const meta = await HorariosView.montar(cont, f, { isAdmin: editable, carreras: cat.carreras });
-        ultimo = meta;
         poblarSecciones(meta);
-
-        if (vista === "disponibilidad") {
-          HorariosView.montarDisponibilidad(cont, meta.bloques, meta.segmentos, { duracionMin: 90 });
-          panelSecciones.hidden = true;
-        } else {
-          aplicarFiltroRapido();
-        }
+        aplicarFiltroRapido();
         actualizarCabeceraImpresion();
         actualizarEstado();
       };
@@ -343,8 +334,19 @@
       selCarrera.addEventListener("change", actualizarEstado);
       document.getElementById("hNivel").addEventListener("change", actualizarEstado);
 
-      document.getElementById("btnVerHorario").addEventListener("click", () => render("horario"));
-      document.getElementById("btnVerDisponibilidad").addEventListener("click", () => render("disponibilidad"));
+      document.getElementById("btnVerHorario").addEventListener("click", () => render());
+
+      // "¿Cuándo hago mi actividad?" se resuelve en el mapa de calor, que
+      // además cruza las actividades ya agendadas del calendario académico —
+      // algo que esta página no sabe. Se lleva la selección ya hecha.
+      document.getElementById("btnVerDisponibilidad").addEventListener("click", () => {
+        const f = filtros();
+        if (!f.carreraId.length || !f.nivel) return toast("Elige carrera y año primero", "error");
+        const q = new URLSearchParams();
+        f.carreraId.forEach((c) => q.append("carreraId", c));
+        q.set("nivel", f.nivel);
+        location.href = "mapa-calor.html?" + q.toString();
+      });
 
       ["fDia", "fTipo", "fSeccion"].forEach((id) => {
         document.getElementById(id).addEventListener("change", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
@@ -525,7 +527,7 @@
       // falta elegir. La excepción es un centro de estudiantes, cuya carrera
       // ya viene preseleccionada — ahí sí conviene mostrarle su horario solo.
       actualizarEstado();
-      if (filtros().carreraId.length && filtros().nivel) render("horario");
+      if (filtros().carreraId.length && filtros().nivel) render();
     })();
   </script>
 </body>
