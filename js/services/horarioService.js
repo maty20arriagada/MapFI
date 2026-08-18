@@ -101,7 +101,121 @@
     return conFilas;
   }
 
-  const horarioService = { geometria, aMinutos, aHHMM, HORA_INICIO, HORA_FIN, PASO, FILAS };
+  /**
+   * Disponibilidad semanal: para cada dia y cada bloque de 15 min, cuantos de
+   * los segmentos elegidos estan EN CLASE y cuantos estudiantes representan.
+   *
+   * Responde la pregunta que hace un centro al programar: "¿a que hora hay mas
+   * gente libre?" y "¿puedo alcanzar a esta carrera?". Es el mismo dato que ya
+   * usa matchService para penalizar choques (P_CLASE), pero visto al reves:
+   * en vez de puntuar una fecha concreta, muestra la semana completa.
+   *
+   * @param {Array} bloques  bloques crudos (con carrera_id, nivel, dia_semana,
+   *                         hora_inicio, hora_fin, tipo)
+   * @param {Array<{carreraId, nivel, poblacion?}>} segmentos  los segmentos que
+   *        interesan. `poblacion` es opcional: sin ella cada segmento pesa 1.
+   * @returns {{celdas: Array, totalSegmentos: number, totalPoblacion: number}}
+   *          `celdas` es una matriz [dia 1..5][fila 0..FILAS-1] con
+   *          { ocupados, poblacionOcupada, libres, pctLibre }.
+   */
+  function disponibilidad(bloques, segmentos) {
+    const segs = (segmentos || []).map((s) => ({
+      clave: s.carreraId + "-" + s.nivel,
+      poblacion: Number(s.poblacion) > 0 ? Number(s.poblacion) : 1,
+    }));
+    const totalSegmentos = segs.length;
+    const totalPoblacion = segs.reduce((a, s) => a + s.poblacion, 0) || 1;
+    const pesoDe = {};
+    segs.forEach((s) => { pesoDe[s.clave] = s.poblacion; });
+
+    // Por dia y fila, el conjunto de segmentos ocupados. Se usa Set para que
+    // dos ramos distintos del MISMO segmento a la misma hora (secciones
+    // paralelas) no cuenten dos veces: el estudiante solo esta en uno.
+    const ocupadosPorCelda = [];
+    for (let d = 0; d <= 5; d++) {
+      ocupadosPorCelda[d] = [];
+      for (let f = 0; f < FILAS; f++) ocupadosPorCelda[d][f] = new Set();
+    }
+
+    (bloques || []).forEach((b) => {
+      // Solo las clases ocupan al estudiante. Un bloque LIBRE no lo ocupa, y
+      // uno PROTEGIDO es justamente el que la Facultad reserva para actividades.
+      if (b.tipo !== "CLASE") return;
+      const dia = +b.dia_semana;
+      if (!(dia >= 1 && dia <= 5)) return;
+      const clave = b.carrera_id + "-" + b.nivel;
+      if (!(clave in pesoDe)) return;
+
+      const ini = aMinutos(b.hora_inicio);
+      const fin = aMinutos(b.hora_fin);
+      if (ini === null || fin === null) return;
+      const desde = Math.max(HORA_INICIO, Math.floor(ini / PASO) * PASO);
+      const hasta = Math.min(HORA_FIN, Math.ceil(fin / PASO) * PASO);
+      for (let m = desde; m < hasta; m += PASO) {
+        const fila = (m - HORA_INICIO) / PASO;
+        if (fila >= 0 && fila < FILAS) ocupadosPorCelda[dia][fila].add(clave);
+      }
+    });
+
+    const celdas = [];
+    for (let d = 0; d <= 5; d++) {
+      celdas[d] = [];
+      for (let f = 0; f < FILAS; f++) {
+        const set = ocupadosPorCelda[d][f];
+        let poblacionOcupada = 0;
+        set.forEach((clave) => { poblacionOcupada += pesoDe[clave]; });
+        celdas[d][f] = {
+          ocupados: set.size,
+          poblacionOcupada,
+          libres: totalSegmentos - set.size,
+          pctLibre: Math.round(((totalPoblacion - poblacionOcupada) / totalPoblacion) * 100),
+        };
+      }
+    }
+
+    return { celdas, totalSegmentos, totalPoblacion };
+  }
+
+  /**
+   * Las mejores franjas para programar una actividad, de mayor a menor
+   * porcentaje de estudiantes libres. Agrupa filas contiguas con la misma
+   * ocupacion para no devolver 52 tramos de 15 minutos.
+   * @param {object} disp  lo que devuelve disponibilidad()
+   * @param {number} [duracionMin=90]  duracion minima de la franja
+   * @returns {Array<{diaSemana, horaInicio, horaFin, pctLibre}>}
+   */
+  function mejoresFranjas(disp, duracionMin) {
+    const minimo = Math.max(PASO, duracionMin || 90);
+    const necesarias = Math.ceil(minimo / PASO);
+    const franjas = [];
+
+    for (let d = 1; d <= 5; d++) {
+      let ini = null;
+      let pct = null;
+      for (let f = 0; f <= FILAS; f++) {
+        const actual = f < FILAS ? disp.celdas[d][f].pctLibre : null;
+        if (actual !== pct) {
+          if (ini !== null && f - ini >= necesarias) {
+            franjas.push({
+              diaSemana: d,
+              horaInicio: aHHMM(HORA_INICIO + ini * PASO),
+              horaFin: aHHMM(HORA_INICIO + f * PASO),
+              pctLibre: pct,
+            });
+          }
+          ini = f;
+          pct = actual;
+        }
+      }
+    }
+
+    return franjas.sort((a, b) => b.pctLibre - a.pctLibre || a.diaSemana - b.diaSemana);
+  }
+
+  const horarioService = {
+    geometria, aMinutos, aHHMM, disponibilidad, mejoresFranjas,
+    HORA_INICIO, HORA_FIN, PASO, FILAS,
+  };
 
   global.HorarioService = horarioService;
 

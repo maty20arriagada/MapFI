@@ -72,9 +72,17 @@
           </button>
         </details>
 
-        <div class="row" style="justify-content:flex-end;margin-top:10px">
+        <div class="row" style="margin-top:12px">
+          <button class="btn" type="button" id="btnVerHorario">
+            <span class="icon" data-icon="calendar"></span> Ver horario
+          </button>
+          <button class="btn secondary" type="button" id="btnVerDisponibilidad">
+            <span class="icon" data-icon="target"></span> ¿Cuándo hago mi actividad?
+          </button>
+          <span style="flex:1"></span>
           <button class="btn secondary" type="button" id="btnImprimir"><span class="icon" data-icon="printer"></span> Imprimir</button>
         </div>
+        <p class="muted" id="estadoSeleccion" style="font-size:.8rem;margin-top:6px"></p>
       </div>
 
       <!-- Visibilidad NO depende de .admin-only (esa clase solo distingue
@@ -224,9 +232,34 @@
       }
 
       let seccionesPorRamo = {};
+      // Lo último dibujado, para poder alternar entre horario y disponibilidad
+      // sin volver a pedir los bloques al servidor.
+      let ultimo = null;
+      let vista = "horario";
 
-      const render = async () => {
+      /** Mensaje bajo los botones: qué falta, o qué se está mostrando. */
+      function actualizarEstado() {
         const f = filtros();
+        const el = document.getElementById("estadoSeleccion");
+        const btnH = document.getElementById("btnVerHorario");
+        const btnD = document.getElementById("btnVerDisponibilidad");
+        const listo = f.carreraId.length > 0 && !!f.nivel;
+        btnH.disabled = !listo;
+        btnD.disabled = !listo;
+
+        if (!f.carreraId.length && !f.nivel) el.textContent = "Elige tu carrera y tu año, y pulsa «Ver horario».";
+        else if (!f.carreraId.length) el.textContent = "Falta la carrera: pínchala en la lista de arriba.";
+        else if (!f.nivel) el.textContent = "Falta el año.";
+        else el.textContent = f.carreraId.length === 1
+          ? "Listo: pulsa «Ver horario»."
+          : `Listo: ${f.carreraId.length} carreras seleccionadas — se mostrarán superpuestas.`;
+      }
+
+      const render = async (nuevaVista) => {
+        if (nuevaVista) vista = nuevaVista;
+        const f = filtros();
+        if (!f.carreraId.length || !f.nivel) { actualizarEstado(); return; }
+
         // Solo se puede editar cuando hay UNA carrera elegida: con varias la
         // página es de consulta y no habría a cuál atribuir el bloque nuevo.
         const unica = f.carreraId.length === 1 ? f.carreraId[0] : null;
@@ -237,9 +270,17 @@
 
         seccionesPorRamo = leerSecciones();
         const meta = await HorariosView.montar(cont, f, { isAdmin: editable, carreras: cat.carreras });
+        ultimo = meta;
         poblarSecciones(meta);
-        aplicarFiltroRapido();
+
+        if (vista === "disponibilidad") {
+          HorariosView.montarDisponibilidad(cont, meta.bloques, meta.segmentos, { duracionMin: 90 });
+          panelSecciones.hidden = true;
+        } else {
+          aplicarFiltroRapido();
+        }
         actualizarCabeceraImpresion();
+        actualizarEstado();
       };
 
       /** Rellena el selector global de sección y el panel "mi horario". */
@@ -296,8 +337,14 @@
           "<span>Impreso el " + escapeHtml(fecha) + (partesFiltro.length ? " · Filtro: " + escapeHtml(partesFiltro.join(", ")) : "") + "</span>";
       }
 
-      selCarrera.addEventListener("change", render);
-      document.getElementById("hNivel").addEventListener("change", render);
+      // Cambiar carrera o año NO redibuja solo: se actualiza el estado y el
+      // usuario decide cuándo cargar. Antes el render era automático y, si no
+      // había nada seleccionado, la página parecía rota sin decir por qué.
+      selCarrera.addEventListener("change", actualizarEstado);
+      document.getElementById("hNivel").addEventListener("change", actualizarEstado);
+
+      document.getElementById("btnVerHorario").addEventListener("click", () => render("horario"));
+      document.getElementById("btnVerDisponibilidad").addEventListener("click", () => render("disponibilidad"));
 
       ["fDia", "fTipo", "fSeccion"].forEach((id) => {
         document.getElementById(id).addEventListener("change", () => { aplicarFiltroRapido(); actualizarCabeceraImpresion(); });
@@ -474,7 +521,11 @@
         finally { btn.disabled = false; }
       });
 
-      render();
+      // Al abrir la página no se dibuja nada por defecto: primero se ve qué
+      // falta elegir. La excepción es un centro de estudiantes, cuya carrera
+      // ya viene preseleccionada — ahí sí conviene mostrarle su horario solo.
+      actualizarEstado();
+      if (filtros().carreraId.length && filtros().nivel) render("horario");
     })();
   </script>
 </body>

@@ -236,8 +236,90 @@
     });
     ramos.forEach((r) => r.secciones.sort((a, b) => String(a).localeCompare(String(b), "es", { numeric: true })));
 
-    return { secciones, ramos, carreras: carrerasUsadas };
+    // Se devuelven los bloques crudos para que la vista de disponibilidad los
+    // reutilice sin repetir las peticiones.
+    return {
+      secciones, ramos, carreras: carrerasUsadas,
+      bloques: bloquesCrudos,
+      segmentos: ids.map((id) => ({ carreraId: +id, nivel: +nivel })),
+    };
   }
 
-  global.HorariosView = { montar, aplicarFiltro, claveRamo };
+  const ESCALA = [
+    { min: 90, clase: "disp-libre", etiqueta: "Casi todos libres" },
+    { min: 60, clase: "disp-alta", etiqueta: "Mayoría libre" },
+    { min: 30, clase: "disp-media", etiqueta: "Mitad en clase" },
+    { min: 1, clase: "disp-baja", etiqueta: "Mayoría en clase" },
+    { min: 0, clase: "disp-nula", etiqueta: "Todos en clase" },
+  ];
+
+  function claseDisponibilidad(pct) {
+    return (ESCALA.find((e) => pct >= e.min) || ESCALA[ESCALA.length - 1]).clase;
+  }
+
+  /**
+   * Dibuja la DISPONIBILIDAD de la semana en vez del horario: cada celda
+   * indica qué porcentaje de los estudiantes seleccionados está libre a esa
+   * hora. Es la vista que responde "¿cuándo hago mi actividad para que venga
+   * más gente?" y "¿puedo alcanzar a esta carrera?".
+   *
+   * Usa los MISMOS bloques que ya se pidieron para el horario, así que no
+   * cuesta ni una petición extra.
+   */
+  function montarDisponibilidad(el, bloquesCrudos, segmentos, opts) {
+    opts = opts || {};
+    const esc = global.escapeHtml || ((x) => x);
+    const hs = HS();
+    const disp = hs.disponibilidad(bloquesCrudos, segmentos);
+
+    let html = '<div class="tt-legend tt-legend-disp">' +
+      ESCALA.map((e) => '<span><i class="' + e.clase + '"></i> ' + esc(e.etiqueta) + "</span>").join("") +
+      "</div>";
+
+    html += '<div class="timetable"><div class="tt-corner"></div>';
+    for (let d = 1; d <= 5; d++) {
+      html += '<div class="tt-day" style="grid-column:' + (d + 1) + ';grid-row:1">' + DIAS[d] + "</div>";
+    }
+    horasCabecera().forEach((h) => {
+      html += '<div class="tt-hour" style="grid-column:1;grid-row:' + h.fila + '">' + h.texto + "</div>";
+    });
+
+    // Una celda por dia y fila. Se agrupan filas contiguas con el mismo
+    // porcentaje para no emitir 260 nodos con el mismo color.
+    for (let d = 1; d <= 5; d++) {
+      let ini = 0;
+      for (let f = 1; f <= hs.FILAS; f++) {
+        const actual = f < hs.FILAS ? disp.celdas[d][f].pctLibre : null;
+        const previo = disp.celdas[d][ini].pctLibre;
+        if (actual === previo) continue;
+        const desde = hs.aHHMM(hs.HORA_INICIO + ini * hs.PASO);
+        const hasta = hs.aHHMM(hs.HORA_INICIO + f * hs.PASO);
+        html += '<div class="tt-disp ' + claseDisponibilidad(previo) + '"' +
+          ' style="grid-column:' + (d + 1) + ";grid-row:" + (2 + ini) + " / " + (2 + f) + '"' +
+          ' title="' + esc(DIAS_LARGO[d] + " " + desde + "–" + hasta + ": " + previo + "% libre") + '">' +
+          (f - ini >= 4 ? "<span>" + previo + "%</span>" : "") +
+          "</div>";
+        ini = f;
+      }
+    }
+    html += "</div>";
+
+    const mejores = hs.mejoresFranjas(disp, opts.duracionMin || 90)
+      .filter((f) => f.pctLibre >= 50).slice(0, 6);
+    if (mejores.length) {
+      html += '<div class="tt-aviso tt-sugerencias"><strong>Mejores franjas para tu actividad</strong><ul>' +
+        mejores.map((f) =>
+          "<li>" + esc(DIAS_LARGO[f.diaSemana]) + " " + esc(f.horaInicio) + "–" + esc(f.horaFin) +
+          " — <strong>" + f.pctLibre + "%</strong> de los estudiantes libres</li>"
+        ).join("") + "</ul></div>";
+    } else {
+      html += '<div class="tt-aviso">No hay ninguna franja de ' + (opts.duracionMin || 90) +
+        ' minutos donde esté libre al menos la mitad de tu público. Prueba con menos carreras o menos años.</div>';
+    }
+
+    el.innerHTML = html;
+    return disp;
+  }
+
+  global.HorariosView = { montar, montarDisponibilidad, aplicarFiltro, claveRamo };
 })(window);
