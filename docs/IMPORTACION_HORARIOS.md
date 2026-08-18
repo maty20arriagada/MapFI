@@ -136,6 +136,18 @@ Es idempotente: cada segmento (carrera + año) se carga en modo *reemplazar*, as
 volver a correrlo deja el horario igual, no duplicado. Los segmentos que el archivo no
 menciona quedan intactos.
 
+**En el servidor** (contenedor Docker) el proceso corre como usuario no-root y no puede
+escribir dentro de `/app`, así que los CSV de respaldo y el informe hay que mandarlos a
+una ruta escribible:
+
+```bash
+docker compose exec -T server node js/db/importar-horarios.js Extras/Horarios_FI_UDEC.txt --dry-run --salida /tmp/horarios
+docker compose exec -T server head -60 /tmp/horarios/REVISION.md
+```
+
+Si no se pueden escribir los archivos, **la carga a la base se hace igual**: el respaldo
+es un extra, no un requisito. Con `--dry-run` el informe se vuelca por pantalla.
+
 ### De dónde sale cada dato
 
 | Dato | Origen | Confianza |

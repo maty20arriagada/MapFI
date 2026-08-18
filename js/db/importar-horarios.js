@@ -252,13 +252,40 @@ function escribirInforme({ segmentos, revision, errores, registros, totalBloques
   return lineas.join("\n");
 }
 
+/**
+ * Escribe los CSV por segmento y el informe. NUNCA lanza: devuelve el
+ * resultado para que el llamador decida. En el contenedor de produccion falla
+ * (usuario no-root sobre /app), y perder el respaldo no puede ser motivo para
+ * no cargar el horario.
+ */
+function escribirSalidas(segmentos, informe, dir) {
+  const destino = dir || DIR_SALIDA;
+  try {
+    fs.mkdirSync(destino, { recursive: true });
+    segmentos.forEach((bloques, clave) => {
+      const [carreraId, nivel] = clave.split("|").map(Number);
+      fs.writeFileSync(
+        path.join(destino, `horario-${CODIGO_POR_ID[carreraId]}-${nivel}.csv`),
+        aTextoCsv(bloques), "utf8"
+      );
+    });
+    fs.writeFileSync(path.join(destino, "REVISION.md"), informe, "utf8");
+    return { ok: true, dir: destino };
+  } catch (e) {
+    return { ok: false, dir: destino, error: e.message };
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
-  const ruta = args.find((a) => !a.startsWith("--"));
+  const iSalida = args.indexOf("--salida");
+  const dirSalida = iSalida >= 0 ? args[iSalida + 1] : null;
+  // El valor de --salida no es la ruta del .txt: se excluye al buscarla.
+  const ruta = args.find((a, i) => !a.startsWith("--") && i !== iSalida + 1);
 
   if (!ruta) {
-    console.error(`${LOG} Uso: node js/db/importar-horarios.js <ruta-al-txt> [--dry-run]`);
+    console.error(`${LOG} Uso: node js/db/importar-horarios.js <ruta-al-txt> [--dry-run] [--salida <dir>]`);
     process.exit(1);
   }
   if (!fs.existsSync(ruta)) {
@@ -279,17 +306,31 @@ async function main() {
 
   // Salidas en disco: CSV por segmento + informe. Se generan siempre, tambien
   // en la carga real, para que quede respaldo de lo que se cargó.
-  fs.mkdirSync(DIR_SALIDA, { recursive: true });
-  segmentos.forEach((bloques, clave) => {
-    const [carreraId, nivel] = clave.split("|").map(Number);
-    const archivo = path.join(DIR_SALIDA, `horario-${CODIGO_POR_ID[carreraId]}-${nivel}.csv`);
-    fs.writeFileSync(archivo, aTextoCsv(bloques), "utf8");
-  });
-  fs.writeFileSync(path.join(DIR_SALIDA, "REVISION.md"), escribirInforme(resultado, mallas, dryRun), "utf8");
-  console.log(`${LOG} Escritos ${segmentos.size} CSV + REVISION.md en Extras/salida/`);
+  //
+  // OJO: en el contenedor de produccion esto FALLA — /app es de root y el
+  // proceso corre como usuario no-root (Principio III). El respaldo es un
+  // extra, no un requisito para cargar, asi que un fallo al escribir NO debe
+  // impedir la carga: se avisa y se sigue. Con --dry-run, ademas, el informe
+  // se vuelca por pantalla para que el modo siga sirviendo de algo.
+  const informe = escribirInforme(resultado, mallas, dryRun);
+  const salida = escribirSalidas(segmentos, informe, dirSalida);
+
+  if (salida.ok) {
+    console.log(`${LOG} Escritos ${segmentos.size} CSV + REVISION.md en ${salida.dir}`);
+  } else {
+    console.warn(`${LOG} AVISO: no se pudieron escribir los archivos en ${salida.dir}`);
+    console.warn(`${LOG}   (${salida.error})`);
+    console.warn(`${LOG}   Usa --salida <ruta-escribible> si los necesitas, p.ej. --salida /tmp/horarios`);
+  }
 
   if (dryRun) {
-    console.log(`${LOG} --dry-run: no se tocó la base. Revisa Extras/salida/REVISION.md antes de cargar.`);
+    if (!salida.ok) {
+      console.log("\n" + "=".repeat(70));
+      console.log("INFORME DE REVISIÓN (no se pudo escribir a disco, va por pantalla)");
+      console.log("=".repeat(70) + "\n");
+      console.log(informe);
+    }
+    console.log(`${LOG} --dry-run: no se tocó la base.`);
     return;
   }
 
@@ -310,7 +351,8 @@ async function main() {
   }
 
   console.log(`${LOG} Listo. Insertados: ${insertados} · Reemplazados: ${eliminados}`);
-  console.log(`${LOG} Revisa Extras/salida/REVISION.md: hay ${revision.confianzaBaja.length} ramo(s) con año dudoso.`);
+  console.log(`${LOG} Hay ${revision.confianzaBaja.length} bloque(s) con año de confianza baja` +
+    (salida.ok ? ` — detalle en ${salida.dir}/REVISION.md` : " — vuelve a correr con --dry-run para ver el detalle"));
 }
 
 // Solo se ejecuta como script; al importarlo desde una prueba no hace nada.
@@ -324,4 +366,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { construir, aTextoCsv, campoCsv, escribirInforme, cargarMallas };
+module.exports = { construir, aTextoCsv, campoCsv, escribirInforme, cargarMallas, escribirSalidas };
