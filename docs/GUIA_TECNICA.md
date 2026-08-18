@@ -139,13 +139,17 @@ js/
 │   ├── entidadDao.js
 │   ├── bloqueHorarioDao.js
 │   └── ...
-├── services/              ← Lógica de negocio pura (sin I/O)
+├── services/              ← Lógica pura de SERVIDOR (sin I/O). NO se sirve: 404
 │   ├── matchService.js
 │   ├── heatmapService.js
 │   ├── holidayService.js
 │   ├── reputationService.js
 │   ├── reportService.js
 │   ├── icsService.js
+│   ├── horarioFiParser.js
+│   ├── horarioCarrera.js
+│   └── horarioMalla.js
+├── shared/                ← Lógica pura ISOMORFA: navegador Y servidor. Sí se sirve
 │   └── horarioService.js     Geometría de la grilla de horarios (Spec 003)
 ├── views/                 ← Vistas de página (frontend)
 │   ├── dashboard-view.js
@@ -174,7 +178,26 @@ js/
 └── ui-toast.js            ← (frontend) notificaciones
 ```
 
-**Carpetas de primer nivel:** `js/dao/`, `js/services/`, `js/views/`, `js/db/`, `js/vendor/`
+**Carpetas de primer nivel:** `js/dao/`, `js/services/`, `js/shared/`, `js/views/`, `js/db/`, `js/vendor/`
+
+### La carpeta decide si un archivo es público
+
+`server.js` responde **404** a `js/dao/`, `js/services/` y `js/db/` (lista `RUTAS_SOLO_BACKEND`,
+hallazgo de seguridad SEG-2). No hay excepciones por nombre de archivo:
+
+| Carpeta | ¿La sirve el servidor? | Para qué |
+|---|---|---|
+| `js/`, `js/views/`, `js/vendor/` | Sí | Código de navegador |
+| `js/shared/` | Sí | **Isomorfo**: corre en navegador *y* servidor |
+| `js/services/`, `js/dao/`, `js/db/` | **No — 404** | Solo servidor |
+
+**Al crear un módulo nuevo**: si alguna página lo carga con `<script src>`, va en `js/` o
+`js/shared/` — y compruébalo pidiendo la URL a `server.js`, **no** a un servidor estático. Un
+servidor estático sirve cualquier archivo del árbol y no aplica la lista de bloqueo: eso es
+exactamente lo que dejó la página de Horarios en blanco en producción durante la Spec 003, con el
+módulo de geometría devolviendo 404 sin que nadie lo viera en local.
+
+Detalle completo en `specs/004-fix-grilla-horarios/contracts/superficie-servida.md`.
 
 ---
 

@@ -40,7 +40,7 @@ const heatmapService = require("./js/services/heatmapService");
 const reputationService = require("./js/services/reputationService");
 const reportService = require("./js/services/reportService");
 const icsService = require("./js/services/icsService");
-const horarioService = require("./js/services/horarioService");
+const horarioService = require("./js/shared/horarioService");
 
 const bcrypt = require("bcryptjs");
 
@@ -1324,8 +1324,25 @@ app.post("/api/auth/password", requireAuth, async (req, res) => {
 // package.json: todos quedaban descargables desde el navegador (revision de
 // seguridad 2026-08-04, hallazgo SEG-2).
 //
-// Se bloquean explicitamente las rutas que son solo de backend. Se comprobo
-// que ninguna pagina carga js/dao, js/services ni js/db antes de cerrarlas.
+// Se bloquean explicitamente las rutas que son solo de backend.
+//
+// LA CARPETA DECIDE SI UN ARCHIVO ES PUBLICO. No hay excepciones por nombre:
+//   js/, js/views/, js/vendor/  → navegador, se sirven
+//   js/shared/                  → ISOMORFO (navegador Y servidor), se sirve
+//   js/services/, js/dao/, js/db/ → solo servidor, NUNCA se sirven
+//
+// Aqui decia "se comprobo que ninguna pagina carga js/dao, js/services ni
+// js/db". Era cierto al escribirlo y dejo de serlo: la Spec 003 anadio a
+// horarios.html un <script src="js/services/horarioService.js"> — un modulo que
+// corre en los dos lados — y en produccion devolvia 404, asi que
+// window.HorarioService quedaba indefinido y la grilla de horarios no se
+// dibujaba. En local no se vio porque se verifico con un servidor estatico, que
+// no aplica esta lista. De ahi js/shared/ (Spec 004): una invariante que se ve
+// en el arbol de carpetas en vez de una que hay que recordar.
+//
+// Al anadir un modulo nuevo: si alguna pagina lo carga con <script src>, va en
+// js/ o js/shared/ — y compruebalo pidiendo la URL a ESTE servidor, no a uno
+// estatico. Detalle en specs/004-fix-grilla-horarios/contracts/superficie-servida.md.
 //
 // Arreglo de fondo pendiente: mover el frontend a un `public/` propio y servir
 // solo esa carpeta, en vez de mantener esta lista.

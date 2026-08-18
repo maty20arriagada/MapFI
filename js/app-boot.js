@@ -18,7 +18,7 @@
   // importa el orden de carga de los <script> y no se rompe nada existente.
   var MODULOS = [
     "api", "toast", "Icon", "Icons", "escapeHtml", "esAdminOSuper", "CsvUtils", "Filters",
-    "CalendarView", "HeatmapView", "HorariosView", "MatchCalculator",
+    "CalendarView", "HeatmapView", "HorariosView", "HorarioService", "MatchCalculator",
     "EventTable", "Onboarding", "Tour", "Tooltips", "DashboardView",
     "CalendarioView", "toggleTheme", "logout",
   ];

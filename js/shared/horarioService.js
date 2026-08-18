@@ -2,8 +2,16 @@
  * Servicio PURO: sin I/O, sin red, sin base de datos (Principio II). Traduce
  * bloques (dia_semana, hora_inicio, hora_fin) a filas de una grilla CSS fija
  * de 08:00 a 21:00 con resolucion de 15 minutos, de modo que 45 y 90 minutos
- * queden en proporcion exacta (ver research.md, R-1). Corre tanto en el
- * navegador (js/horarios-view.js) como en Node (Jest), igual que csv-utils.js. */
+ * queden en proporcion exacta (ver research.md, R-1).
+ *
+ * ¿Por que vive en js/shared/ y no en js/services/? Porque corre en los DOS
+ * lados: el navegador (js/horarios-view.js) y Node (server.js valida las horas
+ * de /api/bloques/importar, y Jest lo prueba). `js/services/` esta bloqueada
+ * para el navegador por RUTAS_SOLO_BACKEND (hallazgo de seguridad SEG-2), asi
+ * que un modulo isomorfo ahi dentro devuelve 404 en produccion — es exactamente
+ * el fallo que dejo la pagina de Horarios en blanco (Spec 004). La regla es
+ * posicional: la carpeta decide si un archivo se sirve. Ver
+ * specs/004-fix-grilla-horarios/contracts/superficie-servida.md. */
 (function (global) {
   "use strict";
 

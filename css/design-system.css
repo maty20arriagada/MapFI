@@ -331,7 +331,7 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 /* ── Horario semanal (timetable) ──────────────────────────────────────────
  * Grilla FIJA de 08:00 a 21:00 con resolucion de 15 minutos (52 filas), para
  * que un bloque de 45 min y uno de 90 min queden en proporcion exacta —
- * ver js/services/horarioService.js y specs/003-gestion-horarios/research.md
+ * ver js/shared/horarioService.js y specs/003-gestion-horarios/research.md
  * (R-1). `row-gap: 0` es deliberado: con separacion entre 51 filas, un gap
  * uniforme rompe esa proporcion; la separacion visual la da el borde de
  * `.tt-block`, no el gap. */
