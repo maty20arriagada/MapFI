@@ -3,7 +3,7 @@
 const {
   geometria, aMinutos, aHHMM, disponibilidad, mejoresFranjas,
   HORA_INICIO, HORA_FIN, PASO, FILAS,
-} = require("../../js/services/horarioService");
+} = require("../../js/shared/horarioService");
 
 function bloque(over) {
   return { id: 1, dia_semana: 1, hora_inicio: "08:00", hora_fin: "09:00", tipo: "CLASE", descripcion: "x", ...over };

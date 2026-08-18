@@ -2,8 +2,9 @@
  * Es distinto del calendario académico: aquí van los bloques RECURRENTES de
  * clase. La grilla es FIJA (08:00-21:00, resolución de 15 min); la geometría
  * de cada bloque (fila, ajuste al cuarto de hora, sub-columna si se solapa
- * con otro) la calcula el servicio puro js/services/horarioService.js —
- * ver Spec 003, US2.
+ * con otro) la calcula el servicio puro js/shared/horarioService.js —
+ * ver Spec 003, US2. Vive en js/shared/ y no en js/services/ porque corre en
+ * los dos lados y js/services/ no se sirve al navegador (Spec 004).
  *
  * Admite VARIAS carreras a la vez: se piden por separado y se concatenan antes
  * de calcular la geometría, así el apilado en sub-columnas resuelve solo los
@@ -17,7 +18,34 @@
 
   function hhmm(t) { return (t || "").slice(0, 5); }
 
+  const RUTA_HS = "js/shared/horarioService.js";
+
   function HS() { return global.HorarioService; }
+
+  /**
+   * Aviso cuando el modulo de geometria no esta cargado (FR-006, Spec 004).
+   *
+   * Sin esto el fallo es mudo: `HS().geometria(...)` lanza un TypeError, la
+   * promesa de montar() queda rechazada y el usuario ve una zona en blanco sin
+   * ninguna pista. Paso de verdad en produccion — el modulo vivia en
+   * js/services/, que server.js bloquea con 404 — y costo una sesion de
+   * depuracion averiguar por que el boton "Ver horario" no hacia nada.
+   *
+   * Texto fijo, sin datos de usuario interpolados: no hay superficie de XSS.
+   */
+  function avisoSinModulo(el) {
+    console.error(
+      "[horarios-view] No se cargo el modulo de geometria (" + RUTA_HS + "). " +
+      "Si responde 404, comprueba que el archivo se sirve: js/services/, js/dao/ y " +
+      "js/db/ estan bloqueados a proposito (SEG-2) y los modulos que usa el navegador " +
+      "van en js/ o js/shared/."
+    );
+    el.innerHTML = '<div class="placeholder">' +
+      "<strong>No se pudo cargar el módulo de horarios.</strong><br>" +
+      "Recarga la página. Si sigue igual, avisa a tu centro de estudiantes o al " +
+      "equipo de MapFI e indícales que falta <code>" + RUTA_HS + "</code>." +
+      "</div>";
+  }
 
   /** Etiquetas de hora en punto (08:00 a 20:00), cada una en su fila. */
   function horasCabecera() {
@@ -155,6 +183,14 @@
   async function montar(el, filtros, opts) {
     opts = opts || {};
     const vacio = { secciones: [], ramos: [], carreras: [] };
+
+    // Antes que nada: si falta el modulo de geometria no hay grilla posible, y
+    // decirlo en el primer render ahorra al usuario rellenar filtros para nada.
+    if (!HS()) {
+      avisoSinModulo(el);
+      return vacio;
+    }
+
     const ids = comoLista(filtros && filtros.carreraId);
     const nivel = filtros && filtros.nivel;
 
@@ -247,4 +283,10 @@
 
 
   global.HorariosView = { montar, aplicarFiltro, claveRamo };
-})(window);
+
+  // Doble exportacion, igual que js/horario-csv.js: sigue siendo un modulo de
+  // navegador, pero asi Jest puede probar el guard de FR-006 sin necesitar jsdom.
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = global.HorariosView;
+  }
+})(typeof window !== "undefined" ? window : globalThis);

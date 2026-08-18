@@ -35,7 +35,7 @@ const UMBRAL = { BAJO: 1, MEDIO: 3, ALTO: 5 };
 /** Umbrales de la vista SEMANAL, por % de estudiantes ocupados. */
 const UMBRAL_PCT = { BAJO: 1, MEDIO: 34, ALTO: 67, TOTAL: 100 };
 
-const HORA_INICIO = 480; // 08:00, misma rejilla que js/services/horarioService.js
+const HORA_INICIO = 480; // 08:00, misma rejilla que js/shared/horarioService.js
 const HORA_FIN = 1260;   // 21:00
 const PASO = 15;
 const FILAS = (HORA_FIN - HORA_INICIO) / PASO; // 52
