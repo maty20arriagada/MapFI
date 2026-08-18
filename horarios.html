@@ -29,10 +29,11 @@
       <div class="card filters">
         <div class="grid cols-2">
           <div>
-            <label for="hCarrera">Carrera</label>
+            <label for="hCarrera">Carrera — pincha una en la lista</label>
             <select id="hCarrera" multiple size="6" aria-describedby="ayudaCarrera"></select>
             <p class="muted" id="ayudaCarrera" style="font-size:.8rem;margin-top:4px">
-              Mantén Ctrl (o ⌘) para ver varias carreras a la vez y detectar choques entre ellas.
+              Es una lista, no un desplegable: pincha tu carrera. Con Ctrl (o ⌘) puedes
+              marcar varias a la vez y comparar sus horarios.
             </p>
           </div>
           <div><label for="hNivel">Generación / año</label><select id="hNivel"></select></div>
@@ -170,6 +171,14 @@
       // multiple> un placeholder es una opción más que se puede seleccionar.
       selCarrera.innerHTML = cat.carreras
         .map((c) => '<option value="' + c.id + '">' + escapeHtml(c.nombre) + "</option>").join("");
+
+      // Si la sesión tiene carrera propia (centro de estudiantes), se
+      // preselecciona: es su horario el que viene a ver, y así la página no
+      // aparece vacía sin que se entienda por qué.
+      if (user && user.carreraId != null) {
+        const propia = Array.from(selCarrera.options).find((o) => +o.value === +user.carreraId);
+        if (propia) propia.selected = true;
+      }
       Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "— Generación —");
 
       const cont = document.getElementById("timetable");

@@ -156,9 +156,20 @@
     opts = opts || {};
     const vacio = { secciones: [], ramos: [], carreras: [] };
     const ids = comoLista(filtros && filtros.carreraId);
+    const nivel = filtros && filtros.nivel;
 
-    if (!ids.length || !filtros.nivel) {
-      el.innerHTML = '<div class="placeholder">Selecciona una <strong>carrera</strong> y una <strong>generación</strong> para ver su horario semanal.</div>';
+    // Mensaje segun lo que FALTA, no un generico. La lista de carreras admite
+    // varias y por eso no es un desplegable con placeholder: si no se dice que
+    // hay que pinchar una, la pagina parece rota (reportado en produccion).
+    if (!ids.length || !nivel) {
+      const falta = !ids.length && !nivel
+        ? "Elige tu <strong>carrera</strong> en la lista de arriba y tu <strong>año</strong>"
+        : !ids.length
+          ? "Ahora elige tu <strong>carrera</strong>: pínchala en la lista de arriba"
+          : "Elige tu <strong>año</strong> para ver el horario";
+      el.innerHTML = '<div class="placeholder">' + falta +
+        (!ids.length ? " — puedes marcar varias con Ctrl (o ⌘) para compararlas." : ".") +
+        "</div>";
       return vacio;
     }
 
