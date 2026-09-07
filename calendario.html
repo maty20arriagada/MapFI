@@ -23,7 +23,7 @@
           <div><label>Tipo</label>
             <select id="fTipo" class="filtro">
               <option value="">Todos los tipos</option>
-              <option value="EXAMEN">Evaluaciones</option>
+              <option value="EXAMEN">Certámenes y evaluaciones</option>
               <option value="HITO_ACADEMICO">Hitos académicos</option>
               <option value="EVENTO">Eventos</option>
               <option value="CHARLA">Charlas</option>
@@ -58,7 +58,7 @@
           <div class="grid cols-3">
             <div><label>Tipo <span class="req">*</span></label>
               <select name="tipo">
-                <option value="EXAMEN">Evaluación</option>
+                <option value="EXAMEN">Certamen / evaluación</option>
                 <option value="HITO_ACADEMICO">Hito académico</option>
                 <option value="EVENTO">Evento institucional</option>
                 <option value="CHARLA">Charla</option>
@@ -100,10 +100,10 @@
         <div class="help-box" id="formatoHelp" hidden>
           <strong>Formato</strong> — archivo <code>.csv</code> en UTF-8 (separador <code>,</code> o <code>;</code>). Encabezado y ejemplo:
           <pre>titulo,ramo,tipo,inicio,fin,carreras,niveles,ubicacion
-Certamen 1,Cálculo I,EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,Aula Magna
-Certamen 2,Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
+Certamen 1,Cálculo I,CERTAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,Aula Magna
+Certamen 2,Física I,CERTAMEN,2026-05-20 18:30,,*,1,</pre>
           <ul style="margin:6px 0 0 18px">
-            <li><code>tipo</code>: <code>EXAMEN</code>, <code>HITO_ACADEMICO</code>, <code>EVENTO</code>, <code>CHARLA</code>, <code>TALLER</code> o <code>ENTREGA</code>.</li>
+            <li><code>tipo</code>: <code>CERTAMEN</code>, <code>HITO_ACADEMICO</code>, <code>EVENTO</code>, <code>CHARLA</code>, <code>TALLER</code> o <code>ENTREGA</code>. Para un certamen valen tambien <code>EXAMEN</code>, <code>EVALUACION</code>, <code>PRUEBA</code> y <code>CONTROL</code>: todas se guardan igual.</li>
             <li><code>ramo</code>: opcional, nombre de la asignatura (ej. Cálculo I).</li>
             <li><code>inicio</code> / <code>fin</code>: <code>AAAA-MM-DD HH:MM</code>. Si <code>fin</code> queda vacío = inicio + 2 h.</li>
             <li><code>carreras</code>: códigos separados por <code>|</code>, o <code>*</code> = todas. Códigos: IC, ICAE, ICB, ICEL, ICE, ICI, ICINF, ICMAT, ICM, ICMET, ICMIN, ICQ, ICT, ICPC.</li>
@@ -118,7 +118,7 @@ Certamen 2,Física I,EXAMEN,2026-05-20 18:30,,*,1,</pre>
       </div>
 
       <div class="tt-legend">
-        <span><i style="background:#DC2626"></i> Evaluación</span>
+        <span><i style="background:#DC2626"></i> Certamen / evaluación</span>
         <span><i style="background:#7C3AED"></i> Hito académico</span>
         <span><i style="background:#2563EB"></i> Evento</span>
         <span><i style="background:#F59E0B"></i> Charla</span>

@@ -774,7 +774,7 @@ app.get("/api/actividades/conflictos", async (req, res) => {
 app.get("/api/plantilla-csv", (req, res) => {
   const csv =
     "titulo,ramo,tipo,inicio,fin,carreras,niveles,ubicacion\n" +
-    '"Certamen 1","Cálculo I",EXAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,"Aula Magna"\n' +
+    '"Certamen 1","Cálculo I",CERTAMEN,2026-04-15 18:30,2026-04-15 20:00,ICI|ICINF|ICM,1,"Aula Magna"\n' +
     '"Charla de titulación","",CHARLA,2026-05-06 12:00,,ICI,4|5,"Auditorio"\n' +
     '"Entrega informe","Física I",ENTREGA,2026-06-10 23:59,,*,1,\n';
   res.setHeader("Content-Type", "text/csv; charset=utf-8");

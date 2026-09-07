@@ -31,6 +31,11 @@
             <div><label>Título <span class="req">*</span></label><input name="titulo" required autocomplete="off" /></div>
             <div><label>Tipo <span class="req">*</span></label>
               <select name="tipo" required>
+                <!-- "Certamen" es la palabra que se usa en la UdeC; el valor sigue
+                     siendo EXAMEN, el unico tipo que matchService penaliza al
+                     detectar choques (P_EXAMEN). Sin esta opcion un centro no
+                     podia publicar una evaluacion desde su panel. -->
+                <option value="EXAMEN">Certamen / evaluación</option>
                 <option value="EVENTO">Evento</option>
                 <option value="CHARLA">Charla</option>
                 <option value="TALLER">Taller</option>
