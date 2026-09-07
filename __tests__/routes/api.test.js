@@ -919,6 +919,16 @@ describe("API endpoints públicos", () => {
       expect(res.body.error).toMatch(/hasta|desde/i);
     });
 
+    test("/conflictos acepta carreraId y nivel para acotar al segmento visible", async () => {
+      // El choque se calculaba sobre todas las carreras: una actividad que
+      // apunta a varias quedaba marcada por un choque en un segmento que el
+      // usuario no estaba mirando.
+      const res = await request(app)
+        .get("/api/actividades/conflictos?desde=2026-04-01&hasta=2026-04-30&carreraId=6&nivel=1");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+
     test("A-2 — /api/health informa versión y última migración aplicada", async () => {
       const res = await request(app).get("/api/health");
       expect(res.status).toBe(200);

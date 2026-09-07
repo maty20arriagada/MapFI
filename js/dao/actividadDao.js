@@ -312,7 +312,25 @@ module.exports = {
    * @param {string|Date} desde
    * @param {string|Date} hasta
    */
-  async conflictos(desde, hasta) {
+  /**
+   * Choques entre actividades vigentes: se solapan en el tiempo Y comparten
+   * al menos un segmento (carrera, nivel) de publico objetivo.
+   *
+   * `filtros` acota el choque al segmento que se esta MIRANDO, y no es un
+   * adorno: una actividad puede apuntar a varias carreras a la vez (un ramo
+   * de plan comun, o un `*`). Sin acotar, mirando Industrial se marcaba en
+   * naranja un evento cuyo unico choque real era con Informatica — una
+   * alarma sobre algo que el que mira no ve y que no le afecta. Filtrando
+   * por `ap1`, el choque reportado siempre pertenece al segmento visible.
+   *
+   * Se devuelve ademas QUE segmento choca, para que el aviso pueda decirlo
+   * en vez de dejar al lector adivinando.
+   *
+   * @param {string} desde  ISO
+   * @param {string} hasta  ISO
+   * @param {{carreraId?: number, nivel?: number}} [filtros]
+   */
+  async conflictos(desde, hasta, filtros = {}) {
     const cond = [];
     const args = [];
     agregarFiltroVigente("a1", cond, args);
@@ -321,14 +339,30 @@ module.exports = {
       args.push(desde, hasta);
       cond.push(`a1.periodo && tstzrange($${args.length - 1}, $${args.length})`);
     }
+    // El filtro va sobre ap1, que por el JOIN es el MISMO segmento que ap2:
+    // basta acotar uno para acotar el choque entero.
+    if (filtros.carreraId) {
+      args.push(filtros.carreraId);
+      cond.push(`ap1.carrera_id = $${args.length}`);
+    }
+    if (filtros.nivel) {
+      args.push(filtros.nivel);
+      cond.push(`ap1.nivel = $${args.length}`);
+    }
+    // DISTINCT ON deja una fila por par de actividades: si chocan en varios
+    // segmentos a la vez basta nombrar uno para el aviso.
     const { rows } = await query(
-      `SELECT DISTINCT a1.id, a2.id AS conflicta_con, a2.titulo AS conflicta_titulo
+      `SELECT DISTINCT ON (a1.id, a2.id)
+              a1.id, a2.id AS conflicta_con, a2.titulo AS conflicta_titulo,
+              c.nombre AS conflicta_carrera, ap1.nivel AS conflicta_nivel
          FROM actividad a1
          JOIN actividad a2 ON a1.id <> a2.id AND a1.periodo && a2.periodo
          JOIN actividad_publico ap1 ON ap1.actividad_id = a1.id
          JOIN actividad_publico ap2 ON ap2.actividad_id = a2.id
           AND ap2.carrera_id = ap1.carrera_id AND ap2.nivel = ap1.nivel
-        WHERE ${cond.join(" AND ")}`,
+         JOIN carrera c ON c.id = ap1.carrera_id
+        WHERE ${cond.join(" AND ")}
+        ORDER BY a1.id, a2.id, ap1.carrera_id, ap1.nivel`,
       args
     );
     return rows;
