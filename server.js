@@ -745,6 +745,9 @@ app.get("/api/actividades/eliminadas", async (req, res) => {
 // Choques de horario+publico entre actividades vigentes (§16.4, H-02, H-14).
 // Requiere rango de fechas: acota la consulta a la ventana visible del
 // calendario en vez de recorrer todo el historial.
+// Acepta ademas carreraId/nivel opcionales: sin ellos el choque se calcula
+// sobre todas las carreras y se marcaban en naranja actividades cuyo unico
+// choque era en un segmento que el usuario no estaba mirando.
 // Tope de la ventana consultable: la ruta es publica y hace un self-join,
 // asi que un rango arbitrario (año 1000 al 9999) seria un coste gratuito
 // para cualquiera (revision QA, hallazgo S-3). Dos años cubre de sobra lo
@@ -765,7 +768,13 @@ app.get("/api/actividades/conflictos", async (req, res) => {
     if ((d1 - d0) / 86400000 > CONFLICTOS_MAX_DIAS) {
       return res.status(400).json({ error: `El rango no puede superar ${CONFLICTOS_MAX_DIAS} días` });
     }
-    res.json(await actividadDao.conflictos(desde, hasta));
+    // Acotar al segmento que se esta mirando: un choque que ocurre en otra
+    // carrera no es un choque para quien filtro por la suya (ver el
+    // comentario de actividadDao.conflictos).
+    res.json(await actividadDao.conflictos(desde, hasta, {
+      carreraId: num(req.query.carreraId),
+      nivel: num(req.query.nivel),
+    }));
   }
   catch (e) { res.status(500).json({ error: "Error interno" }); }
 });

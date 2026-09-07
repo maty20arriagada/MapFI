@@ -170,6 +170,49 @@ describe("actividadDao.listarEliminadasRecientes — aviso público de cancelaci
   });
 });
 
+describe("actividadDao.conflictos - acotado al segmento visible", () => {
+  // El choque se calculaba sobre TODAS las carreras. Como una actividad puede
+  // apuntar a varias a la vez, mirando Industrial se marcaba en naranja un
+  // evento cuyo unico choque real era con Informatica: una alarma sobre algo
+  // que el usuario no tenia en pantalla. El filtro va sobre ap1, que por el
+  // JOIN es el mismo segmento que ap2.
+  test("sin filtros: no acota por carrera ni por nivel (comportamiento global)", async () => {
+    await dao.conflictos("2026-04-01", "2026-04-30");
+    expect(lastCall.sql).not.toMatch(/ap1\.carrera_id = \$/);
+    expect(lastCall.sql).not.toMatch(/ap1\.nivel = \$/);
+  });
+
+  test("con carreraId: restringe el choque a esa carrera", async () => {
+    await dao.conflictos("2026-04-01", "2026-04-30", { carreraId: 6 });
+    expect(lastCall.sql).toMatch(/ap1\.carrera_id = \$\d+/);
+    expect(lastCall.params).toContain(6);
+  });
+
+  test("con carreraId y nivel: restringe al segmento exacto", async () => {
+    await dao.conflictos("2026-04-01", "2026-04-30", { carreraId: 6, nivel: 1 });
+    expect(lastCall.sql).toMatch(/ap1\.carrera_id = \$\d+/);
+    expect(lastCall.sql).toMatch(/ap1\.nivel = \$\d+/);
+    expect(lastCall.params).toContain(6);
+    expect(lastCall.params).toContain(1);
+  });
+
+  test("el par (carrera, nivel) sigue exigiendose entre las dos actividades", async () => {
+    // Sin esto un choque seria cualquier solapamiento horario, aunque el
+    // publico no se toque: el nucleo de la deteccion.
+    await dao.conflictos("2026-04-01", "2026-04-30", { carreraId: 6 });
+    expect(lastCall.sql).toMatch(/ap2\.carrera_id = ap1\.carrera_id/);
+    expect(lastCall.sql).toMatch(/ap2\.nivel = ap1\.nivel/);
+  });
+
+  test("devuelve el segmento del choque para poder nombrarlo en el aviso", async () => {
+    await dao.conflictos("2026-04-01", "2026-04-30", { carreraId: 6 });
+    expect(lastCall.sql).toMatch(/conflicta_carrera/);
+    expect(lastCall.sql).toMatch(/conflicta_nivel/);
+    // Una fila por par de actividades aunque choquen en varios segmentos.
+    expect(lastCall.sql).toMatch(/DISTINCT ON \(a1\.id, a2\.id\)/);
+  });
+});
+
 describe("actividadDao.conflictos — conjunto vigente + rango acotado (H-02, H-14)", () => {
   test("usa el conjunto vigente completo (no solo CONFIRMADA) y acota por rango de fechas", async () => {
     await dao.conflictos("2026-04-01", "2026-04-30");

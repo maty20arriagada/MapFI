@@ -27,16 +27,30 @@
     }
 
     // Choques entre actividades vigentes (mismo publico + solapamiento
-    // temporal, §16.4). Mapa id → titulo del evento con el que choca.
-    // Se acota la consulta a la ventana visible (T025 / H-14): reutiliza el
-    // rango de `filtros` si vino explicito; si no, un semestre alrededor de
-    // hoy, en vez de recorrer todo el historial de actividades.
+    // temporal, §16.4). Mapa id → { titulo, carrera, nivel } del evento con
+    // el que choca.
+    //
+    // Se acota a la ventana visible (T025 / H-14) y TAMBIEN a la carrera y
+    // el año que se estan mirando. Lo segundo importa: una actividad puede
+    // apuntar a varias carreras, asi que sin acotar se marcaba en naranja un
+    // evento de Industrial cuyo unico choque real era con Informatica. El
+    // aviso hablaba de algo que el usuario no veia en pantalla, y por eso
+    // confundia en vez de ayudar.
     const rango = rangoConsulta(filtros);
+    if (filtros && filtros.carreraId) rango.carreraId = filtros.carreraId;
+    if (filtros && filtros.nivel) rango.nivel = filtros.nivel;
+
     let conflictos = new Map();
     try {
       const qsConf = new URLSearchParams(rango).toString();
       (await api.get("/api/actividades/conflictos?" + qsConf)).forEach((c) => {
-        if (!conflictos.has(c.id)) conflictos.set(c.id, c.conflicta_titulo);
+        if (!conflictos.has(c.id)) {
+          conflictos.set(c.id, {
+            titulo: c.conflicta_titulo,
+            carrera: c.conflicta_carrera || null,
+            nivel: c.conflicta_nivel || null,
+          });
+        }
       });
     } catch (_) { /* sin señalizacion si falla; el calendario sigue */ }
 
@@ -83,7 +97,7 @@
         // Tooltip nativo con el detalle; incluye el choque si existe.
         const p = info.event.extendedProps;
         let t = `${info.event.title} · ${p.entidad} · ${p.tipo}`;
-        if (p.choque) t += `\nCHOQUE detectado con: ${p.choque}`;
+        if (p.choque) t += "\n" + textoChoque(p.choque);
         info.el.title = t;
       },
       eventClick: (info) => {
@@ -97,7 +111,7 @@
         }
         let det = `${info.event.title} · ${p.entidad} · ${p.tipo} · ${p.estado}` +
           (p.ubicacion ? ` · ${p.ubicacion}` : "");
-        if (p.choque) det += ` — CHOQUE con: ${p.choque}`;
+        if (p.choque) det += " — " + textoChoque(p.choque);
         if (global.toast) toast(det, p.choque ? "error" : undefined); else console.warn("[calendar]", det);
       },
       dateClick: typeof opts.onPick === "function"
@@ -124,6 +138,19 @@
       });
 
     el._fc = cal;
+  }
+
+  /**
+   * Redacta el aviso de choque diciendo CON QUE choca y, sobre todo, PARA
+   * QUIEN. "Choque detectado" a secas obliga a adivinar a quien afecta;
+   * nombrando la carrera y el año se lee y se entiende de una.
+   */
+  function textoChoque(choque) {
+    if (!choque) return "";
+    if (typeof choque === "string") return "Choque con: " + choque; // forma antigua
+    var quien = [choque.carrera, choque.nivel ? choque.nivel + "° año" : null]
+      .filter(Boolean).join(" · ");
+    return "Choque con «" + choque.titulo + "»" + (quien ? " en " + quien : "");
   }
 
   /** Rango a usar para acotar la consulta de choques (T025 / H-14). */
