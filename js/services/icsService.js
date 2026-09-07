@@ -81,7 +81,8 @@ function secuencia(updatedAt) {
 }
 
 const ETIQUETA_TIPO = {
-  EXAMEN: "Evaluación",
+  // "Certamen" es el termino de la UdeC y es lo que se lee en Outlook/Google.
+  EXAMEN: "Certamen",
   HITO_ACADEMICO: "Hito académico",
   EVENTO: "Evento",
   CHARLA: "Charla",
