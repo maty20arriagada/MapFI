@@ -1,13 +1,14 @@
 "use strict";
 /**
- * Clasificador de actividades. Es lo que decide si una fila de la base pasa a
- * ser certamen o tarea, asi que las pruebas cubren sobre todo los casos donde
- * equivocarse cuesta caro: falsos positivos de "certamen" (alarman al
- * estudiante y disparan la penalizacion mas alta del match) y abreviaturas
- * cortas que un regex laxo destroza.
+ * Reordenador de actividades ya cargadas.
+ *
+ * Los casos salen de los 58 titulos REALES que habia en la base el
+ * 2026-09-07, no de ejemplos inventados: el centro de Metalurgia usa una
+ * convencion de sufijos y un clasificador por palabras clave fallaba en 42 de
+ * las 51 filas. Estas pruebas fijan esa convencion.
  */
 const {
-  clasificar,
+  analizar,
   planificar,
   normalizar,
   TIPO_CERTAMEN,
@@ -15,117 +16,172 @@ const {
   TIPO_EVENTO,
 } = require("../../js/services/actividadTipo");
 
-describe("Vinculacion y Gearbox quedan como evento", () => {
-  test.each(["VcM", "vcm", "GBX", "gbx"])("%s -> EVENTO sin mirar el titulo", (sigla) => {
-    expect(clasificar({ titulo: "Certamen 1", entidadSigla: sigla }).tipo).toBe(TIPO_EVENTO);
-  });
+const met = (titulo, extra) => Object.assign({ titulo, tipo: "EVENTO", entidadSigla: "CEEMET" }, extra || {});
 
-  test("un centro de estudiantes NO se libra por tener un titulo de evento", () => {
-    expect(clasificar({ titulo: "Feria de empleabilidad", entidadSigla: "CEEMET" }).tipo).toBe(TIPO_TAREA);
-  });
-});
-
-describe("titulos que SI son certamen", () => {
+describe("la convencion de sufijos de Metalurgia", () => {
   test.each([
-    "Certamen 1", "Certámenes", "Examen de recuperación", "Prueba parcial",
-    "Test 3", "Control 2", "Evaluación global", "Evaluacion 1",
-    "Solemne 2", "Interrogación oral", "Quiz sorpresa", "E. Global",
-  ])("%s -> certamen", (titulo) => {
-    expect(clasificar({ titulo, entidadSigla: "CEEIND" }).tipo).toBe(TIPO_CERTAMEN);
+    ["Topografía", TIPO_CERTAMEN, "Topografía", "Certamen"],
+    ["Cielo abierto", TIPO_CERTAMEN, "Cielo abierto", "Certamen"],
+    ["Mineralogía aplicada a la metalurgia", TIPO_CERTAMEN, "Mineralogía aplicada a la metalurgia", "Certamen"],
+    ["Topografía TEST", TIPO_TAREA, "Topografía", "Test"],
+    ["Hidrometalurgia TEST", TIPO_TAREA, "Hidrometalurgia", "Test"],
+    ["Física II EX", TIPO_CERTAMEN, "Física II", "Examen"],
+    ["Química II EX", TIPO_CERTAMEN, "Química II", "Examen"],
+    ["Dibujo asistido por computadora TAREA", TIPO_TAREA, "Dibujo asistido por computadora", "Tarea"],
+  ])("%s -> %s, ramo %s, etiqueta %s", (titulo, tipo, ramo, etiqueta) => {
+    const p = analizar(met(titulo));
+    expect(p.tipo).toBe(tipo);
+    expect(p.ramo).toBe(ramo);
+    expect(p.etiqueta).toBe(etiqueta);
   });
 
-  test.each(["C1", "C2", "C3", "E1", "E2", "E3", "EV1", "ER", "C 1", "Ev 2"])(
-    "la abreviatura %s se reconoce", (titulo) => {
-      expect(clasificar({ titulo, entidadSigla: "CEEIC" }).tipo).toBe(TIPO_CERTAMEN);
+  test("el sufijo va ANCLADO al final: 'Metalurgia extractiva' no es un EX", () => {
+    // Sin el ancla, /EX/ pescaria "extractiva" y convertiria un certamen en
+    // examen. Es el falso positivo mas facil de introducir aqui.
+    const p = analizar(met("Metalurgia extractiva"));
+    expect(p.etiqueta).toBe("Certamen");
+    expect(p.ramo).toBe("Metalurgia extractiva");
+  });
+
+  test.each(["Metalurgia extractiva TEST", "Flotación TEST"])(
+    "%s si lleva el sufijo, y el ramo queda limpio", (titulo) => {
+      const p = analizar(met(titulo));
+      expect(p.etiqueta).toBe("Test");
+      expect(p.ramo).not.toMatch(/TEST/);
     }
   );
 
-  test("la señal tambien vale si viene en el ramo", () => {
-    // Hay filas cuyo titulo es generico y el ramo lleva la pista.
-    expect(clasificar({ titulo: "Sesión", ramo: "Taller de Certamen", entidadSigla: "CEEIC" }).tipo)
-      .toBe(TIPO_CERTAMEN);
+  test("el sufijo no distingue mayusculas ni sobra el espacio", () => {
+    expect(analizar(met("Topografía test ")).etiqueta).toBe("Test");
+    expect(analizar(met("Física II ex")).etiqueta).toBe("Examen");
   });
 });
 
-describe("falsos positivos — lo caro es marcar de mas", () => {
-  test.each([
-    ["Controlador lógico programable", "control dentro de otra palabra"],
-    ["Charla sobre Testimonios", "test dentro de otra palabra"],
-    ["Feria Interescolar", "er dentro de otra palabra"],
-    ["Presentación de Ceremonia", "ce sin numero"],
-  ])("%s NO es certamen (%s)", (titulo) => {
-    expect(clasificar({ titulo, entidadSigla: "CEEIND" }).tipo).toBe(TIPO_TAREA);
+describe("lo que NO se toca", () => {
+  test.each(["VcM", "GBX", "vcm"])("%s queda como evento, sin mirar el titulo", (sigla) => {
+    const p = analizar({ titulo: "Certamen 1", tipo: "EVENTO", entidadSigla: sigla });
+    expect(p.accion).toBe("respetar");
+    expect(p.tipo).toBe(TIPO_EVENTO);
   });
-});
 
-describe("todo lo demas es tarea, y el fallback se marca", () => {
-  test.each(["Entrega informe", "Tarea 2", "Proyecto grupal", "Pitch", "Avance 1", "Trabajo final"])(
-    "%s -> tarea, decision firme", (titulo) => {
-      const d = clasificar({ titulo, entidadSigla: "CEEIND" });
-      expect(d.tipo).toBe(TIPO_TAREA);
-      expect(d.ambigua).toBe(false);
+  test.each(["ENTREGA", "CHARLA", "TALLER", "EXAMEN", "EXTRAPROGRAMATICA", "HITO_ACADEMICO"])(
+    "una fila ya clasificada a mano como %s se respeta", (tipo) => {
+      // "Introduccion a la sustentabilidad" ya era ENTREGA y "Geologia y
+      // Mineralogia" ya era CHARLA: alguien lo decidio sabiendo algo que el
+      // titulo no dice.
+      const p = analizar(met("Introducción a la sustentabilidad", { tipo }));
+      expect(p.accion).toBe("respetar");
+      expect(p.tipo).toBe(tipo);
     }
   );
 
-  test.each(["Actividad 3", "Sesión", "Charla de titulación"])(
-    "%s -> tarea, pero marcada como ambigua para revisar", (titulo) => {
-      const d = clasificar({ titulo, entidadSigla: "CEEIND" });
-      expect(d.tipo).toBe(TIPO_TAREA);
-      expect(d.ambigua).toBe(true);
-    }
-  );
-
-  test("no revienta con titulo vacio ni con la actividad indefinida", () => {
-    expect(clasificar({}).tipo).toBe(TIPO_TAREA);
-    expect(clasificar(undefined).tipo).toBe(TIPO_TAREA);
-    expect(clasificar({ titulo: null, entidadSigla: null }).tipo).toBe(TIPO_TAREA);
+  test("solo se reordena lo que quedo como EVENTO", () => {
+    expect(analizar(met("Topografía")).accion).toBe("reclasificar");
   });
 });
 
-describe("normalizar", () => {
-  test("quita tildes y unifica mayusculas y espacios", () => {
-    expect(normalizar("  Evaluación   GLOBAL ")).toBe("evaluacion global");
-  });
-});
-
-describe("planificar — solo devuelve lo que cambia", () => {
-  const filas = [
-    { id: 1, titulo: "Certamen 1", tipo: "EVENTO", entidadSigla: "CEEMET" },
-    { id: 2, titulo: "Certamen 2", tipo: "EXAMEN", entidadSigla: "CEEMET" },  // ya correcta
-    { id: 3, titulo: "Entrega informe", tipo: "EVENTO", entidadSigla: "CEEMET" },
-    { id: 4, titulo: "Feria de Empleabilidad", tipo: "EVENTO", entidadSigla: "VcM" }, // ya correcta
-    { id: 5, titulo: "Charla de titulación", tipo: "CHARLA", entidadSigla: "CEEIND" },
+describe("numeracion de repeticiones", () => {
+  const cuatroTopografias = [
+    met("Topografía", { id: 4, fechaInicio: "2026-12-01" }),
+    met("Topografía", { id: 1, fechaInicio: "2026-09-01" }),
+    met("Topografía", { id: 3, fechaInicio: "2026-11-01" }),
+    met("Topografía", { id: 2, fechaInicio: "2026-10-01" }),
   ];
 
-  test("una fila ya bien clasificada no se toca", () => {
-    const plan = planificar(filas);
-    expect(plan.cambios.map((c) => c.id)).not.toContain(2);
-    expect(plan.cambios.map((c) => c.id)).not.toContain(4);
-    expect(plan.sinCambio).toBe(2);
+  test("numera por FECHA, no por el orden de llegada", () => {
+    const { cambios } = planificar(cuatroTopografias);
+    const porId = Object.fromEntries(cambios.map((c) => [c.id, c.tituloNuevo]));
+    expect(porId[1]).toBe("Certamen 1");
+    expect(porId[2]).toBe("Certamen 2");
+    expect(porId[3]).toBe("Certamen 3");
+    expect(porId[4]).toBe("Certamen 4");
   });
 
-  test("devuelve el tipo previo, imprescindible para poder revertir", () => {
-    const plan = planificar(filas);
-    const c1 = plan.cambios.find((c) => c.id === 1);
-    expect(c1.tipoPrevio).toBe("EVENTO");
-    expect(c1.tipoNuevo).toBe(TIPO_CERTAMEN);
+  test("certamenes y tests del mismo ramo se numeran por separado", () => {
+    const { cambios } = planificar([
+      met("Topografía", { id: 1, fechaInicio: "2026-09-01" }),
+      met("Topografía", { id: 2, fechaInicio: "2026-10-01" }),
+      met("Topografía TEST", { id: 3, fechaInicio: "2026-09-15" }),
+      met("Topografía TEST", { id: 4, fechaInicio: "2026-10-15" }),
+    ]);
+    const porId = Object.fromEntries(cambios.map((c) => [c.id, c.tituloNuevo]));
+    expect(porId[1]).toBe("Certamen 1");
+    expect(porId[3]).toBe("Test 1");
+    expect(porId[4]).toBe("Test 2");
   });
 
-  test("una CHARLA de un centro se convierte: es la regla acordada", () => {
-    const plan = planificar(filas);
-    const c5 = plan.cambios.find((c) => c.id === 5);
-    expect(c5.tipoPrevio).toBe("CHARLA");
-    expect(c5.tipoNuevo).toBe(TIPO_TAREA);
+  test("si solo hay uno, no se numera", () => {
+    const { cambios } = planificar([met("Metalurgia extractiva TEST", { id: 9, fechaInicio: "2026-09-01" })]);
+    expect(cambios[0].tituloNuevo).toBe("Test");
+  });
+
+  test("agrupa aunque el ramo difiera en tildes o espacios", () => {
+    const { cambios } = planificar([
+      met("Topografía", { id: 1, fechaInicio: "2026-09-01" }),
+      met("Topografia", { id: 2, fechaInicio: "2026-10-01" }),
+      met("Topografía  ", { id: 3, fechaInicio: "2026-11-01" }),
+    ]);
+    expect(cambios.map((c) => c.tituloNuevo).sort()).toEqual(["Certamen 1", "Certamen 2", "Certamen 3"]);
+  });
+
+  test("fechas iguales: desempata por id, sin quedar indefinido", () => {
+    const { cambios } = planificar([
+      met("Flotación", { id: 20, fechaInicio: "2026-09-01" }),
+      met("Flotación", { id: 10, fechaInicio: "2026-09-01" }),
+    ]);
+    const porId = Object.fromEntries(cambios.map((c) => [c.id, c.tituloNuevo]));
+    expect(porId[10]).toBe("Certamen 1");
+    expect(porId[20]).toBe("Certamen 2");
+  });
+});
+
+describe("planificar — lo que necesita el script", () => {
+  const muestra = [
+    met("Topografía", { id: 1, fechaInicio: "2026-09-01" }),
+    met("Topografía TEST", { id: 2, fechaInicio: "2026-09-15" }),
+    met("Física II EX", { id: 3, fechaInicio: "2026-12-20" }),
+    met("Introducción a la sustentabilidad", { id: 4, tipo: "ENTREGA", fechaInicio: "2026-09-08" }),
+    met("Geología y Mineralogía", { id: 5, tipo: "CHARLA", fechaInicio: "2026-09-09" }),
+    { id: 6, titulo: "Feria de Empleabilidad", tipo: "EVENTO", entidadSigla: "VcM", fechaInicio: "2026-09-07" },
+    { id: 7, titulo: "Certamen 1 - Cálculo I", tipo: "EXAMEN", entidadSigla: "DOCFI", fechaInicio: "2026-09-11" },
+  ];
+
+  test("separa lo que cambia de lo que se respeta", () => {
+    const p = planificar(muestra);
+    expect(p.cambios.map((c) => c.id).sort()).toEqual([1, 2, 3]);
+    expect(p.respetadas.map((r) => r.id).sort()).toEqual([4, 5, 6, 7]);
+  });
+
+  test("conserva los valores previos: sin ellos no hay reversion", () => {
+    const c = planificar(muestra).cambios.find((x) => x.id === 2);
+    expect(c.tipoPrevio).toBe("EVENTO");
+    expect(c.tituloPrevio).toBe("Topografía TEST");
+    expect(c.ramoPrevio).toBeNull();
+    expect(c.tipoNuevo).toBe(TIPO_TAREA);
+    expect(c.ramoNuevo).toBe("Topografía");
+    expect(c.tituloNuevo).toBe("Test");
   });
 
   test("no muta la entrada", () => {
-    const copia = JSON.parse(JSON.stringify(filas));
-    planificar(filas);
-    expect(filas).toEqual(copia);
+    const copia = JSON.parse(JSON.stringify(muestra));
+    planificar(muestra);
+    expect(muestra).toEqual(copia);
   });
 
   test("lista vacia o indefinida no revienta", () => {
     expect(planificar([]).cambios).toEqual([]);
     expect(planificar(undefined).cambios).toEqual([]);
+  });
+
+  test("titulo vacio o actividad indefinida no revientan", () => {
+    expect(() => analizar({})).not.toThrow();
+    expect(() => analizar(undefined)).not.toThrow();
+    expect(analizar({ titulo: "", tipo: "EVENTO" }).tipo).toBe(TIPO_CERTAMEN);
+  });
+});
+
+describe("normalizar", () => {
+  test("quita tildes y unifica mayusculas y espacios", () => {
+    expect(normalizar("  Topografía   II ")).toBe("topografia ii");
   });
 });

@@ -1,24 +1,36 @@
 "use strict";
 /**
- * MapFI · actividadTipo.js — clasifica una actividad como certamen, tarea o
- * evento a partir de su titulo y de quien la publica.
+ * MapFI · actividadTipo.js — reordena las actividades ya cargadas: decide su
+ * tipo, separa el ramo del titulo y numera las repeticiones.
  *
- * Servicio PURO (Principio II): sin I/O, sin red, sin base de datos. Recibe
- * datos y devuelve una decision, para que la regla se pueda probar sin
- * levantar un contenedor y para que el script de reclasificacion no esconda
- * la logica dentro de un bucle.
+ * Servicio PURO (Principio II): sin I/O, sin red, sin base de datos.
  *
- * REGLA (decidida con el usuario el 2026-09-07):
- *   1. Lo que publican Vinculacion con el Medio (VcM) y Gearbox (GBX) es
- *      EVENTO, sin mirar el titulo. Son las dos entidades cuyo proposito es
- *      acompañar al estudiante, no evaluarlo.
- *   2. Todo lo demas es CERTAMEN si el titulo lo delata, y TAREA si no.
- *      El fallback es TAREA a proposito: marcar de mas como "certamen"
- *      alarma al estudiante y ensucia el algoritmo de choques, que penaliza
- *      los examenes con el peso mas alto (P_EXAMEN = 45 en matchService).
+ * DE DONDE SALE LA REGLA
+ * ----------------------
+ * No de adivinar palabras clave. Al mirar los 58 titulos reales aparecio una
+ * convencion de SUFIJOS que el centro de Metalurgia usa de forma consistente:
  *
- * Los tipos que se guardan son los del CHECK de la tabla (migracion 006):
- * EXAMEN es el certamen y ENTREGA es la tarea. No se inventan tipos nuevos.
+ *     Topografia            -> el certamen del ramo (se repite: C1, C2, C3...)
+ *     Topografia TEST       -> un test
+ *     Fisica II EX          -> el examen
+ *     Dibujo ... TAREA      -> una tarea
+ *
+ * Un clasificador por palabras ("certamen", "prueba", "control") acertaba
+ * solo en TEST y fallaba en las 40 filas sin sufijo y en las 2 de EX. Por eso
+ * la regla es posicional: se mira el final del titulo, no su vocabulario.
+ *
+ * DECISIONES DEL USUARIO (2026-09-07), todas deliberadas:
+ *   · Sin sufijo  -> CERTAMEN. Es la evaluacion principal del ramo.
+ *   · TEST        -> TAREA.    Control menor, no debe pesar como un certamen.
+ *   · EX          -> CERTAMEN. Es evaluacion formal.
+ *   · TAREA       -> TAREA.
+ *   · Vinculacion con el Medio (VcM) y Gearbox (GBX) -> EVENTO, sin mirar el
+ *     titulo: su trabajo es acompañar al estudiante, no evaluarlo.
+ *   · Lo que YA fue clasificado a mano (cualquier tipo distinto de EVENTO) se
+ *     RESPETA. Quien lo marco sabia algo que el titulo no dice.
+ *
+ * Los tipos que se guardan son los del CHECK de la migracion 006: EXAMEN es
+ * el certamen y ENTREGA la tarea. No se inventan tipos nuevos.
  */
 
 /** Entidades cuyo trabajo NO es academico: lo suyo queda como evento. */
@@ -29,128 +41,164 @@ const TIPO_TAREA = "ENTREGA";
 const TIPO_EVENTO = "EVENTO";
 
 /**
- * Quita tildes y pasa a minusculas, para que "Evaluación" y "evaluacion"
- * crucen igual. Es la misma normalizacion que usa horarioMalla.
+ * Sufijos, en orden de comprobacion. Anclados al FINAL del titulo: sin el
+ * ancla, "Metalurgia extractiva" acabaria pescando el sufijo EX.
  */
+const SUFIJOS = Object.freeze([
+  { re: /\s+TAREA\s*$/i, tipo: TIPO_TAREA, etiqueta: "Tarea" },
+  { re: /\s+TESTS?\s*$/i, tipo: TIPO_TAREA, etiqueta: "Test" },
+  { re: /\s+EX\s*$/i, tipo: TIPO_CERTAMEN, etiqueta: "Examen" },
+]);
+
+/** Sin ningun sufijo, el titulo entero es el ramo y la actividad es el certamen. */
+const SIN_SUFIJO = Object.freeze({ tipo: TIPO_CERTAMEN, etiqueta: "Certamen" });
+
+/** Quita tildes y unifica espacios, para agrupar "Topografía" con "Topografia". */
 function normalizar(s) {
   return String(s == null ? "" : s)
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")  // combinantes, escapados: literales se corrompen
+    .replace(/[\u0300-\u036f]/g, "")  // combinantes, escapados
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
 }
 
 /**
- * Señales de que un titulo describe una evaluacion con nota.
+ * Decide que hacer con UNA actividad, sin conocer las demas (por eso todavia
+ * no numera: eso necesita el conjunto y lo hace `planificar`).
  *
- * Van con limite de palabra a proposito. Sin el, "control" pescaria
- * "Controlador logico" y "er" pescaria absolutamente todo. Las abreviaturas
- * cortas (C1, E2, EV3, ER) son las que mas se usan en la Facultad y las que
- * mas facil se rompen con un regex laxo, asi que se listan una a una.
+ * @param {{titulo?, ramo?, tipo?, entidadSigla?}} act
+ * @returns {{accion: "respetar"|"reclasificar", tipo, ramo, etiqueta, motivo}}
  */
-const PATRONES_CERTAMEN = [
-  /\bcertamen(es)?\b/,
-  /\bexamen(es)?\b/,
-  /\bprueba(s)?\b/,
-  /\btest(s)?\b/,
-  /\bcontrol(es)?\b/,
-  /\bevaluacion(es)?\b/,
-  /\bparcial(es)?\b/,
-  /\bsolemne(s)?\b/,
-  /\binterrogacion(es)?\b/,
-  /\bquiz(z?es)?\b/,
-  /\brecuperacion\b/,
-  /\bglobal\b/,
-  // Abreviaturas: C1, C2, E1, E2, E3, EV1, ER. Con espacio opcional
-  // ("C 1") porque en las planillas aparece de las dos formas.
-  /\b[ce]\s?\d\b/,
-  /\bev\s?\d\b/,
-  /\ber\b/,
-];
-
-/**
- * Clasifica una actividad.
- *
- * @param {{titulo?: string, entidadSigla?: string, tipo?: string}} act
- * @returns {{tipo: string, motivo: string, ambigua: boolean}}
- *   `ambigua` marca las que cayeron en el fallback sin ninguna señal: no
- *   cambia lo que se guarda, pero permite listarlas en el informe para que
- *   alguien las mire.
- */
-function clasificar(act) {
+function analizar(act) {
   act = act || {};
-  const sigla = normalizar(act.entidadSigla).toUpperCase();
+  const sigla = String(act.entidadSigla || "").trim().toUpperCase();
+  const tituloOriginal = String(act.titulo || "").trim();
 
   if (SIGLAS_ACOMPANAMIENTO.indexOf(sigla) !== -1) {
     return {
+      accion: "respetar",
       tipo: TIPO_EVENTO,
+      ramo: act.ramo || null,
+      etiqueta: null,
       motivo: "entidad de acompañamiento (" + sigla + ")",
-      ambigua: false,
     };
   }
 
-  const titulo = normalizar(act.titulo);
-  const ramo = normalizar(act.ramo);
-  // Se mira el titulo y, si no dice nada, tambien el ramo: hay filas cuyo
-  // titulo es solo "C1" y otras donde la señal esta en el nombre del ramo.
-  const texto = titulo + " " + ramo;
+  // Ya clasificada a mano: no se pisa. Solo se reordena lo que quedo como
+  // EVENTO, que es el valor con el que entraron sin revisar.
+  if (act.tipo && act.tipo !== TIPO_EVENTO) {
+    return {
+      accion: "respetar",
+      tipo: act.tipo,
+      ramo: act.ramo || null,
+      etiqueta: null,
+      motivo: "ya clasificada a mano como " + act.tipo,
+    };
+  }
 
-  for (const re of PATRONES_CERTAMEN) {
-    if (re.test(texto)) {
-      return { tipo: TIPO_CERTAMEN, motivo: "el titulo dice " + re.source, ambigua: false };
+  for (const s of SUFIJOS) {
+    if (s.re.test(tituloOriginal)) {
+      return {
+        accion: "reclasificar",
+        tipo: s.tipo,
+        ramo: tituloOriginal.replace(s.re, "").trim() || tituloOriginal,
+        etiqueta: s.etiqueta,
+        motivo: "sufijo " + s.etiqueta.toUpperCase(),
+      };
     }
   }
 
   return {
-    tipo: TIPO_TAREA,
-    motivo: "sin señal de evaluacion en el titulo",
-    // Si el titulo trae una palabra tipica de entrega, la decision es firme;
-    // si no trae nada, cayo en el fallback y conviene revisarla.
-    ambigua: !/\b(tarea|entrega|proyecto|informe|avance|pitch|presentacion|trabajo|memoria|laboratorio|practica)\b/.test(texto),
+    accion: "reclasificar",
+    tipo: SIN_SUFIJO.tipo,
+    ramo: tituloOriginal,
+    etiqueta: SIN_SUFIJO.etiqueta,
+    motivo: "sin sufijo: el titulo es el ramo",
   };
 }
 
 /**
- * Aplica `clasificar` a una lista y devuelve solo lo que CAMBIA, mas el
- * resumen. No muta la entrada.
+ * Aplica `analizar` a la lista y numera las repeticiones.
  *
- * @param {Array} actividades  filas con { id, titulo, ramo, tipo, entidadSigla }
- * @returns {{cambios: Array, sinCambio: number, ambiguas: Array, resumen: Object}}
+ * La numeracion no es cosmetica: "Topografia" aparece cuatro veces y
+ * "Topografia TEST" dos. Sin numerar, el calendario mostraria cuatro chips
+ * identicos — exactamente el problema por el que empezo todo esto. Se ordena
+ * por fecha, que es el orden en que el estudiante los vive.
+ *
+ * Cuando de un (ramo, etiqueta) solo hay uno, no se numera: "Test" se lee
+ * mejor que "Test 1" si no hay un Test 2.
+ *
+ * @param {Array} actividades  { id, titulo, ramo, tipo, entidadSigla, fechaInicio }
+ * @returns {{cambios, respetadas, sinCambio, resumen}}
  */
 function planificar(actividades) {
-  const cambios = [];
-  const ambiguas = [];
-  const resumen = {};
-  let sinCambio = 0;
+  const filas = (actividades || []).map((a) => ({ original: a, plan: analizar(a) }));
 
-  (actividades || []).forEach((a) => {
-    const d = clasificar({ titulo: a.titulo, ramo: a.ramo, entidadSigla: a.entidadSigla });
-    const clave = (a.tipo || "?") + " -> " + d.tipo;
-    resumen[clave] = (resumen[clave] || 0) + 1;
+  // Agrupar por (ramo normalizado + etiqueta) para numerar dentro del grupo.
+  const grupos = new Map();
+  filas.forEach((f) => {
+    if (f.plan.accion !== "reclasificar") return;
+    const clave = normalizar(f.plan.ramo) + "|" + f.plan.etiqueta;
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(f);
+  });
 
-    if (d.ambigua) ambiguas.push({ id: a.id, titulo: a.titulo, tipoPrevio: a.tipo, tipoNuevo: d.tipo });
-
-    if (d.tipo === a.tipo) { sinCambio++; return; }
-    cambios.push({
-      id: a.id,
-      titulo: a.titulo,
-      ramo: a.ramo || null,
-      entidadSigla: a.entidadSigla,
-      tipoPrevio: a.tipo,
-      tipoNuevo: d.tipo,
-      motivo: d.motivo,
+  grupos.forEach((miembros) => {
+    miembros.sort((a, b) => {
+      const fa = a.original.fechaInicio ? new Date(a.original.fechaInicio).getTime() : 0;
+      const fb = b.original.fechaInicio ? new Date(b.original.fechaInicio).getTime() : 0;
+      if (fa !== fb) return fa - fb;
+      return (a.original.id || 0) - (b.original.id || 0); // desempate estable
+    });
+    miembros.forEach((f, i) => {
+      f.plan.tituloNuevo = miembros.length > 1
+        ? f.plan.etiqueta + " " + (i + 1)
+        : f.plan.etiqueta;
     });
   });
 
-  return { cambios, sinCambio, ambiguas, resumen };
+  const cambios = [];
+  const respetadas = [];
+  const resumen = {};
+  let sinCambio = 0;
+
+  filas.forEach((f) => {
+    const a = f.original;
+    const p = f.plan;
+
+    if (p.accion === "respetar") {
+      respetadas.push({ id: a.id, titulo: a.titulo, tipo: a.tipo, motivo: p.motivo });
+      return;
+    }
+
+    const clave = (a.tipo || "?") + " -> " + p.tipo;
+    resumen[clave] = (resumen[clave] || 0) + 1;
+
+    const cambiaTipo = p.tipo !== a.tipo;
+    const cambiaRamo = (p.ramo || null) !== (a.ramo || null);
+    const cambiaTitulo = p.tituloNuevo !== a.titulo;
+    if (!cambiaTipo && !cambiaRamo && !cambiaTitulo) { sinCambio++; return; }
+
+    cambios.push({
+      id: a.id,
+      entidadSigla: a.entidadSigla,
+      tipoPrevio: a.tipo, tipoNuevo: p.tipo,
+      ramoPrevio: a.ramo || null, ramoNuevo: p.ramo,
+      tituloPrevio: a.titulo, tituloNuevo: p.tituloNuevo,
+      motivo: p.motivo,
+    });
+  });
+
+  return { cambios, respetadas, sinCambio, resumen };
 }
 
 module.exports = {
-  clasificar,
+  analizar,
   planificar,
   normalizar,
   SIGLAS_ACOMPANAMIENTO,
+  SUFIJOS,
   TIPO_CERTAMEN,
   TIPO_TAREA,
   TIPO_EVENTO,
