@@ -165,6 +165,19 @@
       moreLinkClick: "popover",
       moreLinkText: (n) => "+" + n + " más",
 
+      // Un evento CON hora se pinta por defecto en el mes como
+      // "punto + hora + titulo" (.fc-daygrid-dot-event) y con el fondo
+      // TRANSPARENTE: el color del tipo se reduce a un punto diminuto y, al
+      // sustituir el contenido con eventContent, ese punto desaparece — el
+      // mes se queda literalmente sin color. Con "block" el evento vuelve a
+      // ser una barra que si usa backgroundColor.
+      //
+      // Va al nivel superior y no dentro de `views`: ahi FullCalendar no la
+      // aplica (comprobado en el navegador, seguia saliendo dot-event). En
+      // Semana los eventos ya son bloques y en Agenda la opcion no interviene,
+      // asi que ponerla global no cambia esas dos vistas.
+      eventDisplay: "block",
+
       // La hora solo se muestra donde aporta. En el mes todas las
       // evaluaciones caian a la misma hora y el "19:10" repetido se comia un
       // tercio del ancho de cada evento — justo el espacio que necesita el
