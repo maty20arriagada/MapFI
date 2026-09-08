@@ -16,6 +16,7 @@
     "seed:horarios": "node js/db/importar-horarios.js",
     "crear:superadmin": "node js/db/crear-superadmin.js",
     "limpiar:actividades": "node js/db/borrar-actividades.js",
+    "reclasificar:actividades": "node js/db/reclasificar-actividades.js",
     "docker:up": "docker compose up --build",
     "docker:prod": "docker compose up -d --build",
     "docker:logs": "docker compose logs -f server",
