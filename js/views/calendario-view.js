@@ -75,16 +75,58 @@
   function init() {
     var cal = document.getElementById("calendar");
 
+    /**
+     * Pinta la leyenda desde la MISMA paleta que usa el calendario. Antes los
+     * siete hex estaban repetidos a mano en calendario.html y bastaba tocar
+     * un color para que leyenda y eventos dejaran de coincidir.
+     */
+    function pintarLeyenda() {
+      var cont = document.getElementById("legendTipos");
+      if (!cont || !global.CalendarView) return;
+      var colores = global.CalendarView.COLOR_TIPO || {};
+      var nombres = global.CalendarView.NOMBRE_TIPO || {};
+      // El orden lo fija NOMBRE_TIPO: certamen primero, que es lo que mas se
+      // consulta.
+      var html = Object.keys(nombres).map(function (t) {
+        return '<span><i style="background:' + esc(colores[t] || "#64748B") + '"></i> ' +
+          esc(nombres[t]) + "</span>";
+      }).join("");
+      // La entrada del choque solo tiene sentido si la señal esta encendida.
+      if (global.CalendarView.ALERTAS_CHOQUE) {
+        html += '<span><i style="background:transparent;border:2px solid #F59E0B;box-sizing:border-box"></i>' +
+          " Choque en la misma carrera y año</span>";
+      }
+      cont.innerHTML = html;
+    }
+
     (async function () {
+      var usuario = null;
       try {
         var r = await api.get("/api/auth/me");
-        isAdmin = esAdminOSuper(r.user);
+        usuario = r.user;
+        isAdmin = esAdminOSuper(usuario);
       } catch (_) {}
 
       cat = await Filters.cargar();
-      Filters.poblarSelect(document.getElementById("fCarrera"), cat.carreras, "id", "nombre", "Todas las carreras");
+      var selCarrera = document.getElementById("fCarrera");
+      Filters.poblarSelect(selCarrera, cat.carreras, "id", "nombre", "Todas las carreras");
       Filters.poblarSelect(document.getElementById("fNivel"), cat.generaciones, "nivel", "etiqueta", "Todos los años");
       Filters.poblarSelect(document.getElementById("fEntidad"), cat.entidades, "id", "nombre", "Todas las entidades");
+
+      pintarLeyenda();
+
+      // Un centro de estudiantes abre en SU carrera. Sin esto el calendario
+      // arrancaba con las 14 mezcladas y un centro de Industrial veia
+      // Hidrometalurgia y Depositos minerales entre sus certamenes.
+      // Sigue siendo un filtro: se puede volver a "Todas las carreras".
+      // `carreraId` lo resuelve el servidor desde la entidad de la sesion
+      // (server.js, GET /api/auth/me); mismo patron que horarios.html.
+      if (usuario && usuario.carreraId != null && selCarrera) {
+        var propia = Array.from(selCarrera.options).find(function (o) {
+          return +o.value === +usuario.carreraId;
+        });
+        if (propia) selCarrera.value = propia.value;
+      }
 
       function abrirFechaForm(fecha) {
         var card = document.getElementById("adminFecha");

@@ -434,6 +434,48 @@ main > .section:nth-child(3) { animation-delay: .12s; }
   @page { size: landscape; margin: 12mm; }
 }
 
+/* ── Calendario · tema ────────────────────────────────────────────────────
+   FullCalendar v6 inyecta su propio CSS con una paleta clara fija. Sin estas
+   variables el calendario se quedaba BLANCO sobre una pagina oscura al
+   activar el tema oscuro. Como los tokens de abajo ya cambian solos en
+   [data-theme="dark"], basta mapearlos una vez: no hace falta un segundo
+   bloque para el modo oscuro. */
+#calendar {
+  --fc-page-bg-color: var(--surface);
+  --fc-border-color: var(--border);
+  --fc-neutral-bg-color: var(--surface-2);
+  --fc-neutral-text-color: var(--text-soft);
+  --fc-today-bg-color: var(--brand-soft);
+  --fc-button-bg-color: var(--brand);
+  --fc-button-border-color: var(--brand);
+  --fc-button-hover-bg-color: var(--brand-2);
+  --fc-button-hover-border-color: var(--brand-2);
+  --fc-button-active-bg-color: var(--brand-dark);
+  --fc-button-active-border-color: var(--brand-dark);
+  --fc-more-link-bg-color: var(--surface-2);
+  --fc-more-link-text-color: var(--text);
+  --fc-small-font-size: .78rem;
+  color: var(--text);
+}
+#calendar .fc-toolbar-title { font-family: var(--font-head); font-size: 1.15rem; }
+#calendar .fc-col-header-cell-cushion { font-family: var(--font-head); font-weight: 600; color: var(--text-soft); }
+#calendar .fc-daygrid-day-number { color: var(--text-soft); font-size: .78rem; }
+
+/* Contenido de cada evento: el ramo manda, el titulo lo matiza. Sin el
+   text-overflow los titulos largos se cortaban a media palabra. `min-width:0`
+   es lo que permite que la elipsis funcione dentro de un flex. */
+.ev-chip { display: flex; flex-direction: column; line-height: 1.25; padding: 1px 3px; min-width: 0; }
+.ev-ramo,
+.ev-titulo { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ev-ramo { font-weight: 700; font-size: .74rem; }
+.ev-titulo { font-size: .70rem; opacity: .92; }
+
+/* En Semana y Agenda hay sitio de sobra: se deja respirar. */
+.fc-timegrid-event .ev-chip,
+.fc-list-event .ev-chip { line-height: 1.35; }
+.fc-list-event .ev-ramo,
+.fc-list-event .ev-titulo { white-space: normal; }
+
 /* Calendario con creación al hacer clic en un día */
 .cal-pickable .fc-daygrid-day, .cal-pickable .fc-timegrid-slot { cursor: pointer; }
 

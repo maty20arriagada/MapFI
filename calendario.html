@@ -117,18 +117,15 @@ Certamen 2,Física I,CERTAMEN,2026-05-20 18:30,,*,1,</pre>
         <div id="importResult" style="margin-top:12px"></div>
       </div>
 
-      <div class="tt-legend">
-        <span><i style="background:#DC2626"></i> Certamen / evaluación</span>
-        <span><i style="background:#7C3AED"></i> Hito académico</span>
-        <span><i style="background:#2563EB"></i> Evento</span>
-        <span><i style="background:#F59E0B"></i> Charla</span>
-        <span><i style="background:#10B981"></i> Taller</span>
-        <span><i style="background:#8B5CF6"></i> Entrega</span>
-        <span><i style="background:#16A34A"></i> Extraprogramática</span>
-        <span><i style="background:transparent;border:2px solid #F59E0B;box-sizing:border-box"></i> Choque en la misma carrera y año</span>
-      </div>
+      <!-- La leyenda se genera desde COLOR_TIPO/NOMBRE_TIPO en calendario-view.js.
+           Antes los siete hex estaban escritos a mano aqui y se desincronizaban
+           en cuanto se tocaba la paleta. La entrada del choque se añade solo si
+           CalendarView.ALERTAS_CHOQUE esta activo. -->
+      <div class="tt-legend" id="legendTipos"></div>
 
-      <div id="calendar"><div class="placeholder">Cargando…</div></div>
+      <div class="card" style="padding:12px">
+        <div id="calendar"><div class="placeholder">Cargando…</div></div>
+      </div>
 
       <!-- Aviso de cancelaciones: solo se muestra si hay algo que avisar.
            Sirve a quien vio una fecha en el calendario y necesita saber que

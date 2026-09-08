@@ -114,6 +114,9 @@
       weekday: "long", day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit",
     });
     var filas = "";
+    // El ramo va primero: en una pagina llena de "Certamen 1" es el unico
+    // dato que dice de que asignatura se trata.
+    if (a.ramo) filas += "<p class='muted'>Ramo: <strong>" + esc(a.ramo) + "</strong></p>";
     if (a.entidad_nombre) filas += "<p class='muted'>Organiza " + esc(a.entidad_nombre) + "</p>";
     if (a.ubicacion) filas += "<p class='muted'>Lugar: " + esc(a.ubicacion) + "</p>";
     if (a.descripcion) filas += "<p>" + esc(a.descripcion) + "</p>";

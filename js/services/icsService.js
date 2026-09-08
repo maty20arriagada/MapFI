@@ -80,6 +80,22 @@ function secuencia(updatedAt) {
   return Math.max(0, Math.floor((d.getTime() - base) / 60000));
 }
 
+/**
+ * Titulo del evento tal como se vera en Outlook o Google.
+ *
+ * Antepone el ramo cuando existe: un semestre cargado deja decenas de
+ * actividades tituladas "Certamen 1", y suscritas al calendario personal
+ * resultan indistinguibles. "Calculo II - Certamen 1" si se entiende.
+ * El dato ya estaba en la base; solo faltaba usarlo aqui.
+ */
+function tituloVisible(a) {
+  const ramo = a && a.ramo ? String(a.ramo).trim() : "";
+  const titulo = a && a.titulo ? String(a.titulo).trim() : "";
+  if (!ramo) return titulo;
+  if (!titulo) return ramo;
+  return ramo + " · " + titulo;
+}
+
 const ETIQUETA_TIPO = {
   // "Certamen" es el termino de la UdeC y es lo que se lee en Outlook/Google.
   EXAMEN: "Certamen",
@@ -124,7 +140,7 @@ function evento(a, dominio, ahora) {
     `DTSTART:${inicio}`,
     `DTEND:${fin}`,
     `SEQUENCE:${secuencia(a.updated_at)}`,
-    `SUMMARY:${escaparTexto(cancelada ? "CANCELADA: " + a.titulo : a.titulo)}`,
+    `SUMMARY:${escaparTexto(cancelada ? "CANCELADA: " + tituloVisible(a) : tituloVisible(a))}`,
     `STATUS:${cancelada ? "CANCELLED" : "CONFIRMED"}`,
     `TRANSP:${a.tipo === "EXAMEN" ? "OPAQUE" : "TRANSPARENT"}`,
   ];
@@ -174,4 +190,4 @@ function generar(actividades = [], opts = {}) {
   return lineas.map(plegar).join(CRLF) + CRLF;
 }
 
-module.exports = { generar, escaparTexto, plegar, aUtc, secuencia };
+module.exports = { generar, escaparTexto, plegar, aUtc, secuencia, tituloVisible };

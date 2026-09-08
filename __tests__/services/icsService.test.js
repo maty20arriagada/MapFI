@@ -152,3 +152,40 @@ describe("icsService — contenido útil", () => {
     expect(txt).not.toContain("BEGIN:VEVENT");
   });
 });
+
+describe("tituloVisible — el ramo llega a Outlook", () => {
+  // Suscrito el calendario, "Certamen 1" a secas es inutil: el semestre de
+  // Industrial dejo 23 eventos con exactamente ese nombre.
+  test("antepone el ramo cuando existe", () => {
+    expect(ics.tituloVisible({ ramo: "Cálculo II", titulo: "Certamen 1" })).toBe("Cálculo II · Certamen 1");
+  });
+
+  test("sin ramo deja el titulo tal cual", () => {
+    expect(ics.tituloVisible({ titulo: "Feria de Empleabilidad" })).toBe("Feria de Empleabilidad");
+  });
+
+  test("ramo en blanco no deja un separador colgando", () => {
+    expect(ics.tituloVisible({ ramo: "  ", titulo: "Certamen 1" })).toBe("Certamen 1");
+  });
+
+  test("el SUMMARY del evento lo usa", () => {
+    const salida = desplegar(ics.generar(
+      [{ ...BASE, titulo: "Certamen 1", ramo: "Álgebra II", tipo: "EXAMEN" }],
+      { dominio: "mapfi.udec.cl" }
+    ));
+    expect(salida).toMatch(/SUMMARY:Álgebra II · Certamen 1/);
+  });
+
+  test("una actividad ARCHIVADA conserva CANCELADA delante del ramo", () => {
+    const salida = desplegar(ics.generar(
+      [{ ...BASE, titulo: "Certamen 1", ramo: "Física II", tipo: "EXAMEN", estado: "ARCHIVADA" }],
+      { dominio: "mapfi.udec.cl" }
+    ));
+    expect(salida).toMatch(/SUMMARY:CANCELADA: Física II · Certamen 1/);
+  });
+
+  test("sin ramo el SUMMARY no cambia respecto de antes", () => {
+    const salida = desplegar(ics.generar([{ ...BASE, ramo: null }], { dominio: "mapfi.udec.cl" }));
+    expect(salida).toMatch(/SUMMARY:Charla de titulación/);
+  });
+});
