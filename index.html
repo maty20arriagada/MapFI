@@ -64,14 +64,26 @@
         const desde = new Date().toISOString();
         const acts = (await api.get("/api/actividades?desde=" + encodeURIComponent(desde))).slice(0, 6);
         if (!acts.length) { el.innerHTML = '<div class="placeholder">No hay eventos próximos agendados.</div>'; return; }
+        // El tipo se muestra en palabras, no como enum: la portada es lo
+        // primero que ve alguien de fuera y "EXAMEN" en mayusculas no es
+        // lenguaje de producto. Misma fuente que la leyenda del calendario.
+        const nombreTipo = (t) =>
+          (window.CalendarView && CalendarView.NOMBRE_TIPO && CalendarView.NOMBRE_TIPO[t]) || t;
+        // Ramo + titulo, la misma composicion del calendario. Con guarda: si
+        // calendar-view.js no cargara, la portada no puede caerse por esto.
+        const tituloVisible = (a) =>
+          (window.CalendarView && CalendarView.etiquetaEvento)
+            ? CalendarView.etiquetaEvento(a).plano
+            : (a.ramo ? a.ramo + " · " + a.titulo : a.titulo);
+
         el.innerHTML = acts.map((a) => {
           const d = new Date(a.fecha_inicio);
           const fecha = d.toLocaleDateString("es-CL", { day: "2-digit", month: "short" });
           const hora = d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" });
           return `<div class="evento-item">
             <div class="evento-fecha">${fecha}<span>${hora}</span></div>
-            <div class="evento-info"><strong>${escapeHtml(a.titulo)}</strong>
-              <div class="muted">${escapeHtml(a.entidad_nombre)} · ${escapeHtml(a.tipo)}</div></div>
+            <div class="evento-info"><strong>${escapeHtml(tituloVisible(a))}</strong>
+              <div class="muted">${escapeHtml(a.entidad_nombre)} · ${escapeHtml(nombreTipo(a.tipo))}</div></div>
           </div>`;
         }).join("");
       } catch (e) {
