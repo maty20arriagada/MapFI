@@ -52,12 +52,12 @@ con su motivo (quickstart US1).
 
 ### Tests for User Story 1
 
-- [ ] T005 [P] [US1] Prueba en `__tests__/db/migracion-018.test.js` que lee `db/migrations/018_limpiar_actividades_muestra.sql` como texto y verifica: que la condición exige **los cuatro** campos de la huella para cada muestra (`titulo`, `descripcion`, `ubicacion` y la sigla de la entidad) según data-model §1; que inserta en `borrado_definitivo` **antes** de borrar; que el motivo es `Dato de ejemplo de instalacion (migracion 018)`; y que **no** escribe en `schema_migrations`.
+- [X] T005 [P] [US1] Prueba en `__tests__/db/migracion-018.test.js` que lee `db/migrations/018_limpiar_actividades_muestra.sql` como texto y verifica: que la condición exige **los cuatro** campos de la huella para cada muestra (`titulo`, `descripcion`, `ubicacion` y la sigla de la entidad) según data-model §1; que inserta en `borrado_definitivo` **antes** de borrar; que el motivo es `Dato de ejemplo de instalacion (migracion 018)`; y que **no** escribe en `schema_migrations`.
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Crear `db/migrations/018_limpiar_actividades_muestra.sql`: una CTE que selecciona las actividades cuya huella completa coincide con alguna de las dos muestras (unión con `entidad` por sigla `DOCFI` / `CEEIND`), `INSERT INTO borrado_definitivo (actividad_id, titulo, entidad_id, entidad_nombre, fecha_inicio, estado_previo, borrado_por, motivo)` con `borrado_por` nulo, y `DELETE FROM actividad` de esos ids (`actividad_publico` cae por `ON DELETE CASCADE`). Idempotente: una segunda pasada no encuentra nada. Comentario de cabecera que explica por qué no se archiva (aviso público falso) y por qué no se identifica por id (patrón de `016_limpiar_horario_muestra.sql`). Hacer pasar T005.
-- [ ] T007 [US1] Ensayar la 018 contra una base real (`npm run docker:db`, `npm run db:migrate`): la muestra desaparece, `borrado_definitivo` gana las filas, y ejecutarla a mano una segunda vez no borra nada. Crear antes una actividad real titulada "Certamen 1 - Cálculo I" desde un centro y comprobar que sobrevive (quickstart US1.4).
+- [X] T006 [US1] Crear `db/migrations/018_limpiar_actividades_muestra.sql`: una CTE que selecciona las actividades cuya huella completa coincide con alguna de las dos muestras (unión con `entidad` por sigla `DOCFI` / `CEEIND`), `INSERT INTO borrado_definitivo (actividad_id, titulo, entidad_id, entidad_nombre, fecha_inicio, estado_previo, borrado_por, motivo)` con `borrado_por` nulo, y `DELETE FROM actividad` de esos ids (`actividad_publico` cae por `ON DELETE CASCADE`). Idempotente: una segunda pasada no encuentra nada. Comentario de cabecera que explica por qué no se archiva (aviso público falso) y por qué no se identifica por id (patrón de `016_limpiar_horario_muestra.sql`). Hacer pasar T005.
+- [X] T007 [US1] Ensayar la 018 contra una base real (`npm run docker:db`, `npm run db:migrate`): la muestra desaparece, `borrado_definitivo` gana las filas, y ejecutarla a mano una segunda vez no borra nada. Crear antes una actividad real titulada "Certamen 1 - Cálculo I" desde un centro y comprobar que sobrevive (quickstart US1.4).
 
 **Checkpoint**: US1 lista para desplegar sola.
 
@@ -71,12 +71,12 @@ con su motivo (quickstart US1).
 
 ### Tests for User Story 2
 
-- [ ] T008 [P] [US2] En `__tests__/calendar-view.test.js`, probar la función pura `htmlAviso()` exportada por `js/calendar-view.js`: contiene el texto acordado, lleva `role="note"`, usa un icono de `js/icons.js` (`data-icon="info"`) y ningún emoji, y no incluye botón de cierre.
+- [X] T008 [P] [US2] En `__tests__/calendar-view.test.js`, probar la función pura `htmlAviso()` exportada por `js/calendar-view.js`: contiene el texto acordado, lleva `role="note"`, usa un icono de `js/icons.js` (`data-icon="info"`) y ningún emoji, y no incluye botón de cierre.
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] En `js/calendar-view.js`, crear `htmlAviso()` con el texto de research R-08 y hacer que `montar()` inserte el aviso **antes** del contenedor del calendario una sola vez por contenedor (marcar con `data-aviso` para no duplicarlo en los re-render de cada filtro), e hidratar el icono con `Icons.hydrate`. Exportarla también por `module.exports`. Hacer pasar T008.
-- [ ] T010 [P] [US2] Estilos del aviso en `css/design-system.css` (`.cal-aviso`): tokens del design system, tono informativo neutro (no rojo ni amarillo de error), contraste AA en tema claro y oscuro, y visible en `@media print`.
+- [X] T009 [US2] En `js/calendar-view.js`, crear `htmlAviso()` con el texto de research R-08 y hacer que `montar()` inserte el aviso **antes** del contenedor del calendario una sola vez por contenedor (marcar con `data-aviso` para no duplicarlo en los re-render de cada filtro), e hidratar el icono con `Icons.hydrate`. Exportarla también por `module.exports`. Hacer pasar T008.
+- [X] T010 [P] [US2] Estilos del aviso en `css/design-system.css` (`.cal-aviso`): tokens del design system, tono informativo neutro (no rojo ni amarillo de error), contraste AA en tema claro y oscuro, y visible en `@media print`.
 - [ ] T011 [US2] Verificar en navegador **servido por `server.js`** (`npm run dev`) los escenarios de quickstart US2 (sin sesión, con sesión de centro y de administrador, tema oscuro, vista de impresión) y guardar una captura.
 
 **Checkpoint**: US1 + US2 son un primer despliegue posible, que protege a los estudiantes.
