@@ -23,7 +23,7 @@ por separado.
 
 **Purpose**: línea base antes de tocar nada.
 
-- [ ] T001 Confirmar la línea base en la rama `006-mejoras-calendario`: `npm test` y `npm run test:tz` en verde; anotar el total de pruebas en la sección Notas de este archivo para medir después que no se perdió ninguna.
+- [X] T001 Confirmar la línea base en la rama `006-mejoras-calendario`: `npm test` y `npm run test:tz` en verde; anotar el total de pruebas en la sección Notas de este archivo para medir después que no se perdió ninguna.
 
 ---
 
@@ -33,9 +33,9 @@ por separado.
 
 **⚠️ CRITICAL**: US3 y US4 dependen de T002-T004. US1, US2 y US5 no.
 
-- [ ] T002 [P] Pruebas del módulo de estado en `__tests__/calendario-estado.test.js`: `leerEstado(search)` devuelve `{ vista, fecha, filtros, tieneCarrera }`; `vista` válida (`mes`, `semana`, `agenda`) y su equivalencia con FullCalendar (`dayGridMonth`, `timeGridWeek`, `listWeek`); `fecha` real (`2026-11-09` sí, `2026-13-45` y `2026-02-30` no); cada valor inválido se descarta sin tumbar a los demás (data-model §3); `carreraId=` vacío marca `tieneCarrera: true` con carrera vacía, distinto de que falte; `escribirEstado(estado)` produce una query estable y leer→escribir una URL válida la deja igual; `puedeEditar(actividad, usuario)` reproduce la tabla de data-model §4 (sin sesión, ADMIN, SUPERADMIN, APORTANTE dueño, APORTANTE ajeno, APORTANTE sin entidad).
-- [ ] T003 Crear `js/calendario-estado.js` (IIFE con doble exportación `window.CalendarioEstado` + `module.exports`, patrón de `js/horario-csv.js`) con `leerEstado`, `escribirEstado`, `aVistaFullCalendar`, `deVistaFullCalendar` y `puedeEditar`, hasta que T002 pase.
-- [ ] T004 [P] Añadir `status` al error que lanza `req()` en `js/api-client.js` (`const err = new Error(...); err.status = res.status; throw err;`), sin cambiar el mensaje; así el editor distingue un 409 de un 403. Verificar que ningún llamador actual dependa del tipo exacto del error.
+- [X] T002 [P] Pruebas del módulo de estado en `__tests__/calendario-estado.test.js`: `leerEstado(search)` devuelve `{ vista, fecha, filtros, tieneCarrera }`; `vista` válida (`mes`, `semana`, `agenda`) y su equivalencia con FullCalendar (`dayGridMonth`, `timeGridWeek`, `listWeek`); `fecha` real (`2026-11-09` sí, `2026-13-45` y `2026-02-30` no); cada valor inválido se descarta sin tumbar a los demás (data-model §3); `carreraId=` vacío marca `tieneCarrera: true` con carrera vacía, distinto de que falte; `escribirEstado(estado)` produce una query estable y leer→escribir una URL válida la deja igual; `puedeEditar(actividad, usuario)` reproduce la tabla de data-model §4 (sin sesión, ADMIN, SUPERADMIN, APORTANTE dueño, APORTANTE ajeno, APORTANTE sin entidad).
+- [X] T003 Crear `js/calendario-estado.js` (IIFE con doble exportación `window.CalendarioEstado` + `module.exports`, patrón de `js/horario-csv.js`) con `leerEstado`, `escribirEstado`, `aVistaFullCalendar`, `deVistaFullCalendar` y `puedeEditar`, hasta que T002 pase.
+- [X] T004 [P] Añadir `status` al error que lanza `req()` en `js/api-client.js` (`const err = new Error(...); err.status = res.status; throw err;`), sin cambiar el mensaje; así el editor distingue un 409 de un 403. Verificar que ningún llamador actual dependa del tipo exacto del error.
 
 **Checkpoint**: módulo de estado probado; errores de la API con código.
 
@@ -247,7 +247,7 @@ Cada paso se cierra **en el servidor de la Facultad**, no con el merge (lección
 
 ## Notes
 
-- Línea base de pruebas (T001): _pendiente_.
+- Línea base de pruebas (T001): **559/559** en `npm test` y en `npm run test:tz` (25 suites), 2026-09-27.
 - La migración 018 es irreversible por diseño (borra datos de fábrica); la constancia queda en
   `borrado_definitivo`.
 - `actualizadoEn` es opcional a propósito: «Mi panel» no lo manda y debe seguir funcionando igual.
