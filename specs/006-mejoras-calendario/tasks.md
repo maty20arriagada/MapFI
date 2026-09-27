@@ -93,15 +93,15 @@ con su motivo (quickstart US1).
 
 ### Tests for User Story 3
 
-- [ ] T012 [P] [US3] En `__tests__/calendario-estado.test.js`, añadir los casos de precedencia de research R-03: con `carreraId` en la URL manda la URL (incluido vacío = "Todas"); sin el parámetro se aplica la carrera propia; exponer esa regla como función pura `carreraInicial(estado, usuario)`.
+- [X] T012 [P] [US3] En `__tests__/calendario-estado.test.js`, añadir los casos de precedencia de research R-03: con `carreraId` en la URL manda la URL (incluido vacío = "Todas"); sin el parámetro se aplica la carrera propia; exponer esa regla como función pura `carreraInicial(estado, usuario)`.
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Implementar `carreraInicial` en `js/calendario-estado.js` hasta que pase T012.
-- [ ] T014 [US3] En `js/calendar-view.js`, aceptar en `opts` una posición inicial (`opts.vista`, `opts.fecha`) y un `opts.alNavegar(vista, fecha)`; pasar `initialView`/`initialDate` a FullCalendar y registrar `datesSet` para invocar `alNavegar` con la vista en castellano y la fecha de anclaje (`cal.getDate()` como `AAAA-MM-DD` local, **no** `toISOString`). Sin `opts.vista`/`opts.fecha` el comportamiento es el de hoy, para que la portada no cambie.
-- [ ] T015 [US3] En `js/views/calendario-view.js`: al arrancar, leer el estado con `CalendarioEstado.leerEstado(location.search)`, aplicar sus filtros a los `<select>` y al checkbox, y resolver la carrera con `carreraInicial` en lugar de la preselección incondicional actual; en `render()` pasar la posición a `montar()`; en cada cambio de filtro y en `alNavegar`, reescribir la URL con `history.replaceState` y `escribirEstado`. Nunca `pushState` (FR-014).
-- [ ] T016 [US3] Cargar `js/calendario-estado.js` en `calendario.html` antes de `js/calendar-view.js` y registrar `CalendarioEstado` en la lista de `js/app-boot.js` (namespace `window.MapFI`).
-- [ ] T017 [US3] Verificar en navegador servido por `server.js` los pasos 1-7 de quickstart US3, incluida la URL con valores inválidos y la ventana privada con el enlace copiado.
+- [X] T013 [US3] Implementar `carreraInicial` en `js/calendario-estado.js` hasta que pase T012.
+- [X] T014 [US3] En `js/calendar-view.js`, aceptar en `opts` una posición inicial (`opts.vista`, `opts.fecha`) y un `opts.alNavegar(vista, fecha)`; pasar `initialView`/`initialDate` a FullCalendar y registrar `datesSet` para invocar `alNavegar` con la vista en castellano y la fecha de anclaje (`cal.getDate()` como `AAAA-MM-DD` local, **no** `toISOString`). Sin `opts.vista`/`opts.fecha` el comportamiento es el de hoy, para que la portada no cambie.
+- [X] T015 [US3] En `js/views/calendario-view.js`: al arrancar, leer el estado con `CalendarioEstado.leerEstado(location.search)`, aplicar sus filtros a los `<select>` y al checkbox, y resolver la carrera con `carreraInicial` en lugar de la preselección incondicional actual; en `render()` pasar la posición a `montar()`; en cada cambio de filtro y en `alNavegar`, reescribir la URL con `history.replaceState` y `escribirEstado`. Nunca `pushState` (FR-014).
+- [X] T016 [US3] Cargar `js/calendario-estado.js` en `calendario.html` antes de `js/calendar-view.js` y registrar `CalendarioEstado` en la lista de `js/app-boot.js` (namespace `window.MapFI`).
+- [X] T017 [US3] Verificar en navegador servido por `server.js` los pasos 1-7 de quickstart US3, incluida la URL con valores inválidos y la ventana privada con el enlace copiado.
 
 **Checkpoint**: el calendario conserva su lugar; US4 aprovecha esto para no moverse al guardar.
 

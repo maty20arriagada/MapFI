@@ -185,8 +185,30 @@
       };
     });
 
-    const cal = new global.FullCalendar.Calendar(el, {
-      initialView: "dayGridMonth",
+    // Posicion (Spec 006, US3). Quien llama puede pedir una vista y fecha
+    // iniciales y enterarse de cada navegacion; asi la pagina la guarda en la
+    // URL y el calendario reaparece donde estaba al recargar y al filtrar.
+    // Sin CalendarioEstado cargado (la portada) todo queda como antes.
+    const CE = global.CalendarioEstado;
+    const posicion = {};
+    if (CE && opts.fecha) posicion.initialDate = opts.fecha;
+    if (CE && typeof opts.alNavegar === "function") {
+      posicion.datesSet = (info) => {
+        const c = info.view.calendar;
+        // En vista Mes, un ancla en fin de semana hace que "Semana" muestre la
+        // semana anterior. Se mueve al dia habil mas cercano del MISMO mes:
+        // el rango del mes no cambia, asi que no se vuelve a disparar datesSet.
+        if (info.view.type === "dayGridMonth") {
+          const d = c.getDate();
+          const habil = CE.anclaDiaHabil(d);
+          if (habil.getDate() !== d.getDate()) c.gotoDate(habil);
+        }
+        opts.alNavegar(CE.deVistaFullCalendar(info.view.type), CE.aFechaIso(c.getDate()));
+      };
+    }
+
+    const cal = new global.FullCalendar.Calendar(el, Object.assign({
+      initialView: CE ? CE.aVistaFullCalendar(opts.vista) : "dayGridMonth",
       locale: "es",
       height: "auto",
       firstDay: 1, // lunes
@@ -280,7 +302,7 @@
             opts.onPick(s);
           }
         : undefined,
-    });
+    }, posicion));
     if (typeof opts.onPick === "function") el.classList.add("cal-pickable");
     cal.render();
 

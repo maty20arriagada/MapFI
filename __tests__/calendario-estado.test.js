@@ -175,3 +175,36 @@ describe("puedeEditar — espejo de puedeEditarActividad (data-model §4)", () =
     expect(E.puedeEditar(null, { rol: "ADMIN" })).toBe(false);
   });
 });
+
+describe("anclaDiaHabil — el ancla del mes no cae en fin de semana", () => {
+  // Al avanzar de mes FullCalendar ancla el dia 1. El 1 de noviembre de 2026
+  // es domingo y los fines de semana estan ocultos: al pasar a "Semana" se
+  // mostraba la semana del 26 de octubre estando en noviembre.
+  const iso = (d) => E.aFechaIso(d);
+
+  test("un dia habil no se toca", () => {
+    expect(iso(E.anclaDiaHabil(new Date(2026, 10, 4)))).toBe("2026-11-04");
+  });
+
+  test("domingo 1 de noviembre -> lunes 2", () => {
+    expect(iso(E.anclaDiaHabil(new Date(2026, 10, 1)))).toBe("2026-11-02");
+  });
+
+  test("sabado 1 de agosto -> lunes 3", () => {
+    expect(iso(E.anclaDiaHabil(new Date(2026, 7, 1)))).toBe("2026-08-03");
+  });
+
+  test("sin salir del mes: sabado 31 de octubre -> viernes 30, no lunes 2 de noviembre", () => {
+    expect(iso(E.anclaDiaHabil(new Date(2026, 9, 31)))).toBe("2026-10-30");
+  });
+
+  test("domingo 30 de agosto -> lunes 31, que sigue en agosto", () => {
+    expect(iso(E.anclaDiaHabil(new Date(2026, 7, 30)))).toBe("2026-08-31");
+  });
+
+  test("no muta la fecha recibida", () => {
+    const d = new Date(2026, 10, 1);
+    E.anclaDiaHabil(d);
+    expect(iso(d)).toBe("2026-11-01");
+  });
+});

@@ -109,6 +109,25 @@
     return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
   }
 
+  /**
+   * Primer dia habil a partir de `d`, SIN salir de su mes. Al avanzar de mes
+   * FullCalendar ancla el dia 1; si cae en fin de semana (ocultos en este
+   * calendario), pasar a la vista Semana mostraba la semana anterior: estando
+   * en noviembre de 2026 (el 1 es domingo) aparecia la del 26 de octubre.
+   * Si avanzar al lunes cambiaria de mes, retrocede al viernes.
+   */
+  function anclaDiaHabil(d) {
+    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var dow = r.getDay();
+    if (dow !== 0 && dow !== 6) return r;
+    var adelante = new Date(r);
+    adelante.setDate(r.getDate() + (dow === 6 ? 2 : 1));
+    if (adelante.getMonth() === r.getMonth()) return adelante;
+    var atras = new Date(r);
+    atras.setDate(r.getDate() - (dow === 6 ? 1 : 2));
+    return atras;
+  }
+
   /** Carrera con la que arranca el filtro: la URL manda; si no la trae, la
    *  del centro con sesion; si no hay, todas (""). */
   function carreraInicial(estado, usuario) {
@@ -136,6 +155,7 @@
     aVistaFullCalendar: aVistaFullCalendar,
     deVistaFullCalendar: deVistaFullCalendar,
     aFechaIso: aFechaIso,
+    anclaDiaHabil: anclaDiaHabil,
     carreraInicial: carreraInicial,
     puedeEditar: puedeEditar,
   };
