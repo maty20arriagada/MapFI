@@ -733,6 +733,32 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 .sync-dialog { max-width: 560px; }
 .sync-dialog input[readonly] { font-size: .82rem; background: var(--surface-2); }
 .sync-dialog hr { width: 100%; }
+/* Panel de edicion desde el calendario (Spec 006, US4). Misma familia visual
+   que confirm-dialog; dos columnas que pasan a una en pantalla chica. */
+.editor-dialog { width: min(620px, calc(100vw - 32px)); max-width: none; }
+.editor-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 8px; }
+.editor-campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.editor-campo.editor-ancho { grid-column: 1 / -1; }
+.editor-campo label { font-weight: 600; font-size: .9rem; }
+.editor-campo input, .editor-campo select { width: 100%; }
+.editor-campo input[aria-invalid="true"] { border-color: var(--rojo); }
+.editor-campo small { font-size: .8rem; }
+.campo-error { margin: 0; color: var(--rojo-text); font-size: .85rem; }
+.editor-error {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--rojo-bg); color: var(--rojo-text); border: 1px solid var(--rojo);
+}
+.editor-error p { margin: 0; flex: 1 1 240px; }
+.editor-acciones { justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.editor-secundarias { flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.editor-enlace { font-size: .88rem; }
+@media (max-width: 560px) {
+  .editor-campos { grid-template-columns: 1fr; }
+  .editor-acciones, .editor-acciones .row { width: 100%; }
+  .editor-acciones .row .btn { flex: 1 1 auto; justify-content: center; }
+}
+
 .confirm-dialog h3 { margin: 0 0 4px; }
 .confirm-dialog p { margin: 0; }
 

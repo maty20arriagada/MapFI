@@ -820,6 +820,13 @@ app.put("/api/actividades/:id", requireAuth, async (req, res) => {
     const actual = await actividadDao.obtener(id);
     if (!actual) return res.status(404).json({ error: "Actividad no encontrada" });
 
+    // Spec 006: el DAO hace `titulo = COALESCE($2, titulo)`, y "" no es nulo,
+    // asi que un titulo vacio PISABA el existente. «Mi panel» nunca manda el
+    // titulo; el panel de edicion del calendario si.
+    if (typeof b.titulo === "string" && !b.titulo.trim()) {
+      return res.status(400).json({ error: "El título no puede quedar vacío" });
+    }
+
     // C-2 (revision QA): la restriccion por rol solo aplica cuando el estado
     // CAMBIA de verdad. Antes se rechazaba tambien el reenvio del estado
     // ACTUAL — y como el formulario de "Mis eventos" siempre manda `estado`,
@@ -849,6 +856,22 @@ app.put("/api/actividades/:id", requireAuth, async (req, res) => {
         : actual.publico.map((p) => ({ carreraId: p.carrera_id, nivel: p.nivel }));
       match = await evaluarMatchParaActividad({ fechaInicio, fechaFin, publico });
     }
+
+    // Spec 006: control optimista. Si el cliente dice que version vio
+    // (`actualizadoEn`, el updated_at que recibio) y ya no es la vigente,
+    // otra persona guardo antes: se avisa en vez de sobrescribir en silencio.
+    // Va AL FINAL a proposito: un 409 significa siempre "los datos eran
+    // validos pero alguien llego antes", nunca un error de forma. Como
+    // `archivar` tambien actualiza updated_at, cubre ademas "la eliminaron
+    // mientras la editaba". Es opcional: «Mi panel» no lo manda y sigue igual.
+    if (req.body && req.body.actualizadoEn !== undefined) {
+      const vista = new Date(req.body.actualizadoEn).getTime();
+      const vigente = new Date(actual.updated_at).getTime();
+      if (!Number.isFinite(vista) || vista !== vigente) {
+        return res.status(409).json({ error: "Esta actividad cambió mientras la editabas. Recarga para ver la versión actual." });
+      }
+    }
+
     res.json(await actividadDao.actualizar(id, { ...b, estado, ...match }, b.publico));
   } catch (e) { res.status(400).json({ error: traducirErrorBD(e) }); }
 });

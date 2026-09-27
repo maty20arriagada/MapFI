@@ -155,6 +155,41 @@
     }
   }
 
+  /** Si quien mira puede editar la actividad. Solo decide que panel abrir y
+   *  si se puede arrastrar; la autorizacion real la hace el servidor. */
+  function puedeEditarAqui(actividad, opts) {
+    const CE = global.CalendarioEstado;
+    return !!(CE && opts && opts.usuario && CE.puedeEditar(actividad, opts.usuario));
+  }
+
+  /** Mover arrastrando, con confirmacion (decision del equipo): el arrastre
+   *  accidental de un certamen no llega a guardarse. Cancelar o un error del
+   *  servidor devuelven la actividad a su lugar. */
+  async function confirmarMovimiento(info, opts) {
+    const CE = global.CalendarioEstado;
+    const a = info.event.extendedProps.actividad;
+    const pregunta = "¿Mover «" + etiquetaEvento(a).plano + "» " +
+      CE.textoMovimiento(info.oldEvent.start, info.event.start) + "?";
+    const ok = global.confirmDialog
+      ? await global.confirmDialog({ titulo: "Mover actividad", mensaje: pregunta, textoConfirmar: "Mover" })
+      : global.confirm(pregunta);
+    if (!ok) { info.revert(); return; }
+    const fin = info.event.end ||
+      new Date(info.event.start.getTime() + (new Date(a.fecha_fin) - new Date(a.fecha_inicio)));
+    try {
+      await global.api.put("/api/actividades/" + encodeURIComponent(a.id), {
+        fechaInicio: info.event.start.toISOString(),
+        fechaFin: fin.toISOString(),
+        actualizadoEn: a.updated_at,
+      });
+      if (global.toast) global.toast("Actividad movida", "success");
+      if (typeof opts.alCambiar === "function") opts.alCambiar();
+    } catch (e) {
+      info.revert();
+      if (global.toast) global.toast(e.message || "No se pudo mover la actividad", "error");
+    }
+  }
+
   function renderCalendario(el, acts, opts, conflictos) {
     conflictos = conflictos || new Map();
     // Destruir instancia previa (al cambiar filtros) para no duplicar.
@@ -177,6 +212,11 @@
         backgroundColor: color,
         borderColor: choque ? "#F59E0B" : color,
         classNames: choque ? ["evento-conflicto"] : [],
+        // Arrastrable SOLO si quien mira puede editarla (Spec 006, US4): un
+        // visitante que arrastra sin querer no ve moverse nada. La duracion no
+        // se cambia arrastrando: eso se hace en el panel, viendo la hora.
+        startEditable: puedeEditarAqui(a, opts),
+        durationEditable: false,
         extendedProps: {
           entidad: a.entidad_nombre, tipo: a.tipo, estado: a.estado,
           ubicacion: a.ubicacion, choque: choque || null,
@@ -286,6 +326,12 @@
         // Panel de detalle con la opcion de llevarse la actividad al
         // calendario propio. Si el modulo no cargo, se degrada al aviso
         // efimero de antes en vez de dejar el clic sin respuesta.
+        // Quien puede editar la actividad (el centro dueño o un administrador)
+        // recibe el panel de edicion; el resto, el de siempre (Spec 006, US4).
+        if (p.actividad && global.EditorActividad && puedeEditarAqui(p.actividad, opts)) {
+          global.EditorActividad.abrir(p.actividad, { alGuardar: opts.alCambiar });
+          return;
+        }
         if (global.CalendarSync && p.actividad) {
           global.CalendarSync.mostrarActividad(p.actividad);
           return;
@@ -295,6 +341,7 @@
         if (p.choque) det += " — " + textoChoque(p.choque);
         if (global.toast) toast(det, p.choque ? "error" : undefined); else console.warn("[calendar]", det);
       },
+      eventDrop: (info) => { confirmarMovimiento(info, opts); },
       dateClick: typeof opts.onPick === "function"
         ? (info) => {
             const s = new Date(info.date);

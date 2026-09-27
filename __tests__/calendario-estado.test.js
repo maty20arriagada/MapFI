@@ -208,3 +208,81 @@ describe("anclaDiaHabil — el ancla del mes no cae en fin de semana", () => {
     expect(iso(d)).toBe("2026-11-01");
   });
 });
+
+describe("edicion desde el calendario (Spec 006, US4)", () => {
+  const actividad = {
+    id: 9, entidad_id: 6, titulo: "Certamen 2", ramo: "Termodinámica", tipo: "EXAMEN",
+    ubicacion: "Aula 104", updated_at: "2026-09-20T14:03:11.482Z",
+  };
+  const form = (extra) => Object.assign({
+    inicio: "2026-11-12T18:30", fin: "2026-11-12T20:30",
+    titulo: "Certamen 2", ramo: "Termodinámica", tipo: "EXAMEN", ubicacion: "Aula 104",
+  }, extra || {});
+
+  describe("cuerpoEdicion — lo que viaja en el PUT", () => {
+    test("manda los campos del panel y la version que se vio", () => {
+      expect(E.cuerpoEdicion(form(), actividad)).toEqual({
+        titulo: "Certamen 2", ramo: "Termodinámica", tipo: "EXAMEN", ubicacion: "Aula 104",
+        fechaInicio: "2026-11-12T18:30", fechaFin: "2026-11-12T20:30",
+        actualizadoEn: "2026-09-20T14:03:11.482Z",
+      });
+    });
+
+    test("recorta espacios sobrantes", () => {
+      const c = E.cuerpoEdicion(form({ titulo: "  Certamen 2  ", ubicacion: " Aula 104 " }), actividad);
+      expect(c.titulo).toBe("Certamen 2");
+      expect(c.ubicacion).toBe("Aula 104");
+    });
+
+    test("vaciar ramo o lugar manda \"\" (null no borraria: el DAO usa COALESCE)", () => {
+      const c = E.cuerpoEdicion(form({ ramo: "", ubicacion: "   " }), actividad);
+      expect(c.ramo).toBe("");
+      expect(c.ubicacion).toBe("");
+    });
+  });
+
+  describe("validarEdicion — errores junto al campo", () => {
+    test("un formulario correcto no tiene errores", () => {
+      expect(E.validarEdicion(form())).toEqual({});
+    });
+
+    test("titulo vacio", () => {
+      expect(E.validarEdicion(form({ titulo: "  " })).titulo).toBeTruthy();
+    });
+
+    test("inicio o termino ilegibles", () => {
+      const e = E.validarEdicion(form({ inicio: "", fin: "mañana" }));
+      expect(e.inicio).toBeTruthy();
+      expect(e.fin).toBeTruthy();
+    });
+
+    test("termino anterior o igual al inicio", () => {
+      expect(E.validarEdicion(form({ fin: "2026-11-12T18:00" })).fin).toMatch(/posterior al inicio/);
+      expect(E.validarEdicion(form({ fin: "2026-11-12T18:30" })).fin).toMatch(/posterior al inicio/);
+    });
+  });
+
+  describe("textoMovimiento — confirmar el arrastre en palabras", () => {
+    const d = (y, m, dia, h, mi) => new Date(y, m - 1, dia, h, mi);
+
+    test("otro dia del mismo mes, misma hora", () => {
+      expect(E.textoMovimiento(d(2026, 11, 10, 18, 30), d(2026, 11, 12, 18, 30)))
+        .toBe("del martes 10 al jueves 12 de noviembre");
+    });
+
+    test("de un mes a otro, cada fecha con su mes", () => {
+      expect(E.textoMovimiento(d(2026, 10, 30, 18, 30), d(2026, 11, 2, 18, 30)))
+        .toBe("del viernes 30 de octubre al lunes 2 de noviembre");
+    });
+
+    test("si cambia la hora, la dice", () => {
+      expect(E.textoMovimiento(d(2026, 11, 10, 18, 30), d(2026, 11, 12, 20, 0)))
+        .toBe("del martes 10 a las 18:30 al jueves 12 de noviembre a las 20:00");
+    });
+
+    test("mismo dia, otra hora", () => {
+      expect(E.textoMovimiento(d(2026, 11, 10, 18, 30), d(2026, 11, 10, 20, 0)))
+        .toBe("del martes 10 a las 18:30 al martes 10 de noviembre a las 20:00");
+    });
+  });
+});

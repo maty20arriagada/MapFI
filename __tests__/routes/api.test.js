@@ -114,7 +114,8 @@ jest.mock("../../js/db", () => {
       // tiempo (T049).
       if (/^SELECT \* FROM actividad WHERE id/.test(sql)) {
         if (params && params[0] === 501) {
-          return { rows: [{ id: 501, entidad_id: 6, titulo: "Evento futuro", fecha_inicio: "2099-01-01T10:00:00Z", fecha_fin: "2099-01-01T12:00:00Z", estado: "CONFIRMADA" }] };
+          // updated_at conocido: lo necesita la regla de version del PUT (Spec 006).
+          return { rows: [{ id: 501, entidad_id: 6, titulo: "Evento futuro", fecha_inicio: "2099-01-01T10:00:00Z", fecha_fin: "2099-01-01T12:00:00Z", estado: "CONFIRMADA", updated_at: "2026-09-20T14:03:11.482Z" }] };
         }
         return { rows: [] };
       }
@@ -855,6 +856,77 @@ describe("API endpoints públicos", () => {
       const res = await agent.post("/api/auth/password").send({ actual: "test1234", nueva: "corta" });
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/al menos 8 caracteres/i);
+    });
+  });
+
+  describe("Spec 006 — PUT /api/actividades/:id desde el calendario", () => {
+    // El panel de edicion del calendario manda el titulo (Mi panel nunca lo
+    // hacia) y lo pueden abrir dos integrantes del mismo centro a la vez.
+    const VERSION = "2026-09-20T14:03:11.482Z";
+    async function comoIndustrial() {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "aportante@mapfi.cl", password: "test1234" });
+      return agent;
+    }
+
+    test("un titulo vacio o solo espacios se rechaza con 400", async () => {
+      // actividadDao.actualizar usa COALESCE: "" no es nulo y pisaria el titulo.
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ titulo: "   " });
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("El título no puede quedar vacío");
+    });
+
+    test("sin titulo en el cuerpo sigue siendo valido, como hoy", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ ubicacion: "Aula 104" });
+      expect(res.status).toBe(200);
+    });
+
+    test("con la version vigente guarda", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ titulo: "Certamen 2", actualizadoEn: VERSION });
+      expect(res.status).toBe(200);
+    });
+
+    test("la misma version escrita con otro formato tambien vale: se compara el instante", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ titulo: "Certamen 2", actualizadoEn: "2026-09-20T11:03:11.482-03:00" });
+      expect(res.status).toBe(200);
+    });
+
+    test("con una version vieja responde 409 y no sobrescribe", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ titulo: "Otro", actualizadoEn: "2026-09-19T10:00:00.000Z" });
+      expect(res.status).toBe(409);
+      expect(res.body.error).toBe("Esta actividad cambió mientras la editabas. Recarga para ver la versión actual.");
+    });
+
+    test("una version ilegible cuenta como distinta: mejor pedir recargar que sobrescribir", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ titulo: "Otro", actualizadoEn: "ayer" });
+      expect(res.status).toBe(409);
+    });
+
+    test("sin actualizadoEn no se comprueba version: Mi panel sigue funcionando", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({ fechaInicio: "2026-05-13T10:00", fechaFin: "2026-05-13T12:00" });
+      expect(res.status).toBe(200);
+    });
+
+    test("una version correcta no salta la autorizacion: otro centro recibe 403", async () => {
+      const agent = request.agent(app);
+      await agent.post("/api/auth/login").send({ email: "informatica@mapfi.cl", password: "test1234" });
+      const res = await agent.put("/api/actividades/501").send({ titulo: "Intruso", actualizadoEn: VERSION });
+      expect(res.status).toBe(403);
+    });
+
+    test("un rango de fechas invalido gana a la version: el 409 significa solo 'otra persona llego antes'", async () => {
+      const agent = await comoIndustrial();
+      const res = await agent.put("/api/actividades/501").send({
+        fechaInicio: "2026-05-13T12:00", fechaFin: "2026-05-13T10:00", actualizadoEn: "2020-01-01T00:00:00Z",
+      });
+      expect(res.status).toBe(400);
     });
   });
 

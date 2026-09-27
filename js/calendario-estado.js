@@ -149,6 +149,69 @@
     return Number(actividad.entidad_id) === Number(usuario.entidadId);
   }
 
+  // ── Edicion desde el calendario (Spec 006, US4) ─────────────────────────
+
+  function texto(v) { return v == null ? "" : String(v).trim(); }
+
+  /** "AAAA-MM-DDTHH:MM" de un <input type="datetime-local">, en hora local. */
+  function leerLocal(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(s || ""));
+    if (!m) return null;
+    var d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /**
+   * Cuerpo del PUT a partir del formulario. Ramo y lugar vacios viajan como
+   * "" y no como null: el DAO hace `COALESCE($n, campo)`, y null CONSERVARIA
+   * el valor viejo — vaciar el campo no tendria efecto. Las fechas van tal
+   * como las da el input; el servidor las interpreta en hora de Chile.
+   * `actualizadoEn` es la version que se vio, para el control de concurrencia.
+   */
+  function cuerpoEdicion(form, actividad) {
+    return {
+      titulo: texto(form.titulo),
+      ramo: texto(form.ramo),
+      tipo: form.tipo,
+      ubicacion: texto(form.ubicacion),
+      fechaInicio: form.inicio,
+      fechaFin: form.fin,
+      actualizadoEn: actividad ? actividad.updated_at : undefined,
+    };
+  }
+
+  /** Errores por campo, para mostrarlos JUNTO al campo (FR-020). */
+  function validarEdicion(form) {
+    var errores = {};
+    if (!texto(form.titulo)) errores.titulo = "Escribe un título.";
+    var ini = leerLocal(form.inicio);
+    var fin = leerLocal(form.fin);
+    if (!ini) errores.inicio = "Indica la fecha y la hora de inicio.";
+    if (!fin) errores.fin = "Indica la fecha y la hora de término.";
+    if (ini && fin && fin <= ini) errores.fin = "El término debe ser posterior al inicio.";
+    return errores;
+  }
+
+  function parteFecha(d, conMes, conHora) {
+    var t = DIAS[d.getDay()] + " " + d.getDate();
+    if (conMes) t += " de " + MESES[d.getMonth()];
+    if (conHora) t += " a las " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    return t;
+  }
+
+  /**
+   * "del martes 10 al jueves 12 de noviembre": lo que se confirma al soltar
+   * una actividad arrastrada. En palabras y no en fechas ISO, porque se lee de
+   * un vistazo antes de mover algo que ven cientos de estudiantes. La hora
+   * solo aparece si cambio.
+   */
+  function textoMovimiento(antes, despues) {
+    var mismoMes = antes.getFullYear() === despues.getFullYear() && antes.getMonth() === despues.getMonth();
+    var cambiaHora = antes.getHours() !== despues.getHours() || antes.getMinutes() !== despues.getMinutes();
+    return "del " + parteFecha(antes, !mismoMes, cambiaHora) +
+      " al " + parteFecha(despues, true, cambiaHora);
+  }
+
   var api = {
     leerEstado: leerEstado,
     escribirEstado: escribirEstado,
@@ -158,6 +221,9 @@
     anclaDiaHabil: anclaDiaHabil,
     carreraInicial: carreraInicial,
     puedeEditar: puedeEditar,
+    cuerpoEdicion: cuerpoEdicion,
+    validarEdicion: validarEdicion,
+    textoMovimiento: textoMovimiento,
   };
 
   global.CalendarioEstado = api;

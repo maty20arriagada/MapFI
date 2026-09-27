@@ -190,6 +190,12 @@
           opciones.avisoAntesDe = document.querySelector(".card.filters");
           opciones.vista = posicion.vista;
           opciones.fecha = posicion.fecha;
+          // Edicion en el calendario (Spec 006, US4): con la sesion, el
+          // calendario sabe que actividades puede editar quien mira; tras
+          // guardar se vuelve a dibujar, y como la posicion esta en la URL no
+          // se mueve de la semana que se estaba mirando.
+          opciones.usuario = usuario;
+          opciones.alCambiar = render;
           opciones.alNavegar = function (vista, fecha) {
             posicion.vista = vista;
             posicion.fecha = fecha;
