@@ -158,7 +158,12 @@
 
       function render() {
         if (global.CalendarView) {
-          global.CalendarView.montar(cal, filtrosActuales(), isAdmin ? { onPick: abrirFechaForm } : {});
+          var opciones = isAdmin ? { onPick: abrirFechaForm } : {};
+          // El aviso va arriba de los filtros, no del calendario: aqui el
+          // calendario queda debajo de toda la tarjeta y el aviso se tiene
+          // que leer sin desplazarse.
+          opciones.avisoAntesDe = document.querySelector(".card.filters");
+          global.CalendarView.montar(cal, filtrosActuales(), opciones);
         }
       }
 

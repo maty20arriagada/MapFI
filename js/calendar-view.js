@@ -70,10 +70,46 @@
     };
   }
 
+  // Aviso de verificacion (Spec 006, US2). Las actividades las cargan los
+  // centros, muchas veces convertidas con IA desde un PDF: sin esto, un error
+  // de carga se lee como una fecha oficial. Siempre visible y sin cierre por
+  // decision del equipo, pero discreto: role="note" y no "alert", que
+  // interrumpiria al lector de pantalla en cada carga.
+  const TEXTO_AVISO =
+    "Las actividades de este calendario las publican los centros de estudiantes y " +
+    "pueden contener errores. Si una fecha es importante para ti, confírmala con tu " +
+    "profesor o con el programa de la asignatura.";
+
+  function htmlAviso() {
+    return '<div class="cal-aviso" role="note">' +
+      '<span class="icon" data-icon="info" aria-hidden="true"></span>' +
+      "<p>" + TEXTO_AVISO + "</p></div>";
+  }
+
+  /** Inserta el aviso una sola vez: montar() se vuelve a llamar en cada
+   *  cambio de filtro y no debe apilar avisos. Vive aqui y no en cada HTML
+   *  para que ningun calendario futuro salga sin el.
+   *
+   *  `antesDe` es el elemento delante del cual va. Por defecto, el propio
+   *  calendario; pero en calendario.html el calendario queda debajo de toda
+   *  la tarjeta de filtros, a mas de 2.000 px en un telefono, y el aviso
+   *  tiene que leerse SIN desplazarse (FR-007): ahi va antes de los filtros. */
+  function insertarAviso(el, antesDe) {
+    const ancla = antesDe || el;
+    if (!el || !ancla || !ancla.parentNode || el.dataset.aviso === "1") return;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = htmlAviso();
+    const aviso = tmp.firstChild;
+    ancla.parentNode.insertBefore(aviso, ancla);
+    el.dataset.aviso = "1";
+    if (global.Icons) global.Icons.hydrate(aviso);
+  }
+
   // opts.onPick(fechaInicio: Date) — se llama al hacer clic en un día/hora,
   // para crear una actividad con la fecha ya prerrellenada.
   async function montar(el, filtros, opts) {
     opts = opts || {};
+    insertarAviso(el, opts.avisoAntesDe);
     const qs = new URLSearchParams(filtros || {}).toString();
     let acts = [];
     try {
@@ -312,6 +348,6 @@
   // Doble exportacion (patron de js/horario-csv.js y js/horarios-view.js):
   // permite probar `etiquetaEvento` desde Node sin montar un DOM.
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { etiquetaEvento, COLOR_TIPO, NOMBRE_TIPO, ALERTAS_CHOQUE };
+    module.exports = { etiquetaEvento, COLOR_TIPO, NOMBRE_TIPO, ALERTAS_CHOQUE, htmlAviso };
   }
 })(typeof window !== "undefined" ? window : globalThis);

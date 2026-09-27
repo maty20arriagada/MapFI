@@ -77,7 +77,7 @@ con su motivo (quickstart US1).
 
 - [X] T009 [US2] En `js/calendar-view.js`, crear `htmlAviso()` con el texto de research R-08 y hacer que `montar()` inserte el aviso **antes** del contenedor del calendario una sola vez por contenedor (marcar con `data-aviso` para no duplicarlo en los re-render de cada filtro), e hidratar el icono con `Icons.hydrate`. Exportarla también por `module.exports`. Hacer pasar T008.
 - [X] T010 [P] [US2] Estilos del aviso en `css/design-system.css` (`.cal-aviso`): tokens del design system, tono informativo neutro (no rojo ni amarillo de error), contraste AA en tema claro y oscuro, y visible en `@media print`.
-- [ ] T011 [US2] Verificar en navegador **servido por `server.js`** (`npm run dev`) los escenarios de quickstart US2 (sin sesión, con sesión de centro y de administrador, tema oscuro, vista de impresión) y guardar una captura.
+- [X] T011 [US2] Verificar en navegador **servido por `server.js`** (`npm run dev`) los escenarios de quickstart US2 (sin sesión, con sesión de centro y de administrador, tema oscuro, vista de impresión) y guardar una captura.
 
 **Checkpoint**: US1 + US2 son un primer despliegue posible, que protege a los estudiantes.
 
