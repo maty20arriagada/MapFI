@@ -58,12 +58,21 @@
 
   // ── Vista de SEMESTRE ────────────────────────────────────────────────────
   async function montarSemestre(el, filtros) {
-    const qs = new URLSearchParams(filtros || {}).toString();
+    // Un arreglo se repite como parametro (?carreraId=7&carreraId=9):
+    // URLSearchParams(objeto) lo convertiria en "7,9".
+    const params = new URLSearchParams();
+    Object.keys(filtros || {}).forEach((k) => {
+      [].concat(filtros[k]).forEach((v) => {
+        if (v !== undefined && v !== null && v !== "") params.append(k, v);
+      });
+    });
+    const qs = params.toString();
     let datos;
     try {
       datos = await api.get("/api/heatmap/semestre" + (qs ? "?" + qs : ""));
     } catch (e) {
-      el.innerHTML = '<div class="placeholder">No se pudo cargar el mapa de calor.</div>';
+      // Un 400 trae un mensaje util (p. ej. el limite de carreras): se muestra.
+      el.innerHTML = '<div class="placeholder">' + esc(e.status === 400 ? e.message : "No se pudo cargar el mapa de calor.") + "</div>";
       return null;
     }
     if (!datos.semanas || !datos.semanas.length) {

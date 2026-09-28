@@ -115,18 +115,31 @@
 
       pintarLeyenda();
 
-      // Un centro de estudiantes abre en SU carrera. Sin esto el calendario
-      // arrancaba con las 14 mezcladas y un centro de Industrial veia
-      // Hidrometalurgia y Depositos minerales entre sus certamenes.
-      // Sigue siendo un filtro: se puede volver a "Todas las carreras".
-      // `carreraId` lo resuelve el servidor desde la entidad de la sesion
-      // (server.js, GET /api/auth/me); mismo patron que horarios.html.
-      if (usuario && usuario.carreraId != null && selCarrera) {
-        var propia = Array.from(selCarrera.options).find(function (o) {
-          return +o.value === +usuario.carreraId;
-        });
-        if (propia) selCarrera.value = propia.value;
+      // Posicion guardada en la URL (Spec 006, US3): vista, fecha y filtros.
+      // El calendario se destruye y se recrea en cada render; con la posicion
+      // aqui, recargar o filtrar ya no lo devuelve al mes en curso.
+      var CE = global.CalendarioEstado;
+      var estado = CE ? CE.leerEstado(location.search) : { vista: "mes", fecha: null, filtros: {}, tieneCarrera: false };
+      var posicion = { vista: estado.vista, fecha: estado.fecha };
+
+      /** Pone un valor en un <select> solo si existe esa opcion. */
+      function elegir(sel, valor) {
+        if (!sel || valor == null) return;
+        var op = Array.from(sel.options).find(function (o) { return o.value === String(valor); });
+        if (op) sel.value = op.value;
       }
+
+      // Un centro de estudiantes abre en SU carrera, salvo que la URL diga
+      // otra cosa: si alguien eligio "Todas las carreras" y recargo, no se le
+      // vuelve a imponer la suya (research R-03). `carreraId` de la sesion lo
+      // resuelve el servidor desde la entidad (GET /api/auth/me).
+      elegir(selCarrera, CE ? CE.carreraInicial(estado, usuario)
+        : (usuario && usuario.carreraId != null ? usuario.carreraId : ""));
+      elegir(document.getElementById("fNivel"), estado.filtros.nivel);
+      elegir(document.getElementById("fEntidad"), estado.filtros.entidadId);
+      elegir(document.getElementById("fTipo"), estado.filtros.tipo);
+      var chkPart = document.getElementById("fParticipacion");
+      if (chkPart && estado.filtros.soloParticipacion === "1") chkPart.checked = true;
 
       function abrirFechaForm(fecha) {
         var card = document.getElementById("adminFecha");
@@ -156,13 +169,45 @@
         return filtros;
       }
 
+      /** Escribe la posicion en la URL. replaceState y NUNCA pushState:
+       *  recorrer diez meses no debe llenar el boton Atras de diez pasos. */
+      function guardarPosicion() {
+        if (!CE || !global.history || !history.replaceState) return;
+        var filtros = filtrosActuales();
+        // La carrera se escribe aunque sea "Todas" (vacia): asi se distingue
+        // de no haber elegido nada y la carrera propia no se vuelve a imponer.
+        filtros.carreraId = document.getElementById("fCarrera").value;
+        var q = CE.escribirEstado({ vista: posicion.vista, fecha: posicion.fecha, filtros: filtros });
+        history.replaceState(history.state, "", location.pathname + "?" + q + location.hash);
+      }
+
       function render() {
         if (global.CalendarView) {
-          global.CalendarView.montar(cal, filtrosActuales(), isAdmin ? { onPick: abrirFechaForm } : {});
+          var opciones = isAdmin ? { onPick: abrirFechaForm } : {};
+          // El aviso va arriba de los filtros, no del calendario: aqui el
+          // calendario queda debajo de toda la tarjeta y el aviso se tiene
+          // que leer sin desplazarse.
+          opciones.avisoAntesDe = document.querySelector(".card.filters");
+          opciones.vista = posicion.vista;
+          opciones.fecha = posicion.fecha;
+          // Edicion en el calendario (Spec 006, US4): con la sesion, el
+          // calendario sabe que actividades puede editar quien mira; tras
+          // guardar se vuelve a dibujar, y como la posicion esta en la URL no
+          // se mueve de la semana que se estaba mirando.
+          opciones.usuario = usuario;
+          opciones.alCambiar = render;
+          opciones.alNavegar = function (vista, fecha) {
+            posicion.vista = vista;
+            posicion.fecha = fecha;
+            guardarPosicion();
+          };
+          global.CalendarView.montar(cal, filtrosActuales(), opciones);
         }
       }
 
-      document.querySelectorAll(".filtro").forEach(function (s) { s.addEventListener("change", render); });
+      document.querySelectorAll(".filtro").forEach(function (s) {
+        s.addEventListener("change", function () { guardarPosicion(); render(); });
+      });
       render();
       renderCanceladas();
 

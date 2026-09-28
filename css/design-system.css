@@ -417,8 +417,11 @@ main > .section:nth-child(3) { animation-delay: .12s; }
  * la propia informacion del horario (tipo de bloque), asi que se fuerza a
  * conservarlo aunque el navegador recorte fondos por defecto al imprimir. */
 .print-only { display: none; }
+/* Impresion de Horarios. Acotada con :has(#timetable): antes era global
+   (`body * { visibility: hidden }`) y cualquier otra pagina, el calendario
+   incluido, salia EN BLANCO al imprimir. */
 @media print {
-  body * { visibility: hidden; }
+  body:has(#timetable) * { visibility: hidden; }
   #timetable, #timetable *, #printHeader, #printHeader * { visibility: visible; }
   #timetable { position: absolute; left: 0; top: 0; width: 100%; }
   #printHeader {
@@ -432,6 +435,23 @@ main > .section:nth-child(3) { animation-delay: .12s; }
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
   @page { size: landscape; margin: 12mm; }
+}
+
+/* ── Aviso de verificacion del calendario (Spec 006, US2) ──────────────
+   Informativo, no de error: tono neutro con el azul de marca en el icono.
+   Siempre visible y sin cierre; por eso discreto, para que no canse. */
+.cal-aviso {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin: 0 0 12px; padding: 10px 14px;
+  background: var(--brand-soft); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-size: .88rem; line-height: 1.5;
+}
+.cal-aviso p { margin: 0; max-width: 75ch; }
+.cal-aviso .icon { flex: none; margin-top: 2px; color: var(--brand); }
+[data-theme="dark"] .cal-aviso .icon { color: var(--gold); }
+@media print {
+  .cal-aviso { break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 /* ── Calendario · tema ────────────────────────────────────────────────────
@@ -713,6 +733,32 @@ main > .section:nth-child(3) { animation-delay: .12s; }
 .sync-dialog { max-width: 560px; }
 .sync-dialog input[readonly] { font-size: .82rem; background: var(--surface-2); }
 .sync-dialog hr { width: 100%; }
+/* Panel de edicion desde el calendario (Spec 006, US4). Misma familia visual
+   que confirm-dialog; dos columnas que pasan a una en pantalla chica. */
+.editor-dialog { width: min(620px, calc(100vw - 32px)); max-width: none; }
+.editor-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 8px; }
+.editor-campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.editor-campo.editor-ancho { grid-column: 1 / -1; }
+.editor-campo label { font-weight: 600; font-size: .9rem; }
+.editor-campo input, .editor-campo select { width: 100%; }
+.editor-campo input[aria-invalid="true"] { border-color: var(--rojo); }
+.editor-campo small { font-size: .8rem; }
+.campo-error { margin: 0; color: var(--rojo-text); font-size: .85rem; }
+.editor-error {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--rojo-bg); color: var(--rojo-text); border: 1px solid var(--rojo);
+}
+.editor-error p { margin: 0; flex: 1 1 240px; }
+.editor-acciones { justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.editor-secundarias { flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.editor-enlace { font-size: .88rem; }
+@media (max-width: 560px) {
+  .editor-campos { grid-template-columns: 1fr; }
+  .editor-acciones, .editor-acciones .row { width: 100%; }
+  .editor-acciones .row .btn { flex: 1 1 auto; justify-content: center; }
+}
+
 .confirm-dialog h3 { margin: 0 0 4px; }
 .confirm-dialog p { margin: 0; }
 

@@ -24,6 +24,37 @@ module.exports = {
     return rows;
   },
 
+  /**
+   * Actividades DISTINTAS por dia para un conjunto de grupos (carrera, nivel)
+   * — alimenta el semestre del mapa de calor (Spec 006, US5).
+   *
+   * No usa vw_saturacion_segmento: esa vista ya agrupo por segmento y perdio
+   * el id de la actividad, asi que al sumar varios segmentos una charla para
+   * cinco años contaba cinco. Misma forma de fila que saturacionSegmento
+   * (fecha, eventos, examenes) para que heatmapService.semestrePorDia no
+   * cambie.
+   *
+   * @param {Array<{carreraId:number, nivel:number}>} publico
+   */
+  async saturacionPublico(publico, desde, hasta) {
+    if (!publico || !publico.length) return [];
+    const args = [publico.map((p) => p.carreraId), publico.map((p) => p.nivel)];
+    const cond = ["(carrera_id, nivel) IN (SELECT * FROM unnest($1::int[], $2::int[]))"];
+    if (desde) { args.push(desde); cond.push(`fecha >= $${args.length}`); }
+    if (hasta) { args.push(hasta); cond.push(`fecha <= $${args.length}`); }
+    const { rows } = await query(
+      `SELECT fecha,
+              COUNT(DISTINCT actividad_id) AS eventos,
+              COUNT(DISTINCT actividad_id) FILTER (WHERE tipo = 'EXAMEN') AS examenes
+         FROM vw_saturacion_actividad
+        WHERE ${cond.join(" AND ")}
+        GROUP BY fecha
+        ORDER BY fecha`,
+      args
+    );
+    return rows;
+  },
+
   async ocupacionBloques() {
     const { rows } = await query(`SELECT * FROM vw_ocupacion_bloques ORDER BY carrera_id, nivel`);
     return rows;

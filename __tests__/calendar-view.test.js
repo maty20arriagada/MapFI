@@ -107,3 +107,62 @@ describe("contraste de la paleta (WCAG AA)", () => {
     expect(contraMasBlanco(hex)).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe("aviso de verificacion (Spec 006, US2)", () => {
+  // Las actividades las cargan los centros, muchas veces convertidas con IA
+  // desde un PDF: sin el aviso, un error de carga se lee como fecha oficial.
+  const { htmlAviso } = require("../js/calendar-view");
+
+  test("dice lo acordado: lo publican los centros, puede tener errores, verificar", () => {
+    const h = htmlAviso();
+    expect(h).toMatch(/publican los centros de estudiantes/);
+    expect(h).toMatch(/pueden contener errores/);
+    expect(h).toMatch(/confírmala con tu profesor o con el programa de la asignatura/);
+  });
+
+  test("es una nota, no una alerta: no interrumpe al lector de pantalla en cada carga", () => {
+    expect(htmlAviso()).toMatch(/role="note"/);
+    expect(htmlAviso()).not.toMatch(/role="alert"/);
+  });
+
+  test("siempre visible: no trae boton de cierre", () => {
+    expect(htmlAviso()).not.toMatch(/<button/i);
+  });
+
+  test("icono SVG del sistema, sin emoji (constitucion VI)", () => {
+    expect(htmlAviso()).toMatch(/data-icon="info"/);
+    expect(htmlAviso()).not.toMatch(/\p{Extended_Pictographic}/u);
+  });
+});
+
+describe("iconos usados por las paginas", () => {
+  // icons.js devuelve "" ante un nombre desconocido para no romper el layout.
+  // Eso es robusto pero silencioso: la portada llevaba tiempo mostrando
+  // "Acerca de MapFI" sin icono porque "info" no existia.
+  const fs = require("fs");
+  const path = require("path");
+  const vm = require("vm");
+  const RAIZ = path.join(__dirname, "..");
+
+  function cargarIcons() {
+    const ctx = { window: {}, document: { readyState: "complete", querySelectorAll: () => [] } };
+    vm.runInNewContext(fs.readFileSync(path.join(RAIZ, "js/icons.js"), "utf8"), ctx);
+    return ctx.window.Icons;
+  }
+
+  test("existe el icono del aviso", () => {
+    expect(cargarIcons().has("info")).toBe(true);
+  });
+
+  test("todo data-icon de las paginas HTML existe en icons.js", () => {
+    const Icons = cargarIcons();
+    const faltan = [];
+    fs.readdirSync(RAIZ).filter((f) => f.endsWith(".html")).forEach((f) => {
+      const html = fs.readFileSync(path.join(RAIZ, f), "utf8");
+      for (const m of html.matchAll(/data-icon="([a-z0-9-]+)"/g)) {
+        if (!Icons.has(m[1])) faltan.push(f + ": " + m[1]);
+      }
+    });
+    expect(faltan).toEqual([]);
+  });
+});

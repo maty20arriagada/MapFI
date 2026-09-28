@@ -267,3 +267,44 @@ describe("heatmapService — semestrePorDia", () => {
     expect(r.celdas["2026-09-09"]).toMatchObject({ diaSemana: 3, semana: "2026-09-07" });
   });
 });
+
+describe("expandirPublico — 'Todas las generaciones' (Spec 006, US5)", () => {
+  test("un año concreto: una fila por carrera", () => {
+    expect(h.expandirPublico(["6", "7"], "2").publico).toEqual([
+      { carreraId: 6, nivel: 2 }, { carreraId: 7, nivel: 2 },
+    ]);
+  });
+
+  test("'todos': cada carrera por los años 1 a 5", () => {
+    const { publico, todos } = h.expandirPublico([6], "todos");
+    expect(todos).toBe(true);
+    expect(publico).toEqual([1, 2, 3, 4, 5].map((nivel) => ({ carreraId: 6, nivel })));
+  });
+
+  test("descarta carreras vacias o no numericas", () => {
+    expect(h.expandirPublico(["", "abc", "6", 0, -1], 1).publico).toEqual([{ carreraId: 6, nivel: 1 }]);
+  });
+
+  test("un año fuera de 1-5 no produce publico", () => {
+    expect(h.expandirPublico([6], "9").publico).toEqual([]);
+    expect(h.expandirPublico([6], undefined).publico).toEqual([]);
+  });
+
+  test("el limite se mide DESPUES de expandir: 4 carreras con todos = 20 pasa", () => {
+    expect(h.MAX_SEGMENTOS).toBe(20);
+    expect(h.expandirPublico([1, 2, 3, 4], "todos").excede).toBe(false);
+  });
+
+  test("5 carreras con todos = 25 grupos: excede", () => {
+    expect(h.expandirPublico([1, 2, 3, 4, 5], "todos").excede).toBe(true);
+  });
+
+  test("con un año concreto siguen cabiendo 20 carreras", () => {
+    expect(h.expandirPublico(Array.from({ length: 20 }, (_, i) => i + 1), 1).excede).toBe(false);
+    expect(h.expandirPublico(Array.from({ length: 21 }, (_, i) => i + 1), 1).excede).toBe(true);
+  });
+
+  test("una carrera repetida cuenta una vez", () => {
+    expect(h.expandirPublico([6, "6"], 1).publico).toEqual([{ carreraId: 6, nivel: 1 }]);
+  });
+});

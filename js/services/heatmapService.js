@@ -347,8 +347,40 @@ function mejoresFranjas(rejilla, duracionMin) {
   return franjas.sort((a, b) => a.pctOcupado - b.pctOcupado || a.diaSemana - b.diaSemana);
 }
 
+/**
+ * Tope de grupos de estudiantes (carrera × año) por consulta. 4 carreras con
+ * "Todas las generaciones" son 20; con un año concreto caben 20 carreras.
+ */
+const MAX_SEGMENTOS = 20;
+const NIVELES_TODOS = [1, 2, 3, 4, 5];
+
+/**
+ * Arma el publico del mapa de calor: carreras × año, o carreras × 1-5 con
+ * "todos" (Spec 006, US5). El limite se mide DESPUES de expandir, que es lo
+ * que cuesta: 5 carreras con "todos" son 25 grupos.
+ *
+ * @param {Array} carreras  ids tal como vienen de la query (texto o numero)
+ * @param {string|number} nivel  1-5 o "todos"
+ * @returns {{publico: Array<{carreraId, nivel}>, todos: boolean, excede: boolean}}
+ */
+function expandirPublico(carreras, nivel) {
+  const ids = [];
+  [].concat(carreras || []).forEach((c) => {
+    const n = Number(c);
+    if (Number.isInteger(n) && n > 0 && ids.indexOf(n) === -1) ids.push(n);
+  });
+  const todos = String(nivel) === "todos";
+  const n = Number(nivel);
+  const niveles = todos ? NIVELES_TODOS : (Number.isInteger(n) && n >= 1 && n <= 5 ? [n] : []);
+  const publico = [];
+  ids.forEach((carreraId) => niveles.forEach((nv) => publico.push({ carreraId, nivel: nv })));
+  return { publico, todos, excede: publico.length > MAX_SEGMENTOS };
+}
+
 module.exports = {
   construir,
+  expandirPublico,
+  MAX_SEGMENTOS,
   semestrePorDia,
   semanaPorHora,
   mejoresFranjas,

@@ -70,10 +70,46 @@
     };
   }
 
+  // Aviso de verificacion (Spec 006, US2). Las actividades las cargan los
+  // centros, muchas veces convertidas con IA desde un PDF: sin esto, un error
+  // de carga se lee como una fecha oficial. Siempre visible y sin cierre por
+  // decision del equipo, pero discreto: role="note" y no "alert", que
+  // interrumpiria al lector de pantalla en cada carga.
+  const TEXTO_AVISO =
+    "Las actividades de este calendario las publican los centros de estudiantes y " +
+    "pueden contener errores. Si una fecha es importante para ti, confírmala con tu " +
+    "profesor o con el programa de la asignatura.";
+
+  function htmlAviso() {
+    return '<div class="cal-aviso" role="note">' +
+      '<span class="icon" data-icon="info" aria-hidden="true"></span>' +
+      "<p>" + TEXTO_AVISO + "</p></div>";
+  }
+
+  /** Inserta el aviso una sola vez: montar() se vuelve a llamar en cada
+   *  cambio de filtro y no debe apilar avisos. Vive aqui y no en cada HTML
+   *  para que ningun calendario futuro salga sin el.
+   *
+   *  `antesDe` es el elemento delante del cual va. Por defecto, el propio
+   *  calendario; pero en calendario.html el calendario queda debajo de toda
+   *  la tarjeta de filtros, a mas de 2.000 px en un telefono, y el aviso
+   *  tiene que leerse SIN desplazarse (FR-007): ahi va antes de los filtros. */
+  function insertarAviso(el, antesDe) {
+    const ancla = antesDe || el;
+    if (!el || !ancla || !ancla.parentNode || el.dataset.aviso === "1") return;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = htmlAviso();
+    const aviso = tmp.firstChild;
+    ancla.parentNode.insertBefore(aviso, ancla);
+    el.dataset.aviso = "1";
+    if (global.Icons) global.Icons.hydrate(aviso);
+  }
+
   // opts.onPick(fechaInicio: Date) — se llama al hacer clic en un día/hora,
   // para crear una actividad con la fecha ya prerrellenada.
   async function montar(el, filtros, opts) {
     opts = opts || {};
+    insertarAviso(el, opts.avisoAntesDe);
     const qs = new URLSearchParams(filtros || {}).toString();
     let acts = [];
     try {
@@ -119,6 +155,41 @@
     }
   }
 
+  /** Si quien mira puede editar la actividad. Solo decide que panel abrir y
+   *  si se puede arrastrar; la autorizacion real la hace el servidor. */
+  function puedeEditarAqui(actividad, opts) {
+    const CE = global.CalendarioEstado;
+    return !!(CE && opts && opts.usuario && CE.puedeEditar(actividad, opts.usuario));
+  }
+
+  /** Mover arrastrando, con confirmacion (decision del equipo): el arrastre
+   *  accidental de un certamen no llega a guardarse. Cancelar o un error del
+   *  servidor devuelven la actividad a su lugar. */
+  async function confirmarMovimiento(info, opts) {
+    const CE = global.CalendarioEstado;
+    const a = info.event.extendedProps.actividad;
+    const pregunta = "¿Mover «" + etiquetaEvento(a).plano + "» " +
+      CE.textoMovimiento(info.oldEvent.start, info.event.start) + "?";
+    const ok = global.confirmDialog
+      ? await global.confirmDialog({ titulo: "Mover actividad", mensaje: pregunta, textoConfirmar: "Mover" })
+      : global.confirm(pregunta);
+    if (!ok) { info.revert(); return; }
+    const fin = info.event.end ||
+      new Date(info.event.start.getTime() + (new Date(a.fecha_fin) - new Date(a.fecha_inicio)));
+    try {
+      await global.api.put("/api/actividades/" + encodeURIComponent(a.id), {
+        fechaInicio: info.event.start.toISOString(),
+        fechaFin: fin.toISOString(),
+        actualizadoEn: a.updated_at,
+      });
+      if (global.toast) global.toast("Actividad movida", "success");
+      if (typeof opts.alCambiar === "function") opts.alCambiar();
+    } catch (e) {
+      info.revert();
+      if (global.toast) global.toast(e.message || "No se pudo mover la actividad", "error");
+    }
+  }
+
   function renderCalendario(el, acts, opts, conflictos) {
     conflictos = conflictos || new Map();
     // Destruir instancia previa (al cambiar filtros) para no duplicar.
@@ -141,6 +212,11 @@
         backgroundColor: color,
         borderColor: choque ? "#F59E0B" : color,
         classNames: choque ? ["evento-conflicto"] : [],
+        // Arrastrable SOLO si quien mira puede editarla (Spec 006, US4): un
+        // visitante que arrastra sin querer no ve moverse nada. La duracion no
+        // se cambia arrastrando: eso se hace en el panel, viendo la hora.
+        startEditable: puedeEditarAqui(a, opts),
+        durationEditable: false,
         extendedProps: {
           entidad: a.entidad_nombre, tipo: a.tipo, estado: a.estado,
           ubicacion: a.ubicacion, choque: choque || null,
@@ -149,8 +225,30 @@
       };
     });
 
-    const cal = new global.FullCalendar.Calendar(el, {
-      initialView: "dayGridMonth",
+    // Posicion (Spec 006, US3). Quien llama puede pedir una vista y fecha
+    // iniciales y enterarse de cada navegacion; asi la pagina la guarda en la
+    // URL y el calendario reaparece donde estaba al recargar y al filtrar.
+    // Sin CalendarioEstado cargado (la portada) todo queda como antes.
+    const CE = global.CalendarioEstado;
+    const posicion = {};
+    if (CE && opts.fecha) posicion.initialDate = opts.fecha;
+    if (CE && typeof opts.alNavegar === "function") {
+      posicion.datesSet = (info) => {
+        const c = info.view.calendar;
+        // En vista Mes, un ancla en fin de semana hace que "Semana" muestre la
+        // semana anterior. Se mueve al dia habil mas cercano del MISMO mes:
+        // el rango del mes no cambia, asi que no se vuelve a disparar datesSet.
+        if (info.view.type === "dayGridMonth") {
+          const d = c.getDate();
+          const habil = CE.anclaDiaHabil(d);
+          if (habil.getDate() !== d.getDate()) c.gotoDate(habil);
+        }
+        opts.alNavegar(CE.deVistaFullCalendar(info.view.type), CE.aFechaIso(c.getDate()));
+      };
+    }
+
+    const cal = new global.FullCalendar.Calendar(el, Object.assign({
+      initialView: CE ? CE.aVistaFullCalendar(opts.vista) : "dayGridMonth",
       locale: "es",
       height: "auto",
       firstDay: 1, // lunes
@@ -228,6 +326,12 @@
         // Panel de detalle con la opcion de llevarse la actividad al
         // calendario propio. Si el modulo no cargo, se degrada al aviso
         // efimero de antes en vez de dejar el clic sin respuesta.
+        // Quien puede editar la actividad (el centro dueño o un administrador)
+        // recibe el panel de edicion; el resto, el de siempre (Spec 006, US4).
+        if (p.actividad && global.EditorActividad && puedeEditarAqui(p.actividad, opts)) {
+          global.EditorActividad.abrir(p.actividad, { alGuardar: opts.alCambiar });
+          return;
+        }
         if (global.CalendarSync && p.actividad) {
           global.CalendarSync.mostrarActividad(p.actividad);
           return;
@@ -237,6 +341,7 @@
         if (p.choque) det += " — " + textoChoque(p.choque);
         if (global.toast) toast(det, p.choque ? "error" : undefined); else console.warn("[calendar]", det);
       },
+      eventDrop: (info) => { confirmarMovimiento(info, opts); },
       dateClick: typeof opts.onPick === "function"
         ? (info) => {
             const s = new Date(info.date);
@@ -244,7 +349,7 @@
             opts.onPick(s);
           }
         : undefined,
-    });
+    }, posicion));
     if (typeof opts.onPick === "function") el.classList.add("cal-pickable");
     cal.render();
 
@@ -312,6 +417,6 @@
   // Doble exportacion (patron de js/horario-csv.js y js/horarios-view.js):
   // permite probar `etiquetaEvento` desde Node sin montar un DOM.
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { etiquetaEvento, COLOR_TIPO, NOMBRE_TIPO, ALERTAS_CHOQUE };
+    module.exports = { etiquetaEvento, COLOR_TIPO, NOMBRE_TIPO, ALERTAS_CHOQUE, htmlAviso };
   }
 })(typeof window !== "undefined" ? window : globalThis);

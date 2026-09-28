@@ -30,6 +30,14 @@
   var PATHS = {
     "help-circle":
       '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    // info, message-circle y mail ya se usaban en index.html y ayuda.html y no
+    // existian: esos titulos salian sin icono sin que nadie lo notara.
+    "info":
+      '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    "message-circle":
+      '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    "mail":
+      '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     "layout-dashboard":
       '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
     "sliders-horizontal":

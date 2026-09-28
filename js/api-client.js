@@ -19,7 +19,12 @@
         422: "Datos inválidos", 429: "Demasiados intentos", 500: "Error del servidor",
         502: "Servicio no disponible", 503: "Servicio en mantención",
       };
-      throw new Error(serverMsg || T[res.status] || "Error inesperado");
+      // El codigo viaja en el error ademas del mensaje: quien llama necesita
+      // distinguir un 409 ("cambio mientras editabas") de un 403 sin
+      // depender del texto, que puede cambiar.
+      const err = new Error(serverMsg || T[res.status] || "Error inesperado");
+      err.status = res.status;
+      throw err;
     }
     return data;
   }
