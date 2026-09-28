@@ -123,9 +123,13 @@ Con `industrial@mapfi.cl`:
 
 ## Cierre
 
-- [ ] `npm test` y `npm run test:tz` en verde.
-- [ ] Las cinco historias verificadas en el navegador **contra `server.js`**.
-- [ ] Capturas de las pantallas nuevas (aviso, panel de edición, confirmación de arrastre,
-      selector de generaciones).
+- [x] `npm test` y `npm run test:tz` en verde (670 pruebas, 2026-09-27).
+- [x] Las cinco historias verificadas en el navegador **contra `server.js`** con Postgres local.
+- [x] Capturas de las pantallas nuevas (aviso, panel de edición, confirmación de arrastre,
+      selector de generaciones), tomadas en el panel del navegador durante la verificación.
 - [ ] Tras el despliegue en la Facultad, repetir US1.3 y US3.1-3 en producción. Como en la Spec
       004, la historia se cierra en el servidor real, no con el merge.
+- [ ] US4.11 (sincronización con Google Calendar) solo se puede comprobar con el feed público
+      de producción.
+- [ ] US2.5 con un lector de pantalla real. Verificado en el árbol de accesibilidad
+      (`role="note"`, sin `aria-live`), no con NVDA ni Narrador.

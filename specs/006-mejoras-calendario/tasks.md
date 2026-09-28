@@ -171,10 +171,10 @@ con su motivo (quickstart US1).
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T038 [P] Ayuda: en `ayuda.html`, documentar la edición desde el calendario (quién puede, arrastre con confirmación, que el público se edita en «Mi panel»), el enlace compartible del calendario y la opción "Todas las generaciones".
-- [ ] T039 Puertas de la constitución: `npm test` y `npm run test:tz` en verde con más pruebas que la línea base de T001; `node --check` de cada `.js` tocado; compilación de los scripts inline de `calendario.html`, `index.html` y `mapa-calor.html`; sin emoji estructural ni "TODO" visible.
-- [ ] T040 Recorrer [quickstart.md](quickstart.md) completo contra `server.js` y marcar su lista de cierre, con capturas del aviso, el panel de edición, la confirmación de arrastre y el selector de generaciones.
-- [ ] T041 Actualizar `AGENTS.md` si cambió algo que un agente deba saber (módulo `CalendarioEstado`, regla `actualizadoEn` del `PUT`, vista `vw_saturacion_actividad`).
+- [X] T038 [P] Ayuda: en `ayuda.html`, documentar la edición desde el calendario (quién puede, arrastre con confirmación, que el público se edita en «Mi panel»), el enlace compartible del calendario y la opción "Todas las generaciones".
+- [X] T039 Puertas de la constitución: `npm test` y `npm run test:tz` en verde con más pruebas que la línea base de T001; `node --check` de cada `.js` tocado; compilación de los scripts inline de `calendario.html`, `index.html` y `mapa-calor.html`; sin emoji estructural ni "TODO" visible.
+- [X] T040 Recorrer [quickstart.md](quickstart.md) completo contra `server.js` y marcar su lista de cierre, con capturas del aviso, el panel de edición, la confirmación de arrastre y el selector de generaciones.
+- [X] T041 Actualizar `AGENTS.md` si cambió algo que un agente deba saber (módulo `CalendarioEstado`, regla `actualizadoEn` del `PUT`, vista `vw_saturacion_actividad`).
 
 ---
 
