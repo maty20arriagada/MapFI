@@ -104,6 +104,12 @@ jest.mock("../../js/db", () => {
       if (sql.includes("FROM matricula")) {
         return { rows: [{ carrera_id: 7, nivel: 1, cantidad: 120 }] };
       }
+      // Spec 006: conteo distinto del semestre. Se captura para comprobar que
+      // la ruta usa la vista nueva cuando hay carreras.
+      if (sql.includes("vw_saturacion_actividad")) {
+        mockPool.__ultimaSaturacionPublico = params;
+        return { rows: [{ fecha: "2026-09-07", eventos: 1, examenes: 1 }] };
+      }
       if (sql.includes("vw_saturacion_segmento")) {
         return { rows: [{ carrera_id: 7, nivel: 1, fecha: "2026-09-07", eventos: 4, examenes: 1 }] };
       }
@@ -638,6 +644,61 @@ describe("API endpoints públicos", () => {
       const res = await request(app).get("/api/heatmap/semana?" + muchas + "&nivel=1");
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/Máximo/i);
+    });
+  });
+
+  describe("Spec 006 — mapa de calor con todas las generaciones", () => {
+    const db = () => require("../../js/db").pool;
+
+    test("por hora: nivel=todos con una carrera responde", async () => {
+      const res = await request(app).get("/api/heatmap/semana?carreraId=7&nivel=todos&fecha=2026-09-07");
+      expect(res.status).toBe(200);
+    });
+
+    test("por hora: 4 carreras con todos (20 grupos) caben", async () => {
+      const q = [1, 2, 3, 4].map((c) => "carreraId=" + c).join("&");
+      const res = await request(app).get("/api/heatmap/semana?" + q + "&nivel=todos&fecha=2026-09-07");
+      expect(res.status).toBe(200);
+    });
+
+    test("por hora: 5 carreras con todos se rechazan explicando el limite en carreras", async () => {
+      const q = [1, 2, 3, 4, 5].map((c) => "carreraId=" + c).join("&");
+      const res = await request(app).get("/api/heatmap/semana?" + q + "&nivel=todos&fecha=2026-09-07");
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("Con todas las generaciones puedes combinar hasta 4 carreras");
+    });
+
+    test("por hora: omitir el nivel sigue siendo un error (todos debe pedirse explicito)", async () => {
+      expect((await request(app).get("/api/heatmap/semana?carreraId=7")).status).toBe(400);
+    });
+
+    test("por hora: un nivel invalido no se interpreta como todos", async () => {
+      expect((await request(app).get("/api/heatmap/semana?carreraId=7&nivel=9")).status).toBe(400);
+    });
+
+    test("semestre: varias carreras con todos usan el conteo distinto", async () => {
+      db().__ultimaSaturacionPublico = null;
+      const res = await request(app).get("/api/heatmap/semestre?carreraId=7&carreraId=9&nivel=todos&desde=2026-09-07&hasta=2026-09-11");
+      expect(res.status).toBe(200);
+      const [carreras, niveles] = db().__ultimaSaturacionPublico;
+      expect(carreras).toHaveLength(10);
+      expect(new Set(carreras)).toEqual(new Set([7, 9]));
+      expect(new Set(niveles)).toEqual(new Set([1, 2, 3, 4, 5]));
+      expect(res.body.celdas["2026-09-07"]).toMatchObject({ eventos: 1, examenes: 1 });
+    });
+
+    test("semestre: una carrera y un año tambien pasa por el conteo distinto, con la misma forma", async () => {
+      db().__ultimaSaturacionPublico = null;
+      const res = await request(app).get("/api/heatmap/semestre?carreraId=7&nivel=1&desde=2026-09-07&hasta=2026-09-11");
+      expect(res.status).toBe(200);
+      expect(db().__ultimaSaturacionPublico[0]).toEqual([7]);
+      expect(res.body.semanas).toEqual(["2026-09-07"]);
+    });
+
+    test("semestre: 5 carreras con todos tambien se rechazan", async () => {
+      const q = [1, 2, 3, 4, 5].map((c) => "carreraId=" + c).join("&");
+      const res = await request(app).get("/api/heatmap/semestre?" + q + "&nivel=todos");
+      expect(res.status).toBe(400);
     });
   });
 

@@ -1007,12 +1007,27 @@ app.get("/api/heatmap/semestre", async (req, res) => {
   try {
     const desde = req.query.desde;
     const hasta = req.query.hasta;
+
+    // Con carreras (lo que siempre manda mapa-calor.html) se cuentan
+    // actividades DISTINTAS del conjunto: antes se sumaban las filas por
+    // segmento y una charla para cinco años contaba cinco (Spec 006, US5).
+    // Sin año, o con "todos", son los cinco años de cada carrera.
+    const carreras = [].concat(req.query.carreraId || []).filter((c) => c !== "");
+    let consulta;
+    if (carreras.length) {
+      const nivelPedido = req.query.nivel === undefined || req.query.nivel === "" ? "todos" : req.query.nivel;
+      const { publico, todos, excede } = heatmapService.expandirPublico(carreras, nivelPedido);
+      if (!publico.length) return res.status(400).json({ error: "La carrera o el año no son válidos" });
+      if (excede) return res.status(400).json({ error: mensajeLimiteHeatmap(todos) });
+      consulta = kpiDao.saturacionPublico(publico, desde, hasta);
+    } else {
+      // Sin carrera: toda la Facultad por un año (o todos). Ninguna pantalla
+      // lo pide hoy; se conserva el comportamiento anterior para la API.
+      consulta = kpiDao.saturacionSegmento({ nivel: num(req.query.nivel), desde, hasta });
+    }
+
     const [filas, feriados] = await Promise.all([
-      kpiDao.saturacionSegmento({
-        carreraId: num(req.query.carreraId),
-        nivel: num(req.query.nivel),
-        desde, hasta,
-      }),
+      consulta,
       desde && hasta ? feriadoDao.listarFechasEntre(desde, hasta) : Promise.resolve([]),
     ]);
     res.json(heatmapService.semestrePorDia(filas, {
@@ -1033,7 +1048,14 @@ app.get("/api/heatmap/semestre", async (req, res) => {
 // hace falta (bloques, actividades de la semana, feriados y población) y es el
 // mismo contexto con el que el Match puntúa una fecha — así las dos funciones
 // no pueden discrepar sobre qué está ocupado.
-const HEATMAP_MAX_SEGMENTOS = 20;
+/** El limite se explica en carreras, que es lo que la persona elige: con
+ *  "todas las generaciones" cada carrera son cinco grupos. */
+function mensajeLimiteHeatmap(todos) {
+  const max = heatmapService.MAX_SEGMENTOS;
+  return todos
+    ? `Con todas las generaciones puedes combinar hasta ${Math.floor(max / 5)} carreras`
+    : `Máximo ${max} carreras a la vez`;
+}
 app.get("/api/heatmap/semana", async (req, res) => {
   try {
     const fecha = req.query.fecha || new Date().toISOString();
@@ -1041,18 +1063,16 @@ app.get("/api/heatmap/semana", async (req, res) => {
       return res.status(400).json({ error: "La fecha no es válida" });
     }
 
-    // El público puede venir como pares carreraId/nivel repetidos
-    // (?carreraId=7&carreraId=9&nivel=1) o como un solo segmento.
-    const carreras = [].concat(req.query.carreraId || []).map(num).filter(Boolean);
-    const nivel = num(req.query.nivel);
-    if (!carreras.length || !nivel) {
+    // El público es carreras × año (?carreraId=7&carreraId=9&nivel=1), o
+    // carreras × 1-5 con nivel=todos (Spec 006, US5). Omitir el nivel sigue
+    // siendo un error: "todas las generaciones" se pide explicitamente.
+    const { publico, todos, excede } = heatmapService.expandirPublico(
+      [].concat(req.query.carreraId || []), req.query.nivel);
+    if (!publico.length) {
       return res.status(400).json({ error: "Se requieren carreraId y nivel" });
     }
-    if (carreras.length > HEATMAP_MAX_SEGMENTOS) {
-      return res.status(400).json({ error: `Máximo ${HEATMAP_MAX_SEGMENTOS} carreras a la vez` });
-    }
+    if (excede) return res.status(400).json({ error: mensajeLimiteHeatmap(todos) });
 
-    const publico = carreras.map((carreraId) => ({ carreraId, nivel }));
     const contexto = await actividadDao.cargarContextoMatch(publico, fecha);
     const rejilla = heatmapService.semanaPorHora(contexto, publico, { fecha });
     res.json({

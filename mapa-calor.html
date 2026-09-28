@@ -72,6 +72,13 @@
       selCarrera.innerHTML = cat.carreras
         .map((c) => '<option value="' + c.id + '">' + escapeHtml(c.nombre) + "</option>").join("");
       Filters.poblarSelect(document.getElementById("hNivel"), cat.generaciones, "nivel", "etiqueta", "— Generación —");
+      // Spec 006, US5: cruzar los cinco años de una carrera (o de hasta cuatro).
+      const opTodas = document.createElement("option");
+      opTodas.value = "todos";
+      opTodas.textContent = "Todas las generaciones";
+      document.getElementById("hNivel").insertBefore(opTodas, document.getElementById("hNivel").options[1] || null);
+      // Con "todas", cada carrera son cinco grupos y el tope es de 20.
+      const MAX_CARRERAS_TODAS = 4;
 
       const cont = document.getElementById("heatmap");
       const navSemana = document.getElementById("navSemana");
@@ -99,15 +106,32 @@
         nivel: document.getElementById("hNivel").value || null,
       });
 
+      /** La seleccion queda en la URL, como ya se leia desde ella: recargar
+       *  o compartir el enlace conserva carreras y año (FR-029). */
+      function guardarSeleccion() {
+        const s = seleccion();
+        const q = new URLSearchParams();
+        s.carreraId.forEach((c) => q.append("carreraId", c));
+        if (s.nivel) q.set("nivel", s.nivel);
+        history.replaceState(history.state, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
+      }
+
       function actualizarEstado() {
         const s = seleccion();
-        const listo = s.carreraId.length > 0 && !!s.nivel;
+        const todas = s.nivel === "todos";
+        // Se avisa ANTES de pedir el mapa, no despues de un error.
+        const excede = todas && s.carreraId.length > MAX_CARRERAS_TODAS;
+        const listo = s.carreraId.length > 0 && !!s.nivel && !excede;
         document.getElementById("btnSemana").disabled = !listo;
         document.getElementById("btnSemestre").disabled = !listo;
         const el = document.getElementById("estadoSeleccion");
         if (!s.carreraId.length && !s.nivel) el.textContent = "Elige tu carrera y tu año para empezar.";
         else if (!s.carreraId.length) el.textContent = "Falta la carrera: pínchala en la lista de arriba.";
         else if (!s.nivel) el.textContent = "Falta el año.";
+        else if (excede) el.textContent = `Con todas las generaciones puedes combinar hasta ${MAX_CARRERAS_TODAS} carreras: tienes ${s.carreraId.length} marcadas. Desmarca alguna o elige un año.`;
+        else if (todas) el.textContent = s.carreraId.length === 1
+          ? "Listo: se cruzarán los cinco años de la carrera."
+          : `Listo: ${s.carreraId.length} carreras, los cinco años de cada una.`;
         else el.textContent = s.carreraId.length === 1
           ? "Listo: elige una de las dos vistas."
           : `Listo: ${s.carreraId.length} carreras — se calculará la disponibilidad conjunta.`;
@@ -141,17 +165,16 @@
           rotularSemana();
           await HeatmapView.montarSemana(cont, { ...s, fecha: semana, duracion: 90 });
         } else {
-          // El semestre mira el calendario completo, no un público concreto:
-          // se filtra por carrera solo si hay UNA elegida.
-          const filtros = { nivel: s.nivel };
-          if (s.carreraId.length === 1) filtros.carreraId = s.carreraId[0];
-          await HeatmapView.montarSemestre(cont, filtros);
+          // Todas las carreras elegidas, no solo cuando hay una: el servidor
+          // cuenta actividades DISTINTAS del conjunto (Spec 006, US5). Antes,
+          // con varias carreras se descartaban y se sumaba todo el año.
+          await HeatmapView.montarSemestre(cont, { carreraId: s.carreraId, nivel: s.nivel });
         }
         actualizarEstado();
       }
 
-      selCarrera.addEventListener("change", actualizarEstado);
-      document.getElementById("hNivel").addEventListener("change", actualizarEstado);
+      selCarrera.addEventListener("change", () => { guardarSeleccion(); actualizarEstado(); });
+      document.getElementById("hNivel").addEventListener("change", () => { guardarSeleccion(); actualizarEstado(); });
       document.getElementById("btnSemana").addEventListener("click", () => render("semana"));
       document.getElementById("btnSemestre").addEventListener("click", () => render("semestre"));
 
